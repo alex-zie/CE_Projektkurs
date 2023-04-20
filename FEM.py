@@ -50,7 +50,10 @@ bars = np.array(bars)
 
 # Äußere Kräfte
 P = np.zeros_like(nodes)
-#P[7,2] = 50
+P[16,0] = 1
+P[17,0] = 1
+P[18,0] = 1
+P[19,0] = 1
 
 # Lager Verschiebung
 Ur = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 4 Festlager = 4*3 blockierte Freiheitsgrade
