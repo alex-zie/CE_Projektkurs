@@ -1,9 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-#%% Input truss structure data
-E = 1e4
-A = 0.111
+E = 1e4     # E-Modul
+A = 0.111   # Querschnittsfläche der Balken
 
 nodes = []
 bars = []
@@ -48,7 +47,7 @@ bars.append([8,4])
 nodes = np.array(nodes).astype(float)
 bars = np.array(bars)
 
-#Applied forces
+#Äußere Kräfte
 P = np.zeros_like(nodes)
 P[0,0] = 1
 P[0,1] = -10
@@ -61,8 +60,9 @@ P[5,0] = 0.6
 #Support Displacement
 Ur = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-#Condition of DOF (1 = free, 0 = fixed)
+#Freiheitsgrade (1 = beweglich, 0 = fest)
 DOFCON = np.ones_like(nodes).astype(int)
+# Festlager
 DOFCON[6,:] = 0
 DOFCON[7,:] = 0
 DOFCON[8,:] = 0
@@ -72,20 +72,21 @@ DOFCON[9,:] = 0
 def TrussAnalysis():
     NN = len(nodes)
     NE = len(bars)
-    DOF = 3
+    DOF = 3 # weil wir uns in 3D befinden
     NDOF = DOF*NN
     
-    #structural analysis
-    d = nodes[bars[:,1],:] - nodes[bars[:,0],:]
-    L = np.sqrt((d**2).sum(axis=1))
-    angle = d.T/L
-    a = np.concatenate((-angle.T,angle.T), axis=1)
+    # Geometrie
+    d = nodes[bars[:,1],:] - nodes[bars[:,0],:] # Endknoten - Anfangsknoten
+    L = np.sqrt((d**2).sum(axis=1))             # Länge der Balken (Euklidische Norm)
+    orientations = d.T/L                        # Richtungsvektoren der Balken
+    trans = np.concatenate((-orientations.T,orientations.T), axis=1) # Transformationsvektor
+
+    # Steifigkeitsmatrix
     K = np.zeros([NDOF,NDOF])
     for k in range(NE):
         aux  = 3*bars[k,:]
         index = np.r_[aux[0]:aux[0]+3,aux[1]:aux[1]+3]
-        
-        ES = np.dot(a[k][np.newaxis].T*E*A,a[k][np.newaxis])/L[k]
+        ES = np.dot(trans[k][np.newaxis].T*E*A, trans[k][np.newaxis])/L[k] # lokale Steifigkeiten
         K[np.ix_(index,index)] = K[np.ix_(index,index)] + ES
     
     freeDOF = DOFCON.flatten().nonzero()[0]
@@ -93,21 +94,22 @@ def TrussAnalysis():
     Kff = K[np.ix_(freeDOF,freeDOF)]
     Kfr = K[np.ix_(freeDOF,supportDOF)]
     Krf = Kfr.T
-    Krr = K[np.ix_(supportDOF,supportDOF)]
+    Krr = K[np.ix_(supportDOF,supportDOF)] # für die Lagerkräfte
     Pf = P.flatten()[freeDOF]
-    Uf = np.linalg.solve(Kff,Pf)
+    Uf = np.linalg.solve(Kff,Pf) # Deformation an jedem Freiheitsgrad
     U = DOFCON.astype(float).flatten()
     U[freeDOF] = Uf
     U[supportDOF] = Ur
     U = U.reshape(NN,DOF)
     u = np.concatenate((U[bars[:,0]],U[bars[:,1]]),axis=1)
-    N = E*A/L[:]*(a[:]*u[:]).sum(axis=1)
-    R = (Krf[:]*Uf).sum(axis=1) + (Krr[:]*Ur).sum(axis=1)
-    R = R.reshape(4,DOF)
+    N = E*A/L[:]*(trans[:]*u[:]).sum(axis=1) # externe Kräfte
+    R = (Krf[:]*Uf).sum(axis=1) + (Krr[:]*Ur).sum(axis=1) # Reaktionskräfte
+    R = R.reshape(4,DOF) # 4 ist die Anzahl der Lager
     return np.array(N), np.array(R), U
 
 def Plot(nodes,c,lt,lw,lg):
-    plt.gca(projection='3d')
+    plt.subplot(projection='3d')
+    #plt.gca(projection='3d')
     for i in range(len(bars)):
         xi, xf = nodes[bars[i,0],0], nodes[bars[i,1],0]
         yi, yf = nodes[bars[i,0],1], nodes[bars[i,1],1]
@@ -128,6 +130,7 @@ Plot(nodes,'gray','--',1,'Undeformed')
 scale = 5
 Dnodes = U*scale + nodes
 Plot(Dnodes,'red','-',2,'Deformed')
+plt.show()
 #plt.savefig('fig-1.png', dpi=300)
 
 
