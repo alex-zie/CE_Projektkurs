@@ -7,47 +7,50 @@ A = 0.25   # Querschnittsfläche der Balken
 nodes = []
 bars = []
 
-nodes.append([0, 0, 0])         # 0
-nodes.append([100, 0, 0])       # 1
-nodes.append([0, 100, 0])       # 2
-nodes.append([100, 100, 0])     # 3
-nodes.append([0, 0, 100])       # 4
-nodes.append([100, 0, 100])     # 5
-nodes.append([0, 100, 100])     # 6
-nodes.append([100, 100, 100])   # 7
+height = 10
+numSegments = 10
+hs = height/numSegments # Höhe jedes Segments
 
-bars.append([0,1])
-bars.append([2,3])
-bars.append([4,5])
-bars.append([6,7])
-bars.append([0,2])
-bars.append([1,3])
-bars.append([4,6])
-bars.append([5,7])
-bars.append([0,4])
-bars.append([1,5])
-bars.append([2,6])
-bars.append([3,7])
+for i in range(numSegments):
+    nodes.append([0, 0, i*hs])         
+    nodes.append([hs, 0, i*hs])     
+    nodes.append([0, hs, i*hs])       
+    nodes.append([hs, hs, i*hs])  
 
-bars.append([0,6])
-bars.append([2,4])
-bars.append([1,7])
-bars.append([3,5])
-bars.append([0,5])
-bars.append([1,4])
-bars.append([2,7])
-bars.append([3,6])
-bars.append([0,3])
-bars.append([1,2])
-bars.append([4,7])
-bars.append([5,6])
+
+# x- und y-Richtung
+for i in range(numSegments):
+    bars.append([4*i, 4*i+1])
+    bars.append([4*i+2, 4*i+3])
+    bars.append([4*i, 4*i+2])
+    bars.append([4*i+1, 4*i+3])
+
+# z-Richtung
+for i in range(numSegments-1):
+    bars.append([4*i, 4*i+4])
+    bars.append([4*i+1, 4*i+5])
+    bars.append([4*i+2, 4*i+6])
+    bars.append([4*i+3, 4*i+7])
+
+# Kreuzstreben
+for i in range(numSegments-1):
+    bars.append([4*i, 4*i+5])
+    bars.append([4*i+1, 4*i+4])
+    bars.append([4*i+2, 4*i+7])
+    bars.append([4*i+3, 4*i+6])
+    bars.append([4*i+1, 4*i+7])
+    bars.append([4*i+3, 4*i+5])
+    bars.append([4*i+2, 4*i+4])
+    bars.append([4*i, 4*i+6])
+    
+
 
 nodes = np.array(nodes).astype(float)
 bars = np.array(bars)
 
 # Äußere Kräfte
 P = np.zeros_like(nodes)
-P[7,2] = 50
+#P[7,2] = 50
 
 # Lager Verschiebung
 Ur = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 4 Festlager = 4*3 blockierte Freiheitsgrade
@@ -102,6 +105,7 @@ def TrussAnalysis():
 
 def Plot(nodes,c,lt,lw,lg):
     plt.subplot(projection='3d')
+    plt.gca().set_aspect('equal')
     #plt.gca(projection='3d')
     for i in range(len(bars)):
         xi, xf = nodes[bars[i,0],0], nodes[bars[i,1],0]
@@ -109,7 +113,7 @@ def Plot(nodes,c,lt,lw,lg):
         zi, zf = nodes[bars[i,0],2], nodes[bars[i,1],2]
         line, = plt.plot([xi, xf],[yi, yf],[zi, zf],color=c,linestyle=lt,linewidth=lw)
     line.set_label(lg)
-    plt.legend(prop={'size': 14})
+    plt.legend(prop={'size': 7})
 
 #%% Result
 N, R, U = TrussAnalysis()
