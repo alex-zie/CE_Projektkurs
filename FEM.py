@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Material
-h_b = 10e-2  # Höhe des Querschnitts der Balken
-b_b = 10e-2  # Breite des Querschnitts der Balken
+h_b = 10e-2  # Höhe des Querschnitts der Balken in m
+b_b = 10e-2  # Breite des Querschnitts der Balken in m
 E = 210e9  # E-Modul in Pa
-A = h_b * b_b  # Querschnittsfläche der Balken
+A = h_b * b_b  # Querschnittsfläche der Balken in m^2
 rho = 7850  # Dichte in kg/m^3
-g = 9.81
+g = 9.81 # m/s^2
 
 # Nodes und Bars
 nodes = []
@@ -18,7 +18,6 @@ numSegmentsT = 10
 hs = height / numSegmentsT  # Höhe jedes Segments
 
 # Ausleger
-offset = 4 * numSegmentsT - 5
 numSegmentsA = 10
 length = 10
 ls = length / numSegmentsA
@@ -29,13 +28,13 @@ for i in range(numSegmentsT):
     nodes.append([hs, 0, i * hs])  # Right Top
     nodes.append([0, hs, i * hs])  # Left Bottom
     nodes.append([hs, hs, i * hs])  # Right Bottom
-
+offset = len(nodes)
 # Erstelle die Nodes des Auslegers in positive x Richtung
-# for i in range(1, numSegmentsA):
-#     nodes.append([hs + i * ls, 0, (numSegmentsT - 1) * hs])  # Left Top
-#     nodes.append([hs + i * ls, hs, (numSegmentsT - 1) * hs])  # Right Top
-#     nodes.append([hs + i * ls, 0, (numSegmentsT - 2) * hs])  # Left Bottom
-#     nodes.append([hs + i * ls, hs, (numSegmentsT - 2) * hs])  # Right Bottom
+for i in range(1, numSegmentsA+1):
+    nodes.append([hs + i * ls, 0, (numSegmentsT - 1) * hs])  # Left Top
+    nodes.append([hs + i * ls, hs, (numSegmentsT - 1) * hs])  # Right Top
+    nodes.append([hs + i * ls, 0, (numSegmentsT - 2) * hs])  # Left Bottom
+    nodes.append([hs + i * ls, hs, (numSegmentsT - 2) * hs])  # Right Bottom
 
 # Turm
 # x- und y-Richtung (LT für Left Top usw.)
@@ -64,6 +63,23 @@ for i in range(numSegmentsT - 1):
     bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
 
 # Ausleger
+bars.append([offset-2, offset])  # LB -> LT
+bars.append([offset-1, offset+1])  # RB -> RT
+bars.append([offset-6, offset+2])  # LB-1 -> LB
+bars.append([offset-5, offset+3])  # RB-1 -> RB
+# x- und y-Richtung (LT für Left Top usw.)
+for i in range(numSegmentsA):
+    bars.append([4 * i + offset, 4 * i + offset + 1])  # LT -> RT
+    bars.append([4 * i + 2 + offset, 4 * i + 3 + offset])  # LB -> RB
+    bars.append([4 * i + offset, 4 * i + 2 + offset])  # LT -> LB
+    bars.append([4 * i + 1 + offset, 4 * i + 3 + offset])  # RT -> RB
+
+# z-Richtung
+for i in range(numSegmentsA-1):
+    bars.append([4 * i + offset, 4 * i + 4 + offset])  # LT
+    bars.append([4 * i + 1 + offset, 4 * i + 5 + offset])  # RT
+    bars.append([4 * i + 2 + offset, 4 * i + 6 + offset])  # LB
+    bars.append([4 * i + 3 + offset, 4 * i + 7 + offset])  # RB
 
 # python list zu np.array
 nodes = np.array(nodes).astype(float)
@@ -165,4 +181,4 @@ scale = 5
 Dnodes = U * scale + nodes
 Plot(Dnodes, 'red', '-', 2, 'Deformed')
 plt.show()
-# plt.savefig('fig-1.png', dpi=300)
+plt.savefig('fig-1.png', dpi=300)
