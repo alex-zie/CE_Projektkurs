@@ -54,13 +54,13 @@ for i in range(numSegmentsT - 1):
 # Kreuzstreben (+1 jeweils für nächste Stufe)
 for i in range(numSegmentsT - 1):
     bars.append([4 * i, 4 * i + 5])  # LT -> RT+1
-    bars.append([4 * i + 1, 4 * i + 4])  # RT -> RT+1
-    bars.append([4 * i + 2, 4 * i + 7])  # LB -> RB+1
+    #bars.append([4 * i + 1, 4 * i + 4])  # RT -> RT+1
     bars.append([4 * i + 3, 4 * i + 6])  # RB -> LB+1
+    #bars.append([4 * i + 2, 4 * i + 7])  # LB -> RB+1
     bars.append([4 * i + 1, 4 * i + 7])  # RT -> RB+1
-    bars.append([4 * i + 3, 4 * i + 5])  # RB -> RT+1
+    #bars.append([4 * i + 3, 4 * i + 5])  # RB -> RT+1
     bars.append([4 * i + 2, 4 * i + 4])  # LB -> LT+1
-    bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
+    #bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
 
 # Ausleger
 bars.append([offset-2, offset])  # LB -> LT
@@ -153,7 +153,7 @@ def TrussAnalysis():
 
 def Plot(nodes, c, lt, lw, lg):
     plt.subplot(projection='3d')
-    plt.gca().set_aspect('auto')
+    plt.gca().set_aspect('equal')
     # plt.gca(projection='3d')
     for i in range(len(bars)):
         # Jeweilige Start und Endkoordiante
