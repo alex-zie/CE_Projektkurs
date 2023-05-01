@@ -29,9 +29,9 @@ class FEM:
         Krf = Kfr.T
         Krr = K[np.ix_(supportDOF, supportDOF)]  # für die Lagerkräfte
 
-        # weights = np.zeros_like(self.truss.F)
-        # weights[:, 2] = -self.computeWeight()
-        # self.truss.addExternalForces(weights)
+        weights = np.zeros_like(self.truss.F)
+        weights[:, 2] = -self.computeWeight()
+        self.truss.addExternalForces(weights)
         F = self.truss.F.flatten()[freeDOF] # Kraftmatrix passend zu K mit nicht null Einträgen, wie oben definiert
 
         Uf = np.linalg.lstsq(Kff, F)[0]  # Deformation an jedem Freiheitsgrad # least squares damit auch überbestimmte Systeme fkt.
@@ -86,3 +86,11 @@ class FEM:
             line, = plt.plot([xi, xf], [yi, yf], [zi, zf], color=c, linestyle=lt, linewidth=lw)
         line.set_label(lg)
         plt.legend(prop={'size': 7})
+
+    def plotNode(self, node):
+        plt.subplot(projection='3d')
+        plt.plot(self.truss.nodes[node, 0], self.truss.nodes[node, 1], self.truss.nodes[node, 2], 'bo')
+
+    def plotPoint(self, point):
+        plt.subplot(projection='3d')
+        plt.plot(point[0], point[1], point[2], 'bo')

@@ -43,6 +43,8 @@ if __name__=="__main__":
     # Berechne die neue Position der Knoten
     Dnodes = U * scale + nodes
     fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')
+    fem.plotPoint(Dnodes[-1])
+    fem.plotPoint(Dnodes[-2])
     plt.show()
     #plt.savefig('fig-1.png', dpi=300)
 

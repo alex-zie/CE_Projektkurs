@@ -17,7 +17,9 @@ def triangle():
     myTruss = Truss(nodes, bars, 0.111, 7850, 1e4)
     myTruss.addSupport(0, 0, 0, 0)
     myTruss.addSupport(1, 0, 0, 0)
-    myTruss.addSupport(2, 0, 0, 0)
+    #myTruss.addSupport(2, 0, 0, 0)
+
+    myTruss.addExternalForce(2, 0, 0, -10)
 
 def bridge():
     global myTruss
@@ -43,11 +45,12 @@ nodes = []
 bars = []
 myTruss = None
 
-bridge()
+triangle()
 
 fem = FEM(myTruss)
 
 N, R, U = fem.TrussAnalysis()
+print(myTruss.F)
 print('\nAxial Forces (positive = tension, negative = compression)')
 # Anschaulichkeit
 print(N[np.newaxis].T)

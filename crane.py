@@ -61,9 +61,9 @@ class crane(Truss):
             # bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
 
         # Ausleger
-        bars.append([offset - 2, offset])  # LB -> LT
+        bars.append([offset - 4, offset])  # LB -> LT
         bars.append([offset - 1, offset + 1])  # RB -> RT
-        bars.append([offset - 6, offset + 2])  # LB-1 -> LB
+        bars.append([offset - 8, offset + 2])  # LB-1 -> LB
         bars.append([offset - 5, offset + 3])  # RB-1 -> RB
         # x- und y-Richtung (LT für Left Top usw.)
         for i in range(numSegmentsA):
@@ -93,9 +93,8 @@ class crane(Truss):
 
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
-        #self.addExternalForce(bars[-1][1], 0, 0, 1000) # in z-Richtung funktioniert es nicht
-        #self.addExternalForce(bars[-2][1], 0, 0, 1000)
-
+        #self.addExternalForce(-1, 0, 0, -1e9) # in z-Richtung funktioniert es nicht
+        #self.addExternalForce(-2, 0, 0, -1e9)
         # Material
         self. A = A
         self.rho = rho
