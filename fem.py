@@ -1,10 +1,10 @@
 import numpy as np
-from truss import truss
+from truss import Truss
 import matplotlib.pyplot as plt
 
 class FEM:
 
-    def __init__(self, truss: truss):
+    def __init__(self, truss: Truss):
         self.truss = truss
         self.NN = len(truss.nodes)
         self.NE = len(truss.bars)
@@ -12,6 +12,9 @@ class FEM:
         self.NDOF = self.DOF * self.NN  # Gesamtanzahl der Freihetsgrade
 
     def TrussAnalysis(self) -> (np.ndarray, np.ndarray, np.ndarray) :
+        """
+        returns: axial forces, reactional forces, displacements
+        """
         E = self.truss.E 
         A = self.truss.A
         L = self.truss.lengths
@@ -37,7 +40,7 @@ class FEM:
         u = np.concatenate((U[self.truss.bars[:, 0]], U[self.truss.bars[:, 1]]), axis=1)
         N = E * A / L[:] * (trans[:] * u[:]).sum(axis=1)  # interne Kräfte
         R = (Krf[:] * Uf).sum(axis=1) + (Krr[:] * self.truss.Ur).sum(axis=1)  # Reaktionskräfte
-        R = R.reshape(4, self.DOF)  # 4 ist die Anzahl der Lager
+        R = R.reshape(len(self.truss.Ur)//self.DOF, self.DOF)  # TODO Diese Zeile evtl. verbessern
         return np.array(N), np.array(R), U
     
     def computeStiffnessMatrix(self, E, A, L, trans):
@@ -51,8 +54,19 @@ class FEM:
             # Globale Steifigkeiten durch Summierung der Einzelsteifigkeiten, Position !
             K[np.ix_(index, index)] = K[np.ix_(index, index)] + ES
         return K
+    
+    def computeWeight(self):
+        bars = self.truss.bars
+        nOutgoingBars = np.zeros_like(bars[:, 0])
 
-    def Plot(self, nodes,bars, c, lt, lw, lg):
+        # compute for each node (index) the number of outgoing bars
+        for bar in bars:
+            nOutgoingBars[bar] = nOutgoingBars[bar] + 1
+
+        
+
+
+    def Plot(self, nodes, bars, c, lt, lw, lg):
         plt.subplot(projection='3d')
         plt.gca().set_aspect('equal')
         # plt.gca(projection='3d')

@@ -1,7 +1,7 @@
-from truss import truss
+from truss import Truss
 import numpy as np
 
-class crane(truss):
+class crane(Truss):
     """
     Special truss that represents a crane
     """
@@ -82,24 +82,19 @@ class crane(truss):
         # convert python list to np.array
         self.nodes = np.array(nodes).astype(float)
         self.bars = np.array(bars)
-
+        
         # Lager
-        self.Ur = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # 4 Festlager = 4*3 blockierte Freiheitsgrade
-
-        # Freiheitsgrade (1 = beweglich, 0 = fest) # evtl. booleans benutzen?
         self.supports = np.ones_like(self.nodes).astype(int)
-        # Festlager
-        self.supports[0, :] = 0
-        self.supports[1, :] = 0
-        self.supports[2, :] = 0
-        self.supports[3, :] = 0
+        self.Ur = []
+        self.addSupport(0, 0, 0, 0)
+        self.addSupport(1, 0, 0, 0)
+        self.addSupport(2, 0, 0, 0)
+        self.addSupport(3, 0, 0, 0)
 
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
-        self.F[16, 0] = 1
-        self.F[17, 0] = 1
-        self.F[18, 0] = 1
-        self.F[19, 0] = 1
+        self.addExternalForce(bars[-1][1], 0, 0, 1000) # in z-Richtung funktioniert es nicht
+        self.addExternalForce(bars[-2][1], 0, 0, 1000)
 
         # Material
         self. A = A
