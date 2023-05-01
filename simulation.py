@@ -39,7 +39,7 @@ if __name__=="__main__":
     print('\nDeformation at nodes')
     print(U)
     fem.Plot(nodes, bars, 'gray', '--', 1, 'Undeformed')
-    scale = 5
+    scale = 1
     # Berechne die neue Position der Knoten
     Dnodes = U * scale + nodes
     fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')

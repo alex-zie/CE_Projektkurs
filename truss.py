@@ -58,7 +58,15 @@ class Truss:
         y:      y-component 
         z:      z-component 
         """
-        self.F[node, 0] = self.F[node, 0] + x
-        self.F[node, 1] = self.F[node, 1] + y
-        self.F[node, 2] = self.F[node, 2] + z
+        self.F[node][0] = self.F[node][0] + x
+        self.F[node][1] = self.F[node][1] + y
+        self.F[node][2] = self.F[node][2] + z
+
+    def addExternalForces(self, forces):
+        """
+        Adds multiple external forces. If there already is an external force at a node,
+        it will add one on top of it.
+        forces: matrix of forces
+        """
+        self.F = self.F + forces
     

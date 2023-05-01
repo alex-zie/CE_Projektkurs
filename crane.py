@@ -93,8 +93,8 @@ class crane(Truss):
 
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
-        self.addExternalForce(bars[-1][1], 0, 0, 1000) # in z-Richtung funktioniert es nicht
-        self.addExternalForce(bars[-2][1], 0, 0, 1000)
+        #self.addExternalForce(bars[-1][1], 0, 0, 1000) # in z-Richtung funktioniert es nicht
+        #self.addExternalForce(bars[-2][1], 0, 0, 1000)
 
         # Material
         self. A = A
