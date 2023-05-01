@@ -6,7 +6,7 @@ class crane(truss):
     Special truss that represents a crane
     """
 
-    def __init__(self, height, length, hs, ls): # maybe we can add some unique function e.g. crane_variant_1 to generalize
+    def __init__(self, height, length, hs, ls, A, rho,E): # maybe we can add some unique function e.g. crane_variant_1 to generalize
         """
         :param height:
         :param length:
@@ -87,12 +87,12 @@ class crane(truss):
         self.Ur = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # 4 Festlager = 4*3 blockierte Freiheitsgrade
 
         # Freiheitsgrade (1 = beweglich, 0 = fest) # evtl. booleans benutzen?
-        self.DOFCON = np.ones_like(self.nodes).astype(int)
+        self.supports = np.ones_like(self.nodes).astype(int)
         # Festlager
-        self.DOFCON[0, :] = 0
-        self.DOFCON[1, :] = 0
-        self.DOFCON[2, :] = 0
-        self.DOFCON[3, :] = 0
+        self.supports[0, :] = 0
+        self.supports[1, :] = 0
+        self.supports[2, :] = 0
+        self.supports[3, :] = 0
 
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
@@ -100,6 +100,15 @@ class crane(truss):
         self.F[17, 0] = 1
         self.F[18, 0] = 1
         self.F[19, 0] = 1
+
+        # Material
+        self. A = A
+        self.rho = rho
+        self.E = E
+
+        self._computeLengths()
+        self._computeOrientations()
+        self._computeMass()
 
         
 

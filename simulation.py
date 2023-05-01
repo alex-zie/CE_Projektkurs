@@ -1,5 +1,5 @@
 from crane import crane
-import fem
+from fem import FEM
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -10,7 +10,7 @@ if __name__=="__main__":
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3
     g = 9.81  # m/s^2
-    myCrane = crane(10,10,1,1)
+    myCrane = crane(10,10,1,1, A, rho, E)
     nodes = myCrane.nodes
     bars = myCrane.bars
     # P = np.zeros_like(nodes)
@@ -29,13 +29,14 @@ if __name__=="__main__":
     # DOFCON[1, :] = 0
     # DOFCON[2, :] = 0
     # DOFCON[3, :] = 0
-    N, R, U = fem.TrussAnalysis(myCrane, A, rho, E)
-    print('Axial Forces (positive = tension, negative = compression)')
+    fem = FEM(myCrane)
+    N, R, U = fem.TrussAnalysis()
+    print('\nAxial Forces (positive = tension, negative = compression)')
     # Anschaulichkeit
     print(N[np.newaxis].T)
-    print('Reaction Forces (positive = upward, negative = downward')
+    print('\nReaction Forces (positive = upward, negative = downward')
     print(R)
-    print('Deformation at nodes')
+    print('\nDeformation at nodes')
     print(U)
     fem.Plot(nodes, bars, 'gray', '--', 1, 'Undeformed')
     scale = 5
