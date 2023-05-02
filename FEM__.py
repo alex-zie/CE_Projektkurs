@@ -22,19 +22,31 @@ numSegmentsA = 10
 length = 10
 ls = length / numSegmentsA
 
+# Gegenausleger
+revLength = 5
+numSegmentsGA = 5
+rls = revLength / numSegmentsGA
+
 # Erstelle gestapelte Nodes Segmente des Turms
 for i in range(numSegmentsT):
     nodes.append([0, 0, i * hs])  # Left Top
     nodes.append([hs, 0, i * hs])  # Right Top
     nodes.append([0, hs, i * hs])  # Left Bottom
     nodes.append([hs, hs, i * hs])  # Right Bottom
-offset = len(nodes)
+offsetT = len(nodes) # Turm
 # Erstelle die Nodes des Auslegers in positive x Richtung
 for i in range(1, numSegmentsA+1):
     nodes.append([hs + i * ls, 0, (numSegmentsT - 1) * hs])  # Left Top
     nodes.append([hs + i * ls, hs, (numSegmentsT - 1) * hs])  # Right Top
     nodes.append([hs + i * ls, 0, (numSegmentsT - 2) * hs])  # Left Bottom
     nodes.append([hs + i * ls, hs, (numSegmentsT - 2) * hs])  # Right Bottom
+offsetTA = len(nodes) # Turm und Ausleger
+# Erstelle Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht 
+for i in range(1, numSegmentsGA+1):
+    nodes.append([-(hs + i * rls)+1, 0, (numSegmentsT - 1) * hs])  # Left Top
+    nodes.append([-(hs + i * rls)+1, hs, (numSegmentsT - 1) * hs])  # Right Top
+    nodes.append([-(hs + i * rls)+1, 0, (numSegmentsT - 2) * hs])  # Left Bottom
+    nodes.append([-(hs + i * rls)+1, hs, (numSegmentsT - 2) * hs])  # Right Bottom
 
 # Turm
 # x- und y-Richtung (LT für Left Top usw.)
@@ -62,24 +74,58 @@ for i in range(numSegmentsT - 1):
     bars.append([4 * i + 2, 4 * i + 4])  # LB -> LT+1
     #bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
 
+
 # Ausleger
-bars.append([offset-2, offset])  # LB -> LT
-bars.append([offset-1, offset+1])  # RB -> RT
-bars.append([offset-6, offset+2])  # LB-1 -> LB
-bars.append([offset-5, offset+3])  # RB-1 -> RB
+bars.append([offsetT-2, offsetT])  # LB -> LT
+bars.append([offsetT-1, offsetT+1])  # RB -> RT
+bars.append([offsetT-6, offsetT+2])  # LB-1 -> LB
+bars.append([offsetT-5, offsetT+3])  # RB-1 -> RB
 # x- und y-Richtung (LT für Left Top usw.)
 for i in range(numSegmentsA):
-    bars.append([4 * i + offset, 4 * i + offset + 1])  # LT -> RT
-    bars.append([4 * i + 2 + offset, 4 * i + 3 + offset])  # LB -> RB
-    bars.append([4 * i + offset, 4 * i + 2 + offset])  # LT -> LB
-    bars.append([4 * i + 1 + offset, 4 * i + 3 + offset])  # RT -> RB
+    bars.append([4 * i + offsetT, 4 * i + offsetT + 1])  # LT -> RT
+    bars.append([4 * i + 2 + offsetT, 4 * i + 3 + offsetT])  # LB -> RB
+    bars.append([4 * i + offsetT, 4 * i + 2 + offsetT])  # LT -> LB
+    bars.append([4 * i + 1 + offsetT, 4 * i + 3 + offsetT])  # RT -> RB
 
 # z-Richtung
 for i in range(numSegmentsA-1):
-    bars.append([4 * i + offset, 4 * i + 4 + offset])  # LT
-    bars.append([4 * i + 1 + offset, 4 * i + 5 + offset])  # RT
-    bars.append([4 * i + 2 + offset, 4 * i + 6 + offset])  # LB
-    bars.append([4 * i + 3 + offset, 4 * i + 7 + offset])  # RB
+    bars.append([4 * i + offsetT, 4 * i + 4 + offsetT])  # LT
+    bars.append([4 * i + 1 + offsetT, 4 * i + 5 + offsetT])  # RT
+    bars.append([4 * i + 2 + offsetT, 4 * i + 6 + offsetT])  # LB
+    bars.append([4 * i + 3 + offsetT, 4 * i + 7 + offsetT])  # RB
+
+
+#Gegenausleger
+bars.append([offsetT-2, offsetTA+1])  # hinten oben      
+bars.append([offsetT-4, offsetTA])     # vorne oben
+bars.append([offsetT-6, offsetTA+3])  # hinten unten
+bars.append([offsetT-8, offsetTA+2])  # vorne unten
+
+# x- und y-Richtung (LT für Left Top usw.)
+for i in range(numSegmentsGA):
+    bars.append([4 * i + offsetTA, 4 * i + offsetTA + 1])  # LT -> RT ?
+    bars.append([4 * i + 2 + offsetTA, 4 * i + 3 + offsetTA])  # LB -> RB
+    bars.append([4 * i + offsetTA, 4 * i + 2 + offsetTA])  # LT -> LB
+    bars.append([4 * i + 1 + offsetTA, 4 * i + 3 + offsetTA])  # RT -> RB
+
+# z-Richtung
+for i in range(numSegmentsGA-1):
+    bars.append([4 * i + offsetTA, 4 * i + 4 + offsetTA])  # LT
+    bars.append([4 * i + 1 + offsetTA, 4 * i + 5 + offsetTA])  # RT
+    bars.append([4 * i + 2 + offsetTA, 4 * i + 6 + offsetTA])  # LB
+    bars.append([4 * i + 3 + offsetTA, 4 * i + 7 + offsetTA])  # RB
+
+#Kreuzstreben vorne
+bars.append([offsetT-8, offsetTA])
+for i in range (int(numSegmentsGA/2)):
+    bars.append([offsetTA + 8 * i, offsetTA + 6 + 8 * i])
+    bars.append([ offsetTA + 6 + 8 * i, offsetTA + 8 + 8 * i])
+#Kreusstreben hinten
+bars.append([offsetT-4, offsetTA+1])
+for i in range (int(numSegmentsGA/2)):
+    bars.append([offsetTA +1 + 8 * i, offsetTA + 7 + 8 * i])
+    bars.append([ offsetTA + 7 + 8 * i, offsetTA + 9 + 8 * i])
+
 
 # python list zu np.array
 nodes = np.array(nodes).astype(float)
