@@ -16,7 +16,7 @@ def triangle():
 
     myTruss = Truss(nodes, bars, 0.111, 7850, 1e4)
     myTruss.addSupport(0, 0, 0, 0)
-    myTruss.addSupport(1, 0, 0, 0)
+    #myTruss.addSupport(1, 0, 0, 0)
     #myTruss.addSupport(2, 0, 0, 0)
 
     myTruss.addExternalForce(2, 0, 0, -10)

@@ -15,6 +15,11 @@ class FEM:
         """
         returns: axial forces, reactional forces, displacements
         """
+
+        print("Number of nodes: ", len(self.truss.nodes))
+        print("Number of bars: ", len(self.truss.bars))
+        print("Number of bars: ", len(self.truss.Ur[np.where(self.truss.Ur == 0)]))
+
         E = self.truss.E 
         A = self.truss.A
         L = self.truss.lengths
@@ -29,12 +34,13 @@ class FEM:
         Krf = Kfr.T
         Krr = K[np.ix_(supportDOF, supportDOF)]  # für die Lagerkräfte
 
-        weights = np.zeros_like(self.truss.F)
-        weights[:, 2] = -self.computeWeight()
-        self.truss.addExternalForces(weights)
+        # weights = np.zeros_like(self.truss.F)
+        # weights[:, 2] = -self.computeWeight()
+        # self.truss.addExternalForces(weights)
         F = self.truss.F.flatten()[freeDOF] # Kraftmatrix passend zu K mit nicht null Einträgen, wie oben definiert
-
-        Uf = np.linalg.lstsq(Kff, F)[0]  # Deformation an jedem Freiheitsgrad # least squares damit auch überbestimmte Systeme fkt.
+        print("Kff Matrix:", Kff)
+        np.spy(Kff)
+        Uf = np.linalg.solve(Kff, F)[0]  # Deformation an jedem Freiheitsgrad # least squares damit auch überbestimmte Systeme fkt.
         U = self.truss.supports.astype(float).flatten()
         U[freeDOF] = Uf
         U[supportDOF] = self.truss.Ur

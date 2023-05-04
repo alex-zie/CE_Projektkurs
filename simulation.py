@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 if __name__=="__main__":
-    h_b = 10e-2  # Höhe des Querschnitts der Balken in m
-    b_b = 10e-2  # Breite des Querschnitts der Balken in m
+    h_b = 1e-2  # Höhe des Querschnitts der Balken in m
+    b_b = 1e-2  # Breite des Querschnitts der Balken in m
     E = 210e9  # E-Modul in Pa
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3

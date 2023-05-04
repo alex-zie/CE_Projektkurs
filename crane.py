@@ -85,7 +85,7 @@ class crane(Truss):
         
         # Lager
         self.supports = np.ones_like(self.nodes).astype(int)
-        self.Ur = []
+        self.Ur = np.array([]).astype('int')
         self.addSupport(0, 0, 0, 0)
         self.addSupport(1, 0, 0, 0)
         self.addSupport(2, 0, 0, 0)
@@ -93,8 +93,10 @@ class crane(Truss):
 
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
-        #self.addExternalForce(-1, 0, 0, -1e9) # in z-Richtung funktioniert es nicht
-        #self.addExternalForce(-2, 0, 0, -1e9)
+        self.addExternalForce(-1, 0, 0, -1e9) # in z-Richtung funktioniert es nicht
+        self.addExternalForce(-2, 0, 0, -1e9)
+        self.addExternalForce(-3, 0, 0, -1e9)
+        self.addExternalForce(-4, 0, 0, -1e9)
         # Material
         self. A = A
         self.rho = rho

@@ -9,8 +9,8 @@ class Truss:
         self.nodes = np.array(nodes).astype(float)
         self.bars = np.array(bars)
         self.F = np.zeros_like(nodes) # externe Kräfte
-        self.supports = np.ones_like(nodes).astype(int) # Freiheitsgrade (1 = beweglich, 0 = fest) # evtl. booleans benutzen?
-        self.Ur = []
+        self.supports = np.ones_like(nodes).astype(int) # Freiheitsgrade (1 = beweglich, 0 = fest), 3 mal für (x,y,z) # evtl. booleans benutzen?
+        self.Ur = np.array([]).astype(int)
         
         # Material
         self.A = A
@@ -36,18 +36,19 @@ class Truss:
 
     def addSupport(self, node, x, y, z):
         """
-        node:   id of node where support should be added
+        node:   id of node where support should be added 
         x:      displacement in x
         y:      displacement in y
         z:      displacement in z
+            --> 0: free, 1: blocked
         """
         self.supports[node, 0] = x
         self.supports[node, 1] = y
         self.supports[node, 2] = z
 
-        self.Ur.append(self.supports[node][0])
-        self.Ur.append(self.supports[node][1])
-        self.Ur.append(self.supports[node][2])
+        self.Ur = np.append(self.Ur, self.supports[node][0])
+        self.Ur = np.append(self.Ur, self.supports[node][1])
+        self.Ur = np.append(self.Ur, self.supports[node][2])
 
     def addExternalForce(self, node, x, y, z):
         """
