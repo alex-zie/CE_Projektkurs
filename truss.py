@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Truss:
     """
     This class represents a simple truss that can be passed to the fem class to make truss analyses
@@ -8,10 +9,11 @@ class Truss:
     def __init__(self, nodes, bars, A, rho, E):
         self.nodes = np.array(nodes).astype(float)
         self.bars = np.array(bars)
-        self.F = np.zeros_like(nodes) # externe Kräfte
-        self.supports = np.ones_like(nodes).astype(int) # Freiheitsgrade (1 = beweglich, 0 = fest), 3 mal für (x,y,z) # evtl. booleans benutzen?
+        self.F = np.zeros_like(nodes)  # externe Kräfte
+        self.supports = np.ones_like(nodes).astype(
+            int)  # Freiheitsgrade (1 = beweglich, 0 = fest), 3 mal für (x,y,z) # evtl. booleans benutzen?
         self.Ur = np.array([]).astype(int)
-        
+
         # Material
         self.A = A
         self.rho = rho
@@ -20,7 +22,7 @@ class Truss:
         self._computeLengths()
         self._computeOrientations()
         self._computeMass()
-    
+
     # Geometrie
     def _computeLengths(self):
         d = self.nodes[self.bars[:, 1], :] - self.nodes[self.bars[:, 0], :]  # Endknoten - Anfangsknoten
@@ -32,7 +34,7 @@ class Truss:
 
     # Physik
     def _computeMass(self):
-        self.mass = self.lengths*self.A*self.rho
+        self.mass = self.lengths * self.A * self.rho
 
     def addSupport(self, node, x, y, z):
         """
@@ -74,4 +76,3 @@ class Truss:
         forces: matrix of forces
         """
         self.F = self.F + forces
-    

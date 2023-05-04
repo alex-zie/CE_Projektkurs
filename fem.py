@@ -15,11 +15,6 @@ class FEM:
         """
         returns: axial forces, reactional forces, displacements
         """
-
-        print("Number of nodes: ", len(self.truss.nodes))
-        print("Number of bars: ", len(self.truss.bars))
-        print("Number of bars: ", len(self.truss.Ur[np.where(self.truss.Ur == 0)]))
-
         E = self.truss.E 
         A = self.truss.A
         L = self.truss.lengths
@@ -34,7 +29,7 @@ class FEM:
         Krf = Kfr.T
         Krr = K[np.ix_(supportDOF, supportDOF)]  # für die Lagerkräfte
 
-        # weights = np.zeros_like(self.truss.F)
+        # weights = np.zeros_like(self.truss.F) # Gewichtskraft
         # weights[:, 2] = -self.computeWeight()
         # self.truss.addExternalForces(weights)
         F = self.truss.F.flatten()[freeDOF] # Kraftmatrix passend zu K mit nicht null Einträgen, wie oben definiert
@@ -74,7 +69,7 @@ class FEM:
         # add a weight to the node equalling the mass of a connected bar
         for i in range(len(bars)):
             weights[bars[i]] = weights[bars[i]] + masses[i]
-
+        print(weights)
         # make it correct
         return 9.81*weights/nOutgoingBars
 

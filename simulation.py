@@ -3,14 +3,14 @@ from fem import FEM
 import numpy as np
 import matplotlib.pyplot as plt
 
-if __name__=="__main__":
-    h_b = 1e-2  # Höhe des Querschnitts der Balken in m
-    b_b = 1e-2  # Breite des Querschnitts der Balken in m
+if __name__ == "__main__":
+    h_b = 5e-2  # Höhe des Querschnitts der Balken in m
+    b_b = 5e-2  # Breite des Querschnitts der Balken in m
     E = 210e9  # E-Modul in Pa
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3
     g = 9.81  # m/s^2
-    myCrane = crane(10,10,1,1, A, rho, E)
+    myCrane = crane(10, 10, 1, 0.5, A, rho, E)
     nodes = myCrane.nodes
     bars = myCrane.bars
     # P = np.zeros_like(nodes)
@@ -46,5 +46,4 @@ if __name__=="__main__":
     fem.plotPoint(Dnodes[-1])
     fem.plotPoint(Dnodes[-2])
     plt.show()
-    #plt.savefig('fig-1.png', dpi=300)
-
+    # plt.savefig('fig-1.png', dpi=300)
