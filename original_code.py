@@ -3,10 +3,6 @@ import matplotlib.pyplot as plt
 
 E = 1e4  # E-Modul
 A = 0.111  # Querschnittsfläche der Balken
-length = 5
-height = 10
-ls = 1
-hs = 1
 
 nodes = []
 bars = []
@@ -53,24 +49,21 @@ bars = np.array(bars)
 
 #  Äußere Kräfte
 P = np.zeros_like(nodes)
-P[-1,2] = -1e9
-P[-2,2] = -1e9
+P[0,2] = -10
+P[1,2] = -10
 # P[-3,2] = -1e9
 # P[-4,2] = -1e9
 
 # Lager Verschiebung
 Ur = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # 4 Festlager = 4*3 blockierte Freiheitsgrade
 
-#Support Displacement
-Ur = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
 #Freiheitsgrade (1 = beweglich, 0 = fest)
 DOFCON = np.ones_like(nodes).astype(int)
 # Festlager
-DOFCON[0,:] = 0
-DOFCON[1,:] = 0
-DOFCON[2,:] = 0
-DOFCON[3,:] = 0
+DOFCON[6,:] = 0
+DOFCON[7,:] = 0
+DOFCON[8,:] = 0
+DOFCON[9,:] = 0
 
 #%% Truss structural analysis
 def TrussAnalysis():

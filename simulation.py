@@ -45,5 +45,7 @@ if __name__ == "__main__":
     fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')
     fem.plotPoint(Dnodes[-1])
     fem.plotPoint(Dnodes[-2])
+    fem.plotPoint(Dnodes[-3])
+    fem.plotPoint(Dnodes[-4])
     plt.show()
     # plt.savefig('fig-1.png', dpi=300)

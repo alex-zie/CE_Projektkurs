@@ -2,69 +2,78 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # %% Input truss structure data
-E = 1e4
-A = 0.111
+E = 1e4  # E-Modul
+A = 0.111  # Querschnittsfläche der Balken
+length = 5
+height = 10
+ls = 1
+hs = 1
 
 nodes = []
 bars = []
 
-nodes.append([-37.5, 0, 200])
-nodes.append([37.5, 0, 200])
-nodes.append([-37.5, 37.5, 100])
-nodes.append([37.5, 37.5, 100])
-nodes.append([37.5, -37.5, 100])
-nodes.append([-37.5, -37.5, 100])
-nodes.append([-100, 100, 0])
-nodes.append([100, 100, 0])
-nodes.append([100, -100, 0])
-nodes.append([-100, -100, 0])
+nodes.append([-37.5,0,200])
+nodes.append([37.5,0,200])
+nodes.append([-37.5,37.5,100])
+nodes.append([37.5,37.5,100])
+nodes.append([37.5,-37.5,100])
+nodes.append([-37.5,-37.5,100])
+nodes.append([-100,100,0])
+nodes.append([100,100,0])
+nodes.append([100,-100,0])
+nodes.append([-100,-100,0])
 
-bars.append([0, 1])
-bars.append([3, 0])
-bars.append([2, 1])
-bars.append([4, 0])
-bars.append([5, 1])
-bars.append([3, 1])
-bars.append([4, 1])
-bars.append([2, 0])
-bars.append([5, 0])
-bars.append([5, 2])
-bars.append([4, 3])
-bars.append([2, 3])
-bars.append([5, 4])
-bars.append([9, 2])
-bars.append([6, 5])
-bars.append([8, 3])
-bars.append([7, 4])
-bars.append([6, 3])
-bars.append([7, 2])
-bars.append([9, 4])
-bars.append([8, 5])
-bars.append([9, 5])
-bars.append([6, 2])
-bars.append([7, 3])
-bars.append([8, 4])
+bars.append([0,1])
+bars.append([3,0])
+bars.append([2,1])
+bars.append([4,0])
+bars.append([5,1])
+bars.append([3,1])
+bars.append([4,1])
+bars.append([2,0])
+bars.append([5,0])
+bars.append([5,2])
+bars.append([4,3])
+bars.append([2,3])
+bars.append([5,4])
+bars.append([9,2])
+bars.append([6,5])
+bars.append([8,3])
+bars.append([7,4])
+bars.append([6,3])
+bars.append([7,2])
+bars.append([9,4])
+bars.append([8,5])
+bars.append([9,5])
+bars.append([6,2])
+bars.append([7,3])
+bars.append([8,4])
+
 nodes = np.array(nodes).astype(float)
 bars = np.array(bars)
 
-# Applied forces
+#  Äußere Kräfte
 P = np.zeros_like(nodes)
-P[0, 0] = 1
-P[0, 1] = -10
-P[0, 2] = -10
-P[1, 1] = -10
-P[1, 2] = -10
-P[2, 0] = 0.5
-P[5, 0] = 0.6
+P[0,2] = -10
+P[1,2] = -10
+# P[-3,2] = -1e9
+# P[-4,2] = -1e9
 
-# Support Displacement
-Ur = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-# Condition of DOF (1 = free, 0 = fixed)
+# Lager Verschiebung
+Ur = [0, 0, 0, 0, 0, 0, 0, 0]  # 4 Festlager = 4*3 blockierte Freiheitsgrade
+
+#Freiheitsgrade (1 = beweglich, 0 = fest)
 DOFCON = np.ones_like(nodes).astype(int)
-DOFCON[6, :] = 0
-DOFCON[7, :] = 0
-DOFCON[8, :] = 0
-DOFCON[9, :] = 0
+# Festlager
+DOFCON[6,:] = 0
+DOFCON[7,:] = 0
+DOFCON[8,:] = 0
+DOFCON[9,:] = 0
+DOFCON[6,0] = 1
+DOFCON[7,0] = 1
+DOFCON[8,0] = 1
+DOFCON[9,0] = 1
+
 
 
 # %% Truss structural analysis
@@ -102,14 +111,14 @@ def TrussAnalysis():
     U = U.reshape(NN, DOF)
     u = np.concatenate((U[bars[:, 0]], U[bars[:, 1]]), axis=1)
     N = E * A / L[:] * (a[:] * u[:]).sum(axis=1)
-    R = (Krf[:] * Uf).sum(axis=1) + (Krr[:] * Ur).sum(axis=1)
-    R = R.reshape(4, DOF)
+    R = (Krf[:] * Uf).sum(axis=1) #+ (Krr[:] * Ur).sum(axis=1)
+    #R = R.reshape(4, DOF)
     return np.array(N), np.array(R), U
 
 
 def Plot(nodes, c, lt, lw, lg):
     plt.subplot(projection='3d')
-    plt.gca().set_aspect('equal')
+    #plt.gca().set_aspect('equal')
     for i in range(len(bars)):
         xi, xf = nodes[bars[i, 0], 0], nodes[bars[i, 1], 0]
         yi, yf = nodes[bars[i, 0], 1], nodes[bars[i, 1], 1]

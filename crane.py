@@ -29,6 +29,7 @@ class crane(Truss):
             nodes.append([0, hs, i * hs])  # Left Bottom
             nodes.append([hs, hs, i * hs])  # Right Bottom
         offset = len(nodes)
+
         # Erstelle die nodes des Auslegers in positive x Richtung
         for i in range(1, numSegmentsA + 1):
             nodes.append([hs + i * ls, 0, (numSegmentsT - 1) * hs])  # Left Top
@@ -93,8 +94,9 @@ class crane(Truss):
 
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
-        for i in range(-1, -3, -1):
-            self.addExternalForce(i, 0, 0, -250e5)  # in z-Richtung funktioniert es nicht
+        print(np.array(range(-1, -5, -1)))
+        for i in range(-1, -5, -1):
+            self.addExternalForce(i, 0, 0, -1e9)  
         # self.addExternalForce(-3, 0, 0, -1e9)
         # self.addExternalForce(-4, 0, 0, -1e9)
         # Material
