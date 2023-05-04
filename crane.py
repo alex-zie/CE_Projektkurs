@@ -1,12 +1,14 @@
 from truss import Truss
 import numpy as np
 
+
 class crane(Truss):
     """
     Special truss that represents a crane
     """
 
-    def __init__(self, height, length, hs, ls, A, rho,E): # maybe we can add some unique function e.g. crane_variant_1 to generalize
+    def __init__(self, height, length, hs, ls, A, rho,
+                 E):  # maybe we can add some unique function e.g. crane_variant_1 to generalize
         """
         :param height:
         :param length:
@@ -15,7 +17,7 @@ class crane(Truss):
         """
         nodes = []
         bars = []
-        
+
         # for 10m high tower with segement size hs we need at least
         # height / hs segements. For now i would just ignore the last segement
         # size != hs
@@ -82,29 +84,24 @@ class crane(Truss):
         # convert python list to np.array
         self.nodes = np.array(nodes).astype(float)
         self.bars = np.array(bars)
-        
+
         # Lager
         self.supports = np.ones_like(self.nodes).astype(int)
         self.Ur = np.array([]).astype('int')
-        self.addSupport(0, 0, 0, 0)
-        self.addSupport(1, 0, 0, 0)
-        self.addSupport(2, 0, 0, 0)
-        self.addSupport(3, 0, 0, 0)
+        for i in range(4):
+            self.addSupport(i, 0, 0, 0)
 
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
-        self.addExternalForce(-1, 0, 0, -1e9) # in z-Richtung funktioniert es nicht
-        self.addExternalForce(-2, 0, 0, -1e9)
-        self.addExternalForce(-3, 0, 0, -1e9)
-        self.addExternalForce(-4, 0, 0, -1e9)
+        for i in range(-1, -3, -1):
+            self.addExternalForce(i, 0, 0, -250e5)  # in z-Richtung funktioniert es nicht
+        # self.addExternalForce(-3, 0, 0, -1e9)
+        # self.addExternalForce(-4, 0, 0, -1e9)
         # Material
-        self. A = A
+        self.A = A
         self.rho = rho
         self.E = E
 
         self._computeLengths()
         self._computeOrientations()
         self._computeMass()
-
-        
-
