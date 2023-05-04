@@ -8,65 +8,30 @@ A = 0.111
 nodes = []
 bars = []
 
-nodes.append([-37.5, 0, 200])
-nodes.append([37.5, 0, 200])
-nodes.append([-37.5, 37.5, 100])
-nodes.append([37.5, 37.5, 100])
-nodes.append([37.5, -37.5, 100])
-nodes.append([-37.5, -37.5, 100])
-nodes.append([-100, 100, 0])
-nodes.append([100, 100, 0])
-nodes.append([100, -100, 0])
-nodes.append([-100, -100, 0])
-
+nodes.append([0, 0, 0])
+nodes.append([1, 0, 0])
+nodes.append([0.5, 1, 0])
+nodes.append([0.5, 0.5, 1])
 bars.append([0, 1])
-bars.append([3, 0])
+bars.append([1, 2])
 bars.append([2, 1])
-bars.append([4, 0])
-bars.append([5, 1])
-bars.append([3, 1])
-bars.append([4, 1])
-bars.append([2, 0])
-bars.append([5, 0])
-bars.append([5, 2])
-bars.append([4, 3])
+bars.append([0, 3])
+bars.append([1, 3])
 bars.append([2, 3])
-bars.append([5, 4])
-bars.append([9, 2])
-bars.append([6, 5])
-bars.append([8, 3])
-bars.append([7, 4])
-bars.append([6, 3])
-bars.append([7, 2])
-bars.append([9, 4])
-bars.append([8, 5])
-bars.append([9, 5])
-bars.append([6, 2])
-bars.append([7, 3])
-bars.append([8, 4])
 nodes = np.array(nodes).astype(float)
 bars = np.array(bars)
 
 # Applied forces
 P = np.zeros_like(nodes)
-P[0, 0] = 1
-P[0, 1] = -10
-P[0, 2] = -10
-P[1, 1] = -10
-P[1, 2] = -10
-P[2, 0] = 0.5
-P[5, 0] = 0.6
+P[3, 2] = -100
 
 # Support Displacement
-Ur = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Ur = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 # Condition of DOF (1 = free, 0 = fixed)
 DOFCON = np.ones_like(nodes).astype(int)
-DOFCON[6, :] = 0
-DOFCON[7, :] = 0
-DOFCON[8, :] = 0
-DOFCON[9, :] = 0
-
-
+DOFCON[0, :] = 0
+DOFCON[1, :] = 0
+DOFCON[2, :] = 0
 # %% Truss structural analysis
 def TrussAnalysis():
     NN = len(nodes)
@@ -103,7 +68,7 @@ def TrussAnalysis():
     u = np.concatenate((U[bars[:, 0]], U[bars[:, 1]]), axis=1)
     N = E * A / L[:] * (a[:] * u[:]).sum(axis=1)
     R = (Krf[:] * Uf).sum(axis=1) + (Krr[:] * Ur).sum(axis=1)
-    R = R.reshape(4, DOF)
+    R = R.reshape(3, DOF)
     return np.array(N), np.array(R), U
 
 
