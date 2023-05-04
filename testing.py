@@ -3,6 +3,28 @@ from truss import Truss
 import numpy as np
 import matplotlib.pyplot as plt
 
+def tetrahedron():
+    global myTruss
+
+    nodes.append([0,0,-3])
+    nodes.append([20,0,-3])
+    nodes.append([10, 9, -3])
+    nodes.append([10, 6, 3])
+
+    bars.append([0,1])
+    bars.append([1,2])
+    bars.append([0,2])
+    bars.append([0,3])
+    bars.append([1,3])
+    bars.append([2,3])
+
+    myTruss = Truss(nodes, bars, 0.111, 7850, 1e4)
+    myTruss.addSupport(0, 0, 0, 1)
+    myTruss.addSupport(1, 0, 1, 0)
+    myTruss.addSupport(2, 1, 0, 0)
+
+    myTruss.addExternalForce(3, 0, 0, -1)
+
 def triangle():
     global myTruss
 
@@ -35,7 +57,7 @@ def bridge():
     bars.append([2,3])
     bars.append([3,4])
 
-    myTruss = Truss(nodes, bars, 0.01, 7850, 1e4)
+    myTruss = Truss(nodes, bars, 1, 7850, 1e4)
     myTruss.addSupport(0, 0, 0, 0)
     myTruss.addSupport(4, 0, 0, 0)
 
@@ -45,7 +67,7 @@ nodes = []
 bars = []
 myTruss = None
 
-triangle()
+tetrahedron()
 
 fem = FEM(myTruss)
 

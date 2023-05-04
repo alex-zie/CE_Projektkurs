@@ -38,8 +38,6 @@ class FEM:
         # weights[:, 2] = -self.computeWeight()
         # self.truss.addExternalForces(weights)
         F = self.truss.F.flatten()[freeDOF] # Kraftmatrix passend zu K mit nicht null Einträgen, wie oben definiert
-        print("Kff Matrix:", Kff)
-        np.spy(Kff)
         Uf = np.linalg.solve(Kff, F)[0]  # Deformation an jedem Freiheitsgrad # least squares damit auch überbestimmte Systeme fkt.
         U = self.truss.supports.astype(float).flatten()
         U[freeDOF] = Uf
@@ -48,7 +46,8 @@ class FEM:
         u = np.concatenate((U[self.truss.bars[:, 0]], U[self.truss.bars[:, 1]]), axis=1) # Verschiebungsvektor für die einzelnen Elemente
         N = E * A / L[:] * (trans[:] * u[:]).sum(axis=1)  # interne Kräfte
         R = (Krf[:] * Uf).sum(axis=1) + (Krr[:] * self.truss.Ur).sum(axis=1)  # Reaktionskräfte
-        R = R.reshape(len(self.truss.Ur)//self.DOF, self.DOF)  # TODO Diese Zeile evtl. verbessern
+        R = R.reshape(len(self.truss.Ur), 1) # TODO Diese Zeile evtl. verbessern
+        #R = R.reshape(len(self.truss.Ur), self.DOF)  
         return np.array(N), np.array(R), U
     
     def computeStiffnessMatrix(self, E, A, L, trans):
@@ -81,7 +80,7 @@ class FEM:
 
     def Plot(self, nodes, bars, c, lt, lw, lg):
         plt.subplot(projection='3d')
-        plt.gca().set_aspect('equal')
+        #plt.gca().set_aspect('equal')
         # plt.gca(projection='3d')
         for i in range(len(bars)):
             # Jeweilige Start und Endkoordiante
