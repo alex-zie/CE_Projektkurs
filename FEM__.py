@@ -75,11 +75,13 @@ for i in range(numSegmentsT - 1):
     #bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
 
 
+
 # Ausleger
-bars.append([offsetT-2, offsetT])  # LB -> LT
-bars.append([offsetT-1, offsetT+1])  # RB -> RT
-bars.append([offsetT-6, offsetT+2])  # LB-1 -> LB
-bars.append([offsetT-5, offsetT+3])  # RB-1 -> RB
+bars.append([offsetT-4, offsetT])  # vorne oben
+bars.append([offsetT-1, offsetT+1])  # hinten oben
+bars.append([offsetT-8, offsetT+2])  # vorne unten
+bars.append([offsetT-5, offsetT+3])  # hinten unten
+
 # x- und y-Richtung (LT für Left Top usw.)
 for i in range(numSegmentsA):
     bars.append([4 * i + offsetT, 4 * i + offsetT + 1])  # LT -> RT
@@ -93,6 +95,22 @@ for i in range(numSegmentsA-1):
     bars.append([4 * i + 1 + offsetT, 4 * i + 5 + offsetT])  # RT
     bars.append([4 * i + 2 + offsetT, 4 * i + 6 + offsetT])  # LB
     bars.append([4 * i + 3 + offsetT, 4 * i + 7 + offsetT])  # RB
+
+#Kreuzstreben vorne
+bars.append([offsetT-7, offsetT])
+for i in range (int(numSegmentsA/2 )):
+    bars.append([offsetT + 8 * i, offsetT + 6 + 8 * i])
+    if numSegmentsGA % 2 != 0 and i == int(numSegmentsA/2)-1:
+        break
+    bars.append([ offsetT + 6 + 8 * i, offsetT + 8 + 8 * i])
+#Kreusstreben hinten
+bars.append([offsetT-5, offsetT+1])
+for i in range (int(numSegmentsA/2)):
+    bars.append([offsetT +1 + 8 * i, offsetT + 7 + 8 * i])
+    if numSegmentsGA % 2 != 0 and i == int(numSegmentsA/2)-1:
+       break
+    bars.append([ offsetT + 7 + 8 * i, offsetT + 9 + 8 * i])
+
 
 
 #Gegenausleger
@@ -119,11 +137,15 @@ for i in range(numSegmentsGA-1):
 bars.append([offsetT-8, offsetTA])
 for i in range (int(numSegmentsGA/2)):
     bars.append([offsetTA + 8 * i, offsetTA + 6 + 8 * i])
+    if numSegmentsGA % 2 != 0 and i == int(numSegmentsGA/2)-1:
+      break
     bars.append([ offsetTA + 6 + 8 * i, offsetTA + 8 + 8 * i])
 #Kreusstreben hinten
-bars.append([offsetT-4, offsetTA+1])
+bars.append([offsetT-6, offsetTA+1])
 for i in range (int(numSegmentsGA/2)):
     bars.append([offsetTA +1 + 8 * i, offsetTA + 7 + 8 * i])
+    if numSegmentsGA % 2 != 0 and i == int(numSegmentsA/2)-1:
+      break
     bars.append([ offsetTA + 7 + 8 * i, offsetTA + 9 + 8 * i])
 
 
