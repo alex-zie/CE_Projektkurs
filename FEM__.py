@@ -249,4 +249,4 @@ scale = 5
 Dnodes = U * scale + nodes
 Plot(Dnodes, 'red', '-', 2, 'Deformed')
 plt.show()
-plt.savefig('fig-1.png', dpi=300)
+#plt.savefig('fig-1.png', dpi=300)
