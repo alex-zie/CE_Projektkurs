@@ -153,6 +153,9 @@ for i in range (int(numSegmentsGA/2)):
 nodes = np.array(nodes).astype(float)
 bars = np.array(bars)
 
+print(len(nodes))
+print(len(bars))
+
 # Äußere Kräfte
 P = np.zeros_like(nodes)
 P[16, 0] = 1

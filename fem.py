@@ -8,6 +8,8 @@ class FEM:
         self.truss = truss
         self.NN = len(truss.nodes)
         self.NE = len(truss.bars)
+        print(self.NN, "nodes")
+        print(self.NE, "bars")
         self.DOF = 3  # weil wir uns in 3D befinden
         self.NDOF = self.DOF * self.NN  # Gesamtanzahl der Freihetsgrade
 

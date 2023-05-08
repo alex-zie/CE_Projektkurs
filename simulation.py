@@ -10,25 +10,9 @@ if __name__ == "__main__":
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3
     g = 9.81  # m/s^2
-    myCrane = crane(10, 10, 1, 0.5, A, rho, E)
+    myCrane = crane(20, 20, 1, 1, A, rho, E)
     nodes = myCrane.nodes
     bars = myCrane.bars
-    # P = np.zeros_like(nodes)
-    # P[16, 0] = 1
-    # P[17, 0] = 1
-    # P[18, 0] = 1
-    # P[19, 0] = 1
-
-    # # Lager Verschiebung
-    # Ur = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # 4 Festlager = 4*3 blockierte Freiheitsgrade
-
-    # # Freiheitsgrade (1 = beweglich, 0 = fest) # evtl. booleans benutzen?
-    # DOFCON = np.ones_like(nodes).astype(int)
-    # # Festlager
-    # DOFCON[0, :] = 0
-    # DOFCON[1, :] = 0
-    # DOFCON[2, :] = 0
-    # DOFCON[3, :] = 0
     fem = FEM(myCrane)
     N, R, U = fem.TrussAnalysis()
     print('\nAxial Forces (positive = tension, negative = compression)')
