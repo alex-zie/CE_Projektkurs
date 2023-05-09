@@ -48,9 +48,13 @@ class Truss:
         self.supports[node, 1] = y
         self.supports[node, 2] = z
 
-        self.Ur = np.append(self.Ur, self.supports[node][0])
-        self.Ur = np.append(self.Ur, self.supports[node][1])
-        self.Ur = np.append(self.Ur, self.supports[node][2])
+        # appends a 0 per suppressed degree of freedom # TODO can be optimized
+        if x==0:
+            self.Ur = np.append(self.Ur, 0)
+        if y==0:
+            self.Ur = np.append(self.Ur, 0)
+        if z==0:
+            self.Ur = np.append(self.Ur, 0)
 
     def addExternalForce(self, node, x, y, z):
         """
