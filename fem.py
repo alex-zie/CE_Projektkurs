@@ -42,9 +42,8 @@ class FEM:
         A = self.truss.A
         L = self.truss.lengths
         trans = np.concatenate((-self.truss.orientations.T, self.truss.orientations.T), axis=1)  # Transformationsvektor lokal -> global
-
         K = self.computeStiffnessMatrix(E, A, L, trans)
-
+        print(np.linalg.det(K))
         freeDOF = self.truss.supports.flatten().nonzero()[0]  # Prüfe, welche Knoten FG > 0 haben
         supportDOF = (self.truss.supports.flatten() == 0).nonzero()[0]  # Knoten mit Lagern
         Kff = K[np.ix_(freeDOF, freeDOF)]  # Vollkommen Bewegliche knoten
