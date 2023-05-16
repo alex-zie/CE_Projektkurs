@@ -13,6 +13,27 @@ class FEM:
         self.DOF = 3  # weil wir uns in 3D befinden
         self.NDOF = self.DOF * self.NN  # Gesamtanzahl der Freihetsgrade
 
+        N, R, U = self.TrussAnalysis()
+        self.__dict__["N"] = N
+        self.__dict__["R"] = R
+        self.__dict__["U"] = U
+
+    @property
+    def N(self):
+        """Return axial forces"""
+        return self.__dict__["N"]
+    
+    @property
+    def R(self):
+        """Return reactional forces"""
+        return self.__dict__["R"]
+    
+    @property
+    def N(self):
+        """Return deformations"""
+        return self.__dict__["N"]
+
+
     def TrussAnalysis(self):
         """
         returns: axial forces, reactional forces, displacements
@@ -73,6 +94,9 @@ class FEM:
         print(weights)
         # make it correct
         return 9.81*weights/nOutgoingBars
+    
+    def getTension():
+
 
     def Plot(self, nodes, bars, c, lt, lw, lg):
         plt.subplot(projection='3d')
