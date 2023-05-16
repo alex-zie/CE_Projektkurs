@@ -26,6 +26,8 @@ def optimize_area(E, rho):
     plt.legend()
     plt.show()
     print(np.where(t < 0.2e9)[0])
+
+
 E = 210e9  # E-Modul in Pa
 rho = 7850  # Dichte in kg/m^
 g = 9.81  # m/s^2
