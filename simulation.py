@@ -3,22 +3,6 @@ from fem import FEM
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-def optimze(E, rho):
-    t = np.array([])
-    for h_b in range(5, 26, 1):
-        for b_b in range(5, 26, 1):
-            crane = crane(10, 10, 1, 1, h_b * b_b, rho, E)
-            fem = FEM(crane)
-            N = fem.TrussAnalysis()
-            t = np.append(t, np.max(N))
-    plt.plot((np.linspace(5, 25, 1) * np.linspace(5, 25, 1))/(10^-4), t / (10 ^ 9), label="Maximale Spannung")
-    plt.xlabel("A in mm^2")
-    plt.xlabel("A in mm^2")
-    plt.plot(0.2)
-    plt.show()
-
-
 if __name__ == "__main__":
     h_b = 5e-2  # Höhe des Querschnitts der Balken in m
     b_b = 5e-2  # Breite des Querschnitts der Balken in m
@@ -49,4 +33,4 @@ if __name__ == "__main__":
     fem.plotPoint(Dnodes[-3])
     fem.plotPoint(Dnodes[-4])
     plt.show()
-    # plt.savefig('fig-1.png', dpi=300)
+#plt.savefig('fig-1.png', dpi=300)
