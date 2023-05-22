@@ -14,6 +14,7 @@ if __name__ == "__main__":
     nodes = myCrane.nodes
     bars = myCrane.bars
     fem = FEM(myCrane)
+    #fem.addWind(28, 1, 1)
     N, R, U = fem.TrussAnalysis()
     print('\nAxial Forces (positive = tension, negative = compression)')
     # Anschaulichkeit

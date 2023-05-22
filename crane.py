@@ -163,8 +163,8 @@ class crane(Truss):
 
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
-        for i in range(-1, -5, -1):
-            self.addExternalForce(i, 0, 0, -125e3)
+        # for i in range(-1, -5, -1):
+        #     self.addExternalForce(i, 0, 0, -125e3)
         # self.addExternalForce(-3, 0, 0, -1e9)
         # self.addExternalForce(-4, 0, 0, -1e9)
         # Material
