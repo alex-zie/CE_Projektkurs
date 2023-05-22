@@ -57,7 +57,6 @@ class FEM:
             weights[:, 2] = -self.computeWeight()
             self.truss.addExternalForces(weights)
 
-
         F = self.truss.F.flatten()[freeDOF] # Kraftmatrix passend zu K mit nicht null Einträgen, wie oben definiert
         #Uf = np.linalg.solve(Kff, F)  # Deformation an jedem Freiheitsgrad # least squares damit auch überbestimmte Systeme fkt.
         #print("Determinant Kff:", np.linalg.det(Kff))

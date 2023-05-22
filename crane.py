@@ -24,25 +24,33 @@ class crane(Truss):
         self.hs = hs
         self.ls = ls
 
-        self.nST = np.ceil(height / hs).astype('int')
-        self.nSA = np.ceil(length / ls).astype('int')
-        self.nSGA = np.ceil((length / 2) / ls).astype('int')
+        self.nST = np.ceil(height / hs).astype('int') # Number of segments of the Tower
+        self.nSA = np.ceil(length / ls).astype('int') # Number of segments of the Ausleger
+        self.nSGA = np.ceil((length / 2) / ls).astype('int') # Number of segments of the Gegenausleger
 
-        self.y_side
+        # indices of bars on a certain side of the crane
+        self.x_side = []
+        self.y_side = []
 
         if(variant == 1):
-            print("Variante 1")
+            print("Variante 1: Pyramiden")
+            self.tower_pyramid(nodes, bars)
+            offsetT = self.cur_offset(nodes)
+            self.gegenausleger_pyramid(nodes, bars, offsetT)
         else:
+            print("Default Kran")
             self.tower(nodes, bars)
             offsetT = self.cur_offset(nodes)
             self.gegenausleger(nodes, bars, offsetT)
             offsetTG = self.cur_offset(nodes)
             self.ausleger(nodes, bars, offsetT, offsetTG)
-
-
+        
         # convert python list to np.array
         self.nodes = np.array(nodes).astype(float)
         self.bars = np.array(bars)
+
+        self.x_side = np.array(self.x_side).astype(int)
+        self.y_side = np.array(self.y_side).astype(int)
 
         # Lager
         self.supports = np.ones_like(self.nodes).astype(int)
@@ -53,7 +61,7 @@ class crane(Truss):
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
         for i in range(-1, -5, -1):
-            self.addExternalForce(i, 0, 0, -1e4)  
+            self.addExternalForce(i, 0, 0, -5e4)  
         # self.addExternalForce(-3, 0, 0, -1e9)
         # self.addExternalForce(-4, 0, 0, -1e9)
         # Material
@@ -86,20 +94,25 @@ class crane(Truss):
         # x- und y-Richtung (LT für Left Top usw.)
         for i in range(self.nST):
             bars.append([4 * i, 4 * i + 1])  # LT -> RT
+            self.y_side.append(len(bars)-1)
             bars.append([4 * i + 2, 4 * i + 3])  # LB -> RB
             bars.append([4 * i, 4 * i + 2])  # LT -> LB
             bars.append([4 * i + 1, 4 * i + 3])  # RT -> RB
 
+
         # z-Richtung
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 4])  # LT
+            self.y_side.append(len(bars)-1)
             bars.append([4 * i + 1, 4 * i + 5])  # RT
+            self.y_side.append(len(bars)-1)
             bars.append([4 * i + 2, 4 * i + 6])  # LB
             bars.append([4 * i + 3, 4 * i + 7])  # RB
 
         # Kreuzstreben (+1 jeweils für nächste Stufe)
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 5])  # LT -> RT+1
+            self.y_side.append(len(bars)-1)
             # bars.append([4 * i + 1, 4 * i + 4])  # RT -> RT+1
             bars.append([4 * i + 3, 4 * i + 6])  # RB -> LB+1
             # bars.append([4 * i + 2, 4 * i + 7])  # LB -> RB+1
@@ -209,8 +222,12 @@ class crane(Truss):
         return len(nodes)
 
 
+
+
+
     def tower_pyramid(self, nodes, bars):
         #Turm erstellen, der nur height-1 hoch ist und dann oben eine Spitze als Pyramide hat
+        #halt height - 1 oder nst runter ??
 
         #Nodes des Turms
         for i in range(self.nST - 1):
@@ -218,7 +235,7 @@ class crane(Truss):
             nodes.append([self.hs, 0, i * self.hs])  # Right Top
             nodes.append([0, self.hs, i * self.hs])  # Left Bottom
             nodes.append([self.hs, self.hs, i * self.hs])  # Right Bottom
-        nodes.append([self.hs/2, self.hs/2, self.height])
+        nodes.append([self.hs/2, self.hs/2, self.height])           
 
 
         #Bars des Turms
@@ -248,7 +265,39 @@ class crane(Truss):
             # bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
 
         #aller oberste Spitze
-        bars.append
+        offsetTO = len(nodes)
+        bars.append([offsetTO-1, offsetTO-2])    
+        bars.append([offsetTO-1, offsetTO-3])
+        bars.append([offsetTO-1, offsetTO-4])
+        bars.append([offsetTO-1, offsetTO-5])
+
+
+
+    def gegenausleger_pyramid(self, nodes, bars, offsetT):
+            #Gegenausleger erstellen, der aus Pramiden besteht
+
+            #im Gegensatz zu vorher 3 nodes oben weniger
+            #ursprüngliches bottom wird nicht mehr gebraucht
+
+            #Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht 
+            for i in range(1, self.nSGA + 1): #braucht nur noch die ursprüungliche bottoms 
+                nodes.append([-(self.hs + i * self.ls)+1, 0, (self.nST - 2) * self.hs])  # Left also y=0
+                nodes.append([-(self.hs + i * self.ls)+1, self.hs, (self.nST - 2) * self.hs])  # Right also y=hs
+                nodes.append([-((self.hs + i * self.ls)+1)/2, self.hs/2, self.height]) #nodes der Spitzen --> gleiches problem mit doppelter Höhe??
+        
+            #Bars des Gegenausleger
+            # x- und y-Richtung (LT für Left Top usw.)
+            for i in range(self.nSGA):
+                bars.append([4 * i + offsetT-1, 4 * i + offsetT-1 + 1])  # LT -> RT ?
+                bars.append([4 * i + 2 + offsetT-1, 4 * i + 3 + offsetT-1])  # LB -> RB
+               # bars.append([4 * i + offsetT-1, 4 * i + 2 + offsetT-1])  # LT -> LB
+               # bars.append([4 * i + 1 + offsetT-1, 4 * i + 3 + offsetT-1])  # RT -> RB
+
+
+    def ausleger_pyramid(self, nodes, bars):
+        pass
+
+
 
 
 
