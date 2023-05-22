@@ -33,7 +33,7 @@ if __name__ == "__main__":
     # Berechne die neue Position der Knoten
     Dnodes = U * scale + nodes
     fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')
-    fem.Plot(Dnodes, bars[myCrane.x_side], 'yellow', '-', 2, 'Selected bars')
+    fem.Plot(Dnodes, bars[myCrane.y_side], 'yellow', '-', 2, 'Selected bars')
     fem.plotPoint(Dnodes[-1])
     fem.plotPoint(Dnodes[-2])
     fem.plotPoint(Dnodes[-3])

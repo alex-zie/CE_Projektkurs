@@ -254,6 +254,7 @@ class crane(Truss):
         # x- und y-Richtung (LT für Left Top usw.)
         for i in range(self.nST ):
             bars.append([4 * i, 4 * i + 1])  # LT -> RT
+            self.y_side.append(len(bars)-1)
             bars.append([4 * i + 2, 4 * i + 3])  # LB -> RB
             bars.append([4 * i, 4 * i + 2])  # LT -> LB
             bars.append([4 * i + 1, 4 * i + 3])  # RT -> RB
