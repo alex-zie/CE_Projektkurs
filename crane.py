@@ -14,47 +14,31 @@ class crane(Truss):
         :param hs:
         :param ls:
         """
+
         nodes = []
         bars = []
 
+
+        #Turm erstellen
         # for 10m high tower with segement size hs we need at least
         # height / hs segements. For now i would just ignore the last segement
         # size != hs
-        numSegmentsA = np.ceil(length / ls).astype('int')
         numSegmentsT = np.ceil(height / hs).astype('int')
-        numSegmentsGA = 5 #np.ceil((length / 2) / (ls / 2)).astype('int')
-
-        #muss noch rls (und auch length nochmal?) in Fkt oben ergänzen also für den Gegenausleger?
-        rls = (length/2) / numSegmentsGA
+        numSegmentsA = np.ceil(length / ls).astype('int')
+        numSegmentsGA = 5 #np.ceil((length / 2) / (ls / 2)).astype('int')                
 
 
-        #Nodes erstellen
-        #Turm
+
+        #Nodes des Turms
         for i in range(numSegmentsT):
             nodes.append([0, 0, i * hs])  # Left Top
             nodes.append([hs, 0, i * hs])  # Right Top
             nodes.append([0, hs, i * hs])  # Left Bottom
             nodes.append([hs, hs, i * hs])  # Right Bottom
-        offset = len(nodes)
+        offset = len(nodes) 
 
-        # Erstelle Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht 
-        for i in range(1, numSegmentsGA + 1):
-            nodes.append([-(hs + i * ls)+1, 0, (numSegmentsT - 1) * hs])  # Left Top
-            nodes.append([-(hs + i * ls)+1, hs, (numSegmentsT - 1) * hs])  # Right Top
-            nodes.append([-(hs + i * ls)+1, 0, (numSegmentsT - 2) * hs])  # Left Bottom
-            nodes.append([-(hs + i * ls)+1, hs, (numSegmentsT - 2) * hs])  # Right Bottom
-        offsetTG = len(nodes) # Turm und Gegenausleger
 
-        #Ausleger in positive x Richtung
-        for i in range(1, numSegmentsA + 1):
-            nodes.append([hs + i * ls, 0, (numSegmentsT - 1) * hs])  # Left Top
-            nodes.append([hs + i * ls, hs, (numSegmentsT - 1) * hs])  # Right Top
-            nodes.append([hs + i * ls, 0, (numSegmentsT - 2) * hs])  # Left Bottom
-            nodes.append([hs + i * ls, hs, (numSegmentsT - 2) * hs])  # Right Bottom
-
-        
-        #Bars erstellen
-        # Turm
+        #Bars des Turms
         # x- und y-Richtung (LT für Left Top usw.)
         for i in range(numSegmentsT):
             bars.append([4 * i, 4 * i + 1])  # LT -> RT
@@ -81,7 +65,18 @@ class crane(Truss):
             # bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
 
 
-        #Gegenausleger
+
+        #Gegenausleger erstellen
+        #Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht 
+        for i in range(1, numSegmentsGA + 1):
+            nodes.append([-(hs + i * ls)+1, 0, (numSegmentsT - 1) * hs])  # Left Top
+            nodes.append([-(hs + i * ls)+1, hs, (numSegmentsT - 1) * hs])  # Right Top
+            nodes.append([-(hs + i * ls)+1, 0, (numSegmentsT - 2) * hs])  # Left Bottom
+            nodes.append([-(hs + i * ls)+1, hs, (numSegmentsT - 2) * hs])  # Right Bottom
+        offsetTG = len(nodes) # Turm und Gegenausleger
+
+
+            #Bars des Gegenausleger
         bars.append([offset-2, offset+1])  # hinten oben      
         bars.append([offset-4, offset])    # vorne oben
         bars.append([offset-6, offset+3])  # hinten unten
@@ -108,6 +103,7 @@ class crane(Truss):
             if numSegmentsGA % 2 != 0 and i == numSegmentsGA//2: #TODO checken, ob es allgemein funktioniert
                 break
             bars.append([ offset + 6 + 8 * i, offset + 8 + 8 * i])
+
         #Kreusstreben hinten
         bars.append([offset-6, offset+1])
         for i in range(numSegmentsGA//2):
@@ -117,7 +113,19 @@ class crane(Truss):
             bars.append([ offset + 7 + 8 * i, offset + 9 + 8 * i])
 
 
-        # Ausleger
+
+
+    #Ausleger erstellen            
+
+        #Nodes des Ausleger in positive x Richtung
+        for i in range(1, numSegmentsA + 1):
+            nodes.append([hs + i * ls, 0, (numSegmentsT - 1) * hs])  # Left Top
+            nodes.append([hs + i * ls, hs, (numSegmentsT - 1) * hs])  # Right Top
+            nodes.append([hs + i * ls, 0, (numSegmentsT - 2) * hs])  # Left Bottom
+            nodes.append([hs + i * ls, hs, (numSegmentsT - 2) * hs])  # Right Bottom
+
+
+        #Bars des Ausleger
         bars.append([offset - 4, offsetTG])  # LB -> LT
         bars.append([offset - 1, offsetTG + 1])  # RB -> RT
         bars.append([offset - 8, offsetTG + 2])  # LB-1 -> LB
@@ -143,6 +151,7 @@ class crane(Truss):
             if numSegmentsGA % 2 != 0 and i == numSegmentsA//2-1:
                 break
             bars.append([ offsetTG + 6 + 8 * i, offsetTG + 8 + 8 * i])
+
         #Kreusstreben hinten
         bars.append([offset-5, offsetTG+1])
         for i in range (numSegmentsA//2):
@@ -150,6 +159,9 @@ class crane(Truss):
             if numSegmentsGA % 2 != 0 and i == numSegmentsA/2-1:
                 break
             bars.append([ offsetTG + 7 + 8 * i, offsetTG + 9 + 8 * i])
+
+
+
 
         # convert python list to np.array
         self.nodes = np.array(nodes).astype(float)
@@ -175,3 +187,8 @@ class crane(Truss):
         self._computeLengths()
         self._computeOrientations()
         self._computeMass()
+
+
+
+
+
