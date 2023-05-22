@@ -101,17 +101,21 @@ class crane(Truss):
             bars.append([4 * i, 4 * i + 2])  # LT -> LB
             self.x_side.append(len(bars)-1)
             bars.append([4 * i + 1, 4 * i + 3])  # RT -> RB
-
+        self.x_side.remove(self.x_side[-1])
+        self.x_side.remove(self.x_side[-1])
 
         # z-Richtung
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 4])  # LT
             self.y_side.append(len(bars)-1)
+            self.x_side.append(len(bars)-1)
             bars.append([4 * i + 1, 4 * i + 5])  # RT
             self.y_side.append(len(bars)-1)
             bars.append([4 * i + 2, 4 * i + 6])  # LB
             self.x_side.append(len(bars)-1)
             bars.append([4 * i + 3, 4 * i + 7])  # RB
+        self.x_side.remove(self.x_side[-1])
+        self.x_side.remove(self.x_side[-1])
 
         # Kreuzstreben (+1 jeweils für nächste Stufe)
         for i in range(self.nST - 1):
@@ -125,6 +129,7 @@ class crane(Truss):
             bars.append([4 * i + 2, 4 * i + 4])  # LB -> LT+1
             self.x_side.append(len(bars)-1)
             # bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
+        self.x_side.remove(self.x_side[-1])
 
 
 
@@ -145,20 +150,26 @@ class crane(Truss):
         bars.append([offsetT-6, offsetT+3])  # hinten unten
         bars.append([offsetT-8, offsetT+2])  # vorne unten
 
-        # x- und y-Richtung (LT für Left Top usw.)
+        # z-Richtung (LT für Left Top usw.)
         for i in range(self.nSGA):
             bars.append([4 * i + offsetT, 4 * i + offsetT + 1])  # LT -> RT ?
             bars.append([4 * i + 2 + offsetT, 4 * i + 3 + offsetT])  # LB -> RB
             bars.append([4 * i + offsetT, 4 * i + 2 + offsetT])  # LT -> LB
             bars.append([4 * i + 1 + offsetT, 4 * i + 3 + offsetT])  # RT -> RB
+        self.x_side.append(len(bars)-1)
+        self.x_side.append(len(bars)-2)
+        self.x_side.append(len(bars)-3)
+        self.x_side.append(len(bars)-4)
 
-        # z-Richtung
+        # x- und y-Richtung
         for i in range(self.nSGA-1):
             bars.append([4 * i + offsetT, 4 * i + 4 + offsetT])  # LT
             bars.append([4 * i + 1 + offsetT, 4 * i + 5 + offsetT])  # RT
             bars.append([4 * i + 2 + offsetT, 4 * i + 6 + offsetT])  # LB
             bars.append([4 * i + 3 + offsetT, 4 * i + 7 + offsetT])  # RB
+    
 
+        
         #Kreuzstreben vorne
         bars.append([offsetT-8, offsetT])
         for i in range(self.nSGA//2):
@@ -225,9 +236,6 @@ class crane(Truss):
 
     def cur_offset(self, nodes):
         return len(nodes)
-
-
-
 
 
     def tower_pyramid(self, nodes, bars):
