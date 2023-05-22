@@ -10,11 +10,11 @@ if __name__ == "__main__":
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3
     g = 9.81  # m/s^2
-    myCrane = crane(1, 10, 10, 1, 1, A, rho, E)
+    myCrane = crane(1, 8, 8, 1, 1, A, rho, E)
     nodes = myCrane.nodes
     bars = myCrane.bars
-    for i in range(-1, -5, -1):
-        myCrane.addExternalForce(i, 0, 0, -1e4) 
+    # for i in range(-1, -5, -1):
+    #     myCrane.addExternalForce(i, 0, 0, -1e4) 
     fem = FEM(myCrane)
     #fem.addWind(28, 1, 1)
     N, R, U = fem.TrussAnalysis(False)
