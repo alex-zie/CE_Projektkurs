@@ -10,18 +10,19 @@ if __name__ == "__main__":
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3
     g = 9.81  # m/s^2
-    myCrane = crane(20, 20, 1, 1, A, rho, E)
+    myCrane = crane(6, 6, 1, 1, A, rho, E)
     nodes = myCrane.nodes
     bars = myCrane.bars
     fem = FEM(myCrane)
     N, R, U = fem.TrussAnalysis()
     print('\nAxial Forces (positive = tension, negative = compression)')
     # Anschaulichkeit
-    print(N[np.newaxis].T)
+    print(np.max(N[np.newaxis].T))
     print('\nReaction Forces (positive = upward, negative = downward')
-    print(R)
+    print(np.max(R))
     print('\nDeformation at nodes')
-    print(U)
+    print("At node", np.where(U == U.max())[0], "is U:", U[-1:-5:-1])
+    fem.plotPoint(nodes[48])
     fem.Plot(nodes, bars, 'gray', '--', 1, 'Undeformed')
     scale = 1
     # Berechne die neue Position der Knoten
@@ -32,4 +33,4 @@ if __name__ == "__main__":
     fem.plotPoint(Dnodes[-3])
     fem.plotPoint(Dnodes[-4])
     plt.show()
-    # plt.savefig('fig-1.png', dpi=300)
+#plt.savefig('fig-1.png', dpi=300)

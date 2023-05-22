@@ -8,8 +8,8 @@ class FEM:
         self.truss = truss
         self.NN = len(truss.nodes)
         self.NE = len(truss.bars)
-        print(self.NN, "nodes")
-        print(self.NE, "bars")
+        #print(self.NN, "nodes")
+        #print(self.NE, "bars")
         self.DOF = 3  # weil wir uns in 3D befinden
         self.NDOF = self.DOF * self.NN  # Gesamtanzahl der Freihetsgrade
 
@@ -29,9 +29,9 @@ class FEM:
         return self.__dict__["R"]
     
     @property
-    def N(self):
+    def U(self):
         """Return deformations"""
-        return self.__dict__["N"]
+        return self.__dict__["U"]
 
 
     def TrussAnalysis(self):
@@ -43,7 +43,7 @@ class FEM:
         L = self.truss.lengths
         trans = np.concatenate((-self.truss.orientations.T, self.truss.orientations.T), axis=1)  # Transformationsvektor lokal -> global
         K = self.computeStiffnessMatrix(E, A, L, trans)
-        print(np.linalg.det(K))
+        #print("Determinant K:", np.linalg.det(K))
         freeDOF = self.truss.supports.flatten().nonzero()[0]  # Prüfe, welche Knoten FG > 0 haben
         supportDOF = (self.truss.supports.flatten() == 0).nonzero()[0]  # Knoten mit Lagern
         Kff = K[np.ix_(freeDOF, freeDOF)]  # Vollkommen Bewegliche knoten
@@ -51,12 +51,12 @@ class FEM:
         Krf = Kfr.T
         #Krr = K[np.ix_(supportDOF, supportDOF)]  # für die Lagerkräfte
 
-        # weights = np.zeros_like(self.truss.F) # Gewichtskraft
-        # weights[:, 2] = -self.computeWeight()
-        # self.truss.addExternalForces(weights)
+        weights = np.zeros_like(self.truss.F) # Gewichtskraft
+        weights[:, 2] = -self.computeWeight()
+        self.truss.addExternalForces(weights)
         F = self.truss.F.flatten()[freeDOF] # Kraftmatrix passend zu K mit nicht null Einträgen, wie oben definiert
         #Uf = np.linalg.solve(Kff, F)  # Deformation an jedem Freiheitsgrad # least squares damit auch überbestimmte Systeme fkt.
-        print("Determinant:", np.linalg.det(Kff))
+        #print("Determinant Kff:", np.linalg.det(Kff))
         Uf = np.linalg.lstsq(Kff, F)[0]
         U = self.truss.supports.astype(float).flatten()
         U[freeDOF] = Uf
@@ -91,11 +91,12 @@ class FEM:
         # add a weight to the node equalling the mass of a connected bar
         for i in range(len(bars)):
             weights[bars[i]] = weights[bars[i]] + masses[i]
-        print(weights)
+        #print(weights)
         # make it correct
         return 9.81*weights/nOutgoingBars
     
-    def getTension():
+    def getTension(self):
+        return self.N() / self.truss.A
 
 
     def Plot(self, nodes, bars, c, lt, lw, lg):

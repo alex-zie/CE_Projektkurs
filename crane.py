@@ -25,7 +25,8 @@ class crane(Truss):
         # size != hs
         numSegmentsT = np.ceil(height / hs).astype('int')
         numSegmentsA = np.ceil(length / ls).astype('int')
-        numSegmentsGA = 5 #np.ceil((length / 2) / (ls / 2)).astype('int')                
+        numSegmentsT = np.ceil(height / hs).astype('int')
+        numSegmentsGA = 1 #np.ceil((length / 2) / (ls / 2)).astype('int')
 
 
 
@@ -176,7 +177,7 @@ class crane(Truss):
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
         for i in range(-1, -5, -1):
-            self.addExternalForce(i, 0, 0, -1e4)  
+            self.addExternalForce(i, 0, 0, -125e3)
         # self.addExternalForce(-3, 0, 0, -1e9)
         # self.addExternalForce(-4, 0, 0, -1e9)
         # Material
