@@ -16,8 +16,9 @@ if __name__ == "__main__":
     fem = FEM(myCrane)
     #fem.addWind(28, 1, 1)
     N, R, U = fem.TrussAnalysis()
+
+    # Veranschauung
     print('\nAxial Forces (positive = tension, negative = compression)')
-    # Anschaulichkeit
     print(np.max(N[np.newaxis].T))
     print('\nReaction Forces (positive = upward, negative = downward')
     print(np.max(R))
@@ -34,4 +35,4 @@ if __name__ == "__main__":
     fem.plotPoint(Dnodes[-3])
     fem.plotPoint(Dnodes[-4])
     plt.show()
-#plt.savefig('fig-1.png', dpi=300)
+    #plt.savefig('fig-1.png', dpi=300)
