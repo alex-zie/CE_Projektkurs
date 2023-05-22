@@ -248,7 +248,7 @@ class crane(Truss):
             # bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
 
         #aller oberste Spitze
-        
+        bars.append
 
 
 
