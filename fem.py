@@ -34,7 +34,7 @@ class FEM:
         return self.__dict__["U"]
 
 
-    def TrussAnalysis(self):
+    def TrussAnalysis(self, weight=False):
         """
         returns: axial forces, reactional forces, displacements
         """
@@ -51,9 +51,12 @@ class FEM:
         Krf = Kfr.T
         #Krr = K[np.ix_(supportDOF, supportDOF)]  # für die Lagerkräfte
 
-        weights = np.zeros_like(self.truss.F) # Gewichtskraft
-        weights[:, 2] = -self.computeWeight()
-        self.truss.addExternalForces(weights)
+        # Weight
+        if(weight):
+            weights = np.zeros_like(self.truss.F) 
+            weights[:, 2] = -self.computeWeight()
+            self.truss.addExternalForces(weights)
+
         F = self.truss.F.flatten()[freeDOF] # Kraftmatrix passend zu K mit nicht null Einträgen, wie oben definiert
         #Uf = np.linalg.solve(Kff, F)  # Deformation an jedem Freiheitsgrad # least squares damit auch überbestimmte Systeme fkt.
         #print("Determinant Kff:", np.linalg.det(Kff))
@@ -82,6 +85,7 @@ class FEM:
     def computeWeight(self):
         bars = self.truss.bars
         nOutgoingBars = np.zeros_like(self.truss.nodes[:, 0])
+
         # compute for each node (index) the number of outgoing bars
         for bar in bars:
             nOutgoingBars[bar] = nOutgoingBars[bar] + 1
@@ -91,10 +95,66 @@ class FEM:
         # add a weight to the node equalling the mass of a connected bar
         for i in range(len(bars)):
             weights[bars[i]] = weights[bars[i]] + masses[i]
-        #print(weights)
-        # make it correct
+        
         return 9.81*weights/nOutgoingBars
-    
+
+    def addWind(self, speed, axis, dir):
+        """
+        speed in m/s
+        axis: 0 (x-Axis) or 1 (y-Axis)
+        dir: 1 (positive direction) or -1 (negative direction)
+        """
+
+        if(not (dir == -1 or dir == 1)):
+            raise Exception("dir has to be either -1 or 1")
+        if(axis < 0 or axis > 2):
+            raise Exception("axis can only take values 0, 1, 2")
+        
+        bars = self.truss.bars
+        nOutgoingBars = np.zeros_like(self.truss.nodes[:, 0])
+        # compute for each node (index) the number of outgoing bars
+        for bar in bars:
+            nOutgoingBars[bar] = nOutgoingBars[bar] + 1
+
+        # Height from the bars
+        area_bars = self.truss.A ** 0.5 * self.truss.lengths
+        forces = np.zeros_like(self.truss.nodes[:, 0])
+
+        # add wind force to node for each bar that is connected to it
+        # Wind pressure: 0.5 * rho * v**2(m/s) * A(m2)
+        for i in range(len(area_bars)):
+            forces[bars[i]] = forces[bars[i]] + 0.5 * area_bars[i] *1.2* speed**2 # 1.2 is the air density at sea level
+
+        print(forces)
+
+        w_forces = np.zeros_like(self.truss.F)
+        w_forces[:, axis] = dir*forces/nOutgoingBars
+        self.truss.addExternalForces(w_forces)
+
+    def computeWind(self, speed):
+        """
+        speed in m/s
+        axis: 0 (x-Axis) or 1 (y-Axis)
+        dir: 1 (positive direction) or -1 (negative direction)
+        """
+        bars = self.truss.bars
+        nOutgoingBars = np.zeros_like(self.truss.nodes[:, 0])
+        # compute for each node (index) the number of outgoing bars
+        for bar in bars:
+            nOutgoingBars[bar] = nOutgoingBars[bar] + 1
+
+        # Height from the bars
+        area_bars = self.truss.A ** 0.5 * self.truss.lengths
+        forces = np.zeros_like(self.truss.nodes[:, 0])
+        # add wind force to node for each bar that is connected to it
+        # Wind pressure: 0.5 * rho * v**2(m/s) * A(m2)
+        for i in range(len(area_bars)):
+            forces[bars[i]] = forces[bars[i]] + 0.5*area_bars[i]*1.2*speed**2 # 1.2 is the air density at sea level
+
+        print(forces)
+
+        return forces/nOutgoingBars
+
     def getTension(self):
         return self.N() / self.truss.A
 
