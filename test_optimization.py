@@ -10,5 +10,5 @@ def cons(x):
     return x[1] - 1
 
 
-print(sp.minimize(objective, np.array([2, 2]),bounds=[[1, 2], [-1, -0.5]], constraints={'type': 'ineq', 'fun': cons}))
+print(sp.minimize(objective, np.array([1, 1]), bounds=[],constraints={'type': 'ineq', 'fun': cons}))
 #

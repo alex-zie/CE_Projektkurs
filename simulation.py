@@ -10,13 +10,14 @@ if __name__ == "__main__":
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3
     g = 9.81  # m/s^2
-    myCrane = crane(1, 8, 8, 1, 1, A, rho, E)
+    myCrane = crane(0, 10, 10, 2, 2.00000001, 0.0225, rho, E)
+
     nodes = myCrane.nodes
     bars = myCrane.bars
     # for i in range(-1, -5, -1):
-    #     myCrane.addExternalForce(i, 0, 0, -1e4) 
+    #     myCrane.addExternalForce(i, 0, 0, -500e3/4)
     fem = FEM(myCrane)
-    #fem.addWind(28, 1, 1)
+    # fem.addWind(28, 1, 1)
     N, R, U = fem.TrussAnalysis(False)
 
     # Veranschauung
@@ -24,6 +25,7 @@ if __name__ == "__main__":
     print(np.max(N[np.newaxis].T))
     print('\nReaction Forces (positive = upward, negative = downward')
     print(R)
+    print(fem.getTension())
     # print('\nDeformation at nodes')
     # print("At node", np.where(U == U.max())[0], "is U:", U[-1:-5:-1])
     print('\nDeformation')
@@ -39,4 +41,4 @@ if __name__ == "__main__":
     fem.plotPoint(Dnodes[-3])
     fem.plotPoint(Dnodes[-4])
     plt.show()
-    #plt.savefig('fig-1.png', dpi=300)
+    # plt.savefig('fig-1.png', dpi=300)

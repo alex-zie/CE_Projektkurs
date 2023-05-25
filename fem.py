@@ -2,14 +2,15 @@ import numpy as np
 from truss import Truss
 import matplotlib.pyplot as plt
 
+
 class FEM:
 
     def __init__(self, truss: Truss):
         self.truss = truss
         self.NN = len(truss.nodes)
         self.NE = len(truss.bars)
-        #print(self.NN, "nodes")
-        #print(self.NE, "bars")
+        # print(self.NN, "nodes")
+        # print(self.NE, "bars")
         self.DOF = 3  # weil wir uns in 3D befinden
         self.NDOF = self.DOF * self.NN  # Gesamtanzahl der Freihetsgrade
 
@@ -22,54 +23,55 @@ class FEM:
     def N(self):
         """Return axial forces"""
         return self.__dict__["N"]
-    
+
     @property
     def R(self):
         """Return reactional forces"""
         return self.__dict__["R"]
-    
+
     @property
     def U(self):
         """Return deformations"""
         return self.__dict__["U"]
 
-
     def TrussAnalysis(self, weight=False):
         """
         returns: axial forces, reactional forces, displacements
         """
-        E = self.truss.E 
+        E = self.truss.E
         A = self.truss.A
         L = self.truss.lengths
-        trans = np.concatenate((-self.truss.orientations.T, self.truss.orientations.T), axis=1)  # Transformationsvektor lokal -> global
+        trans = np.concatenate((-self.truss.orientations.T, self.truss.orientations.T),
+                               axis=1)  # Transformationsvektor lokal -> global
         K = self.computeStiffnessMatrix(E, A, L, trans)
-        #print("Determinant K:", np.linalg.det(K))
+        # print("Determinant K:", np.linalg.det(K))
         freeDOF = self.truss.supports.flatten().nonzero()[0]  # Prüfe, welche Knoten FG > 0 haben
         supportDOF = (self.truss.supports.flatten() == 0).nonzero()[0]  # Knoten mit Lagern
         Kff = K[np.ix_(freeDOF, freeDOF)]  # Vollkommen Bewegliche knoten
         Kfr = K[np.ix_(freeDOF, supportDOF)]  # Teilweise bewegliche Knoten # sicher?
         Krf = Kfr.T
-        #Krr = K[np.ix_(supportDOF, supportDOF)]  # für die Lagerkräfte
+        # Krr = K[np.ix_(supportDOF, supportDOF)]  # für die Lagerkräfte
 
         # Weight
-        if(weight):
-            weights = np.zeros_like(self.truss.F) 
+        if (weight):
+            weights = np.zeros_like(self.truss.F)
             weights[:, 2] = -self.computeWeight()
             self.truss.addExternalForces(weights)
 
-        F = self.truss.F.flatten()[freeDOF] # Kraftmatrix passend zu K mit nicht null Einträgen, wie oben definiert
-        #Uf = np.linalg.solve(Kff, F)  # Deformation an jedem Freiheitsgrad # least squares damit auch überbestimmte Systeme fkt.
-        #print("Determinant Kff:", np.linalg.det(Kff))
+        F = self.truss.F.flatten()[freeDOF]  # Kraftmatrix passend zu K mit nicht null Einträgen, wie oben definiert
+        # Uf = np.linalg.solve(Kff, F)  # Deformation an jedem Freiheitsgrad # least squares damit auch überbestimmte Systeme fkt.
+        # print("Determinant Kff:", np.linalg.det(Kff))
         Uf = np.linalg.lstsq(Kff, F)[0]
         U = self.truss.supports.astype(float).flatten()
         U[freeDOF] = Uf
         U[supportDOF] = self.truss.Ur
         U = U.reshape(self.NN, self.DOF)
-        u = np.concatenate((U[self.truss.bars[:, 0]], U[self.truss.bars[:, 1]]), axis=1) # Verschiebungsvektor für die einzelnen Elemente
+        u = np.concatenate((U[self.truss.bars[:, 0]], U[self.truss.bars[:, 1]]),
+                           axis=1)  # Verschiebungsvektor für die einzelnen Elemente
         N = E * A / L[:] * (trans[:] * u[:]).sum(axis=1)  # interne Kräfte
-        R = (Krf[:] * Uf).sum(axis=1) #+ (Krr[:] * self.truss.Ur).sum(axis=1)  # Reaktionskräfte
+        R = (Krf[:] * Uf).sum(axis=1)  # + (Krr[:] * self.truss.Ur).sum(axis=1)  # Reaktionskräfte
         return np.array(N), np.array(R), U
-    
+
     def computeStiffnessMatrix(self, E, A, L, trans):
         K = np.zeros([self.NDOF, self.NDOF])
         for k in range(self.NE):
@@ -81,7 +83,7 @@ class FEM:
             # Globale Steifigkeiten durch Summierung der Einzelsteifigkeiten, Position !
             K[np.ix_(index, index)] = K[np.ix_(index, index)] + ES
         return K
-    
+
     def computeWeight(self):
         bars = self.truss.bars
         nOutgoingBars = np.zeros_like(self.truss.nodes[:, 0])
@@ -95,8 +97,8 @@ class FEM:
         # add a weight to the node equalling the mass of a connected bar
         for i in range(len(bars)):
             weights[bars[i]] = weights[bars[i]] + masses[i]
-        
-        return 9.81*weights/nOutgoingBars
+
+        return 9.81 * weights / nOutgoingBars
 
     def addWind(self, speed, axis, dir):
         """
@@ -105,11 +107,11 @@ class FEM:
         dir: 1 (positive direction) or -1 (negative direction)
         """
 
-        if(not (dir == -1 or dir == 1)):
+        if not (dir == -1 or dir == 1):
             raise Exception("dir has to be either -1 or 1")
-        if(axis < 0 or axis > 2):
+        if axis < 0 or axis > 2:
             raise Exception("axis can only take values 0, 1, 2")
-        
+
         bars = self.truss.bars
         nOutgoingBars = np.zeros_like(self.truss.nodes[:, 0])
         # compute for each node (index) the number of outgoing bars
@@ -123,12 +125,13 @@ class FEM:
         # add wind force to node for each bar that is connected to it
         # Wind pressure: 0.5 * rho * v**2(m/s) * A(m2)
         for i in range(len(area_bars)):
-            forces[bars[i]] = forces[bars[i]] + 0.5 * area_bars[i] *1.2* speed**2 # 1.2 is the air density at sea level
+            forces[bars[i]] = forces[bars[i]] + 0.5 * area_bars[
+                i] * 1.2 * speed ** 2  # 1.2 is the air density at sea level
 
         print(forces)
 
         w_forces = np.zeros_like(self.truss.F)
-        w_forces[:, axis] = dir*forces/nOutgoingBars
+        w_forces[:, axis] = dir * forces / nOutgoingBars
         self.truss.addExternalForces(w_forces)
 
     def computeWind(self, speed):
@@ -149,15 +152,15 @@ class FEM:
         # add wind force to node for each bar that is connected to it
         # Wind pressure: 0.5 * rho * v**2(m/s) * A(m2)
         for i in range(len(area_bars)):
-            forces[bars[i]] = forces[bars[i]] + 0.5*area_bars[i]*1.2*speed**2 # 1.2 is the air density at sea level
+            forces[bars[i]] = forces[bars[i]] + 0.5 * area_bars[
+                i] * 1.2 * speed ** 2  # 1.2 is the air density at sea level
 
         print(forces)
 
-        return forces/nOutgoingBars
+        return forces / nOutgoingBars
 
     def getTension(self):
-        return self.N() / self.truss.A
-
+        return self.N / self.truss.A
 
     def Plot(self, nodes, bars, c, lt, lw, lg):
         plt.subplot(projection='3d')
