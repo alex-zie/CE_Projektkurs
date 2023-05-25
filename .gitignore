@@ -1,2 +1,8 @@
-__pycache__
-*.pyc
+/.idea/misc.xml
+/.idea/other.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/shelf/Uncommitted_changes_before_Update_at_22_05_2023_12_04_[Changes]/shelved.patch
+/.idea/shelf/Uncommitted_changes_before_Update_at_22_05_2023_12_04__Changes_.xml
+/.idea/vcs.xml
+/.idea/workspace.xml

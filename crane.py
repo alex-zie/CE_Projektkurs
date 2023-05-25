@@ -38,10 +38,8 @@ class crane(Truss):
             print("Variante 1: Pyramiden")
             self.tower_pyramid(nodes, bars)
             offsetT = self.cur_offset(nodes)
-            print(offsetT)
             self.gegenausleger_pyramid(nodes, bars, offsetT)
             offsetTG = self.cur_offset(nodes)
-            print(offsetTG)
             self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
         else:
             print("Default Kran")
@@ -253,26 +251,36 @@ class crane(Truss):
         # x- und y-Richtung (LT für Left Top usw.)
         for i in range(self.nST):
             bars.append([4 * i, 4 * i + 1])  # LT -> RT
+            self.selectYbar(bars)
             bars.append([4 * i + 2, 4 * i + 3])  # LB -> RB
             bars.append([4 * i, 4 * i + 2])  # LT -> LB
             bars.append([4 * i + 1, 4 * i + 3])  # RT -> RB
+            self.selectXbar(bars)
 
         # z-Richtung
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 4])  # LT
+            self.selectYbar(bars)
             bars.append([4 * i + 1, 4 * i + 5])  # RT
+            self.selectYbar(bars)
+            self.selectXbar(bars)
             bars.append([4 * i + 2, 4 * i + 6])  # LB
             bars.append([4 * i + 3, 4 * i + 7])  # RB
+            self.selectXbar(bars)
 
         # Kreuzstreben (+1 jeweils für nächste Stufe)
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 5])  # LT -> RT+1
+            self.selectYbar(bars)
             # bars.append([4 * i + 1, 4 * i + 4])  # RT -> RT+1
             bars.append([4 * i + 3, 4 * i + 6])  # RB -> LB+1
+            self.selectYbar(bars)
             # bars.append([4 * i + 2, 4 * i + 7])  # LB -> RB+1
             bars.append([4 * i + 1, 4 * i + 7])  # RT -> RB+1
+            self.selectXbar(bars)
             # bars.append([4 * i + 3, 4 * i + 5])  # RB -> RT+1
             bars.append([4 * i + 2, 4 * i + 4])  # LB -> LT+1
+            self.selectXbar(bars)
             # bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
 
         # aller oberste Spitze
@@ -280,7 +288,9 @@ class crane(Truss):
         bars.append([offsetTO - 1, offsetTO - 2])
         bars.append([offsetTO - 1, offsetTO - 3])
         bars.append([offsetTO - 1, offsetTO - 4])
+        self.selectYbar(bars)
         bars.append([offsetTO - 1, offsetTO - 5])
+        self.selectYbar(bars)
 
     def gegenausleger_pyramid(self, nodes, bars, offsetT):
 
@@ -296,16 +306,21 @@ class crane(Truss):
 
         # sonderfall erste pyramide
         bars.append([offsetT, offsetT - 5])
+        self.selectYbar(bars)
         bars.append([offsetT + 1, offsetT - 3])
         bars.append([offsetT + 2, offsetT + 1])
         bars.append([offsetT + 2, offsetT])
+        self.selectYbar(bars)
         bars.append([offsetT + 2, offsetT - 5])
+        self.selectYbar(bars)
         bars.append([offsetT + 2, offsetT - 3])
         bars.append([offsetT + 2, offsetT - 1])
+        self.selectYbar(bars)
 
         # x- und y-Richtung (LT für Left Top usw.)
         for i in range(self.nSGA - 1):
             bars.append([offsetT + 3 * i, offsetT + 3 + 3 * i])
+            self.selectYbar(bars)
             bars.append([offsetT + 1 + 3 * i, offsetT + 1 + 3 + 3 * i])
             bars.append([offsetT + 3 * i, offsetT + 1 + 3 * i])
         offsetGT = len(nodes)
@@ -315,38 +330,50 @@ class crane(Truss):
         for i in range(self.nSGA - 1):  # hier ab zweite pyramide
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 1])
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 2])
+            self.selectYbar(bars)
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 4])
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 5])
+            self.selectYbar(bars)
 
         # Linie oben
         for i in range(self.nSGA - 1):
             bars.append([offsetT + 2 + 3 * i, offsetT + 2 + 3 * i + 3])
+            self.selectYbar(bars)
 
     def ausleger_pyramid(self, nodes, bars, offsetT, offsetTG):
-        for i in range(1, self.nSA):
+        for i in range(1, self.nSA + 1):
             nodes.append([self.hs + i * self.ls, 0, (self.nST - 1) * self.hs])  # Left Bottom
             nodes.append([self.hs + i * self.ls, self.hs, (self.nST - 1) * self.hs])  # Right Bottom
             nodes.append([(self.hs/2 + i * self.ls), self.hs / 2, self.height])  # Top
 
 
         # x- und y-Richtung
-        for i in range(self.nSA - 2):
+        for i in range(self.nSA - 1):
             bars.append([offsetTG + i * 3, (offsetTG + 3) + i * 3])
+            self.selectYbar(bars)
             bars.append([offsetTG + i * 3, (offsetTG + 1) + i * 3])
             bars.append([(offsetTG + 1) + i * 3, (offsetTG + 4) + i * 3])
 
 
         # Bottom nodes with top nodes
-        for i in range(self.nSA - 2):
+        for i in range(self.nSA - 1):
             bars.append([offsetTG + i * 3, (offsetTG + 5) + i * 3])
+            self.selectYbar(bars)
             bars.append([offsetTG + 1 + i * 3, (offsetTG + 5) + i * 3])
             bars.append([(offsetTG + 5) + i * 3, offsetTG + 3 + i * 3])
+            self.selectYbar(bars)
+            tmp_lastbar1 = len(bars) - 1
             bars.append([(offsetTG + 5) + i * 3, offsetTG + 4 + i * 3])
+            tmp_lastbar2 = len(bars) - 1
+
+        self.x_side.append(tmp_lastbar1)
+        self.x_side.append(tmp_lastbar2)
 
 
         # Top Row
-        for i in range(self.nSA - 2):
+        for i in range(self.nSA - 1):
             bars.append([(offsetTG + 2) + i * 3, (offsetTG + 5) + i * 3])
+            self.selectYbar(bars)
 
 
         # Extra bars
@@ -354,24 +381,38 @@ class crane(Truss):
 
         # Last bar ate the end of the crane
         bars.append([offsetTO - 2, offsetTO - 3])
+        self.selectXbar(bars)
 
         # Top of the Tower with first Node Ausleger
         bars.append([offsetT - 1, offsetTG + 2])
+        self.selectYbar(bars)
 
         # Tower with the base of the Ausleger
         bars.append([offsetT - 4, offsetTG])
+        self.selectYbar(bars)
         bars.append([offsetT - 2, offsetTG + 1])
 
         # Tower with the first Top Node in Ausleger
         bars.append([offsetT - 4, offsetTG + 2])
+        self.selectYbar(bars)
         bars.append([offsetT - 2, offsetTG + 2])
 
         # First Top Node to base Ausleger2
         bars.append([offsetTG + 2, offsetTG + 1])
         bars.append([offsetTG + 2, offsetTG])
+        self.selectYbar(bars)
 
+    def selectYbar(self, bars):
+        """
+        Select the last bar from the bar array and add this to another array to select the Y bars
+        """
+        self.y_side.append(len(bars) - 1)
 
-
+    def selectXbar(self, bars):
+        """
+        Select the last bar from the bar array and add this to another array to select the X bars
+        """
+        self.x_side.append(len(bars) - 1)
 
 
 

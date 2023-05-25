@@ -180,6 +180,6 @@ class FEM:
         plt.subplot(projection='3d')
         plt.plot(self.truss.nodes[node, 0], self.truss.nodes[node, 1], self.truss.nodes[node, 2], 'bo')
 
-    def plotPoint(self, point):
+    def plotPoint(self, point, color='b'):
         plt.subplot(projection='3d')
-        plt.plot(point[0], point[1], point[2], 'bo')
+        plt.plot(point[0], point[1], point[2], 'bo', color=color)
