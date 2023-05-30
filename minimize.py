@@ -10,7 +10,7 @@ price = 10
 
 
 def tension(x: np.ndarray):
-    myCrane = crane(0, x[0], x[1], x[2], x[3], x[4], rho, E)
+    myCrane = crane(1, x[0], x[1], x[2], x[3], x[4], rho, E)
     print(x)
     for i in range(-1, -5, -1):
         myCrane.addExternalForce(i, 0, 0, -500e3 / 4)
@@ -24,7 +24,7 @@ def tension(x: np.ndarray):
 
 def cost(x: np.ndarray):
     print(x)
-    myCrane = crane(0, x[0], x[1], x[2], x[3], x[4], rho, E)
+    myCrane = crane(1, x[0], x[1], x[2], x[3], x[4], rho, E)
     return np.sum(myCrane.mass)
 
 
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         {'type': 'ineq', 'fun': lambda x: tension(x) + 0.2e9},  # tension < 0.2e9
         {'type': 'ineq', 'fun': lambda x: x[0] - 2 * x[2]},
         {'type': 'ineq', 'fun': lambda x: x[1] - 2 * x[3]})
-    res = minimize(cost, np.array([5, 5, 1, 1, 0.0225]),
+    res = minimize(cost, np.array([10, 10, 3, 3, 0.0225]),
                    bounds=((5, 10), (5, 10), (0.5, 2), (0.5, 2), (2.5e-3, 6.25e-2)),
                    method='SLSQP', constraints=cons, tol=1e-12)
     print(res)
