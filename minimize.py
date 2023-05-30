@@ -2,7 +2,7 @@ from crane import crane
 from fem import FEM
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import minimize
+from scipy.optimize import minimize,shgo,differential_evolution
 
 E = 210e9  # E-Modul in Pa
 rho = 7850  # Dichte in kg/m^
@@ -55,33 +55,33 @@ def cem(num_steps,iterations,batch_size,waning_time= 10,additional_std=0.25,frac
     return mean_rewards,theta_mean
 
 def tension(x: np.ndarray):
-    myCrane = crane(0, x[0], x[1], x[2], x[3], x[4], rho, E)
+    myCrane = crane(1, x[0], x[1], x[2], x[3], x[4], rho, E)
     for i in range(-1, -5, -1):
         myCrane.addExternalForce(i, 0, 0, -500e3 / 4)
     fem = FEM(myCrane)
     # N, R, U = fem.TrussAnalysis()
     # t = np.max(N[np.newaxis]) / x[4]
     t = np.max(fem.getTension())
-    return t
+    print(t * 1e-9)
+    return -t
 
 
 def cost(x: np.ndarray):
-    myCrane = crane(0, x[0], x[1], x[2], x[3], x[4], rho, E)
-    return -np.sum(myCrane.mass)
+    myCrane = crane(1, x[0], x[1], x[2], x[3], x[4], rho, E)
+    return np.sum(myCrane.mass)
 
 
 if __name__ == "__main__":
-    # print(tension(np.array([7.5, 7.5, 1, 1, 0.0225])))
-    # cons = (
-    #     {'type': 'ineq', 'fun': lambda x: tension(x) + 0.2e9},  # tension < 0.2e9
-    #     {'type': 'ineq', 'fun': lambda x: x[0] - 2 * x[2]},
-    #     {'type': 'ineq', 'fun': lambda x: x[1] - 2 * x[3]})
-    # res = minimize(cost, np.array([5, 5, 1, 1, 0.0225]),
-    #                bounds=((5, 10), (5, 10), (0.5, 2), (0.5, 2), (2.5e-3, 6.25e-2)),
-    #                method='SLSQP', constraints=cons, tol=1e-12)
-    # print(res)
-    rewards,x=cem(100,30,30)
-    plt.plot(rewards)
-    plt.legend()
-    plt.show()
-
+    #print(tension(np.array([7.5, 7.5, 1, 1, 0.0225])))
+    cons = (
+        {'type': 'ineq', 'fun': lambda x: tension(x) + 0.2e9},  # tension < 0.2e9
+    )
+    res = shgo(cost,
+                   bounds=((5, 10), (5, 10), (0.5, 2), (0.5, 2), (2.5e-3, 6.25e-2)),
+                   constraints=cons)
+    print(res)
+    #rewards,x=cem(100,30,30)
+    #plt.plot(rewards)
+    #plt.legend()
+    #plt.show()
+    #[ 7.500e+00  7.500e+00  1.250e+00  1.250e+00  3.250e-02]

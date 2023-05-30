@@ -42,7 +42,7 @@ class crane(Truss):
             offsetTG = self.cur_offset(nodes)
             self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
         else:
-            print("Default Kran")
+            #print("Default Kran")
             self.tower(nodes, bars)
             offsetT = self.cur_offset(nodes)
             self.gegenausleger(nodes, bars, offsetT)
@@ -365,7 +365,6 @@ class crane(Truss):
             tmp_lastbar1 = len(bars) - 1
             bars.append([(offsetTG + 5) + i * 3, offsetTG + 4 + i * 3])
             tmp_lastbar2 = len(bars) - 1
-
         self.x_side.append(tmp_lastbar1)
         self.x_side.append(tmp_lastbar2)
 
