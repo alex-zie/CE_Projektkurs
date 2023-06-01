@@ -60,6 +60,7 @@ def cem(iterations,batch_size,waning_time= 20,additional_std=0.45,fraction=0.4):
 
 def tension(x: np.ndarray):
     myCrane = crane(1, x[0], x[1], x[2], x[3], x[4], rho, E)
+
     for i in range(-1, -5, -1):
         myCrane.addExternalForce(i, 0, 0, -500e3 / 4)
     fem = FEM(myCrane)
@@ -70,6 +71,7 @@ def tension(x: np.ndarray):
 
 
 def cost(x: np.ndarray):
+
     myCrane = crane(1, x[0], x[1], x[2], x[3], x[4], rho, E)
     return -np.sum(myCrane.mass)
 
@@ -87,3 +89,4 @@ if __name__ == "__main__":
     plt.plot(rewards,x)
     plt.legend()
     plt.show()
+
