@@ -7,15 +7,14 @@ class crane(Truss):
     Special truss that represents a crane
     """
 
-    def __init__(self, variant, height, length, hs, ls, A, rho, E, p=True):
+    def __init__(self, variant, height, length, ls, A, rho, E, p=True):
         """
         :param variant:
         :param height:
         :param length:
-        :param hs:
         :param ls:
         """
-        if hs > height:
+        if ls > height:
             raise Exception("Height of segments cannot be greater than the height of the crane!")
         if ls > length:
             raise Exception("Length of segments cannot be greater than the length of the jib!")
@@ -25,12 +24,13 @@ class crane(Truss):
 
         self.height = height
         self.length = length
-        self.hs = hs
         self.ls = ls
 
-        self.nST = np.ceil(height / hs).astype('int')  # Number of segments of the Tower
+        self.nST = np.ceil(height / ls).astype('int')  # Number of segments of the Tower
         self.nSA = np.ceil(length / ls).astype('int')  # Number of segments of the Ausleger
         self.nSGA = np.ceil((length / 2) / ls).astype('int')  # Number of segments of the Gegenausleger
+
+        self.ls = np.min([self.height / self.nST, self.length / self.nST])
 
         # indices of bars on a certain side of the crane
         self.x_side = []
@@ -38,8 +38,8 @@ class crane(Truss):
 
         if (variant == 1):
             if p: print(
-                "Creating crane with cuboid tower with " + str(self.nST) + " segments and pyramidal jib with " + str(
-                    self.nSA + self.nSGA) + " segments.")
+                "Creating crane with cuboid tower with " + str(self.nST) + " segments of length "+str(self.ls)+" and pyramidal jib with " + str(
+                    self.nSA) + " segments.")
             self.tower_pyramid(nodes, bars)
             offsetT = self.cur_offset(nodes)
             self.gegenausleger_pyramid(nodes, bars, offsetT)
@@ -82,16 +82,16 @@ class crane(Truss):
 
     def tower(self, nodes, bars):
         # Turm erstellen
-        # for 10m high tower with segement size hs we need at least
-        # height / hs segements. For now i would just ignore the last segement
-        # size != hs
+        # for 10m high tower with segement size ls we need at least
+        # height / ls segements. For now i would just ignore the last segement
+        # size != ls
 
         # Nodes des Turms
         for i in range(self.nST):
-            nodes.append([0, 0, i * self.hs])  # Left Top
-            nodes.append([self.hs, 0, i * self.hs])  # Right Top
-            nodes.append([0, self.hs, i * self.hs])  # Left Bottom
-            nodes.append([self.hs, self.hs, i * self.hs])  # Right Bottom
+            nodes.append([0, 0, i * self.ls])  # Left Top
+            nodes.append([self.ls, 0, i * self.ls])  # Right Top
+            nodes.append([0, self.ls, i * self.ls])  # Left Bottom
+            nodes.append([self.ls, self.ls, i * self.ls])  # Right Bottom
 
         # Bars des Turms
         # x- und y-Richtung (LT für Left Top usw.)
@@ -111,7 +111,7 @@ class crane(Truss):
             bars.append([4 * i + 2, 4 * i + 6])  # LB
             bars.append([4 * i + 3, 4 * i + 7])  # RB
 
-        # Kreuzstreben (+1 jeweils für nächste Stufe)
+        # Kreuzstreben (+1 jeweils für näclste Stufe)
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 5])  # LT -> RT+1
             self.y_side.append(len(bars) - 1)
@@ -128,10 +128,10 @@ class crane(Truss):
 
         # Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht
         for i in range(1, self.nSGA + 1):
-            nodes.append([-(self.hs + i * self.ls) + 1, 0, (self.nST - 1) * self.hs])  # Left Top
-            nodes.append([-(self.hs + i * self.ls) + 1, self.hs, (self.nST - 1) * self.hs])  # Right Top
-            nodes.append([-(self.hs + i * self.ls) + 1, 0, (self.nST - 2) * self.hs])  # Left Bottom
-            nodes.append([-(self.hs + i * self.ls) + 1, self.hs, (self.nST - 2) * self.hs])  # Right Bottom
+            nodes.append([-(self.ls + i * self.ls) + 1, 0, (self.nST - 1) * self.ls])  # Left Top
+            nodes.append([-(self.ls + i * self.ls) + 1, self.ls, (self.nST - 1) * self.ls])  # Right Top
+            nodes.append([-(self.ls + i * self.ls) + 1, 0, (self.nST - 2) * self.ls])  # Left Bottom
+            nodes.append([-(self.ls + i * self.ls) + 1, self.ls, (self.nST - 2) * self.ls])  # Right Bottom
 
         # Bars des Gegenausleger
         bars.append([offsetT - 2, offsetT + 1])  # hinten oben
@@ -171,10 +171,10 @@ class crane(Truss):
     def ausleger(self, nodes, bars, offsetT, offsetTG):
         # Nodes des Ausleger in positive x Richtung
         for i in range(1, self.nSA + 1):
-            nodes.append([self.hs + i * self.ls, 0, (self.nST - 1) * self.hs])  # Left Top
-            nodes.append([self.hs + i * self.ls, self.hs, (self.nST - 1) * self.hs])  # Right Top
-            nodes.append([self.hs + i * self.ls, 0, (self.nST - 2) * self.hs])  # Left Bottom
-            nodes.append([self.hs + i * self.ls, self.hs, (self.nST - 2) * self.hs])  # Right Bottom
+            nodes.append([self.ls + i * self.ls, 0, (self.nST - 1) * self.ls])  # Left Top
+            nodes.append([self.ls + i * self.ls, self.ls, (self.nST - 1) * self.ls])  # Right Top
+            nodes.append([self.ls + i * self.ls, 0, (self.nST - 2) * self.ls])  # Left Bottom
+            nodes.append([self.ls + i * self.ls, self.ls, (self.nST - 2) * self.ls])  # Right Bottom
 
         # Bars des Ausleger
         bars.append([offsetT - 4, offsetTG])  # LB -> LT
@@ -219,11 +219,11 @@ class crane(Truss):
 
         # Nodes des Turms
         for i in range(self.nST):
-            nodes.append([0, 0, i * self.height / self.nST])  # Left Top
-            nodes.append([self.hs, 0, i * self.height / self.nST])  # Right Top
-            nodes.append([0, self.hs, i * self.height / self.nST])  # Left Bottom
-            nodes.append([self.hs, self.hs, i * self.height / self.nST])  # Right Bottom
-        nodes.append([self.hs / 2, self.hs / 2, self.height])
+            nodes.append([0, 0, i * self.ls])  # Left Top
+            nodes.append([self.ls, 0, i * self.ls])  # Right Top
+            nodes.append([0, self.ls, i * self.ls])  # Left Bottom
+            nodes.append([self.ls, self.ls, i * self.ls])  # Right Bottom
+        nodes.append([self.ls / 2, self.ls / 2, self.ls * self.nST])
 
         # Bars des Turms
         # x- und y-Richtung (LT für Left Top usw.)
@@ -245,7 +245,7 @@ class crane(Truss):
             bars.append([4 * i + 3, 4 * i + 7])  # RB
             self.selectXbar(bars)
 
-        # Kreuzstreben (+1 jeweils für nächste Stufe)
+        # Kreuzstreben (+1 jeweils für näclste Stufe)
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 5])  # LT -> RT+1
             self.selectYbar(bars)
@@ -273,9 +273,9 @@ class crane(Truss):
 
         # Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht
         for i in range(1, self.nSGA + 1):  # braucht nur noch die ursprüungliche bottoms
-            nodes.append([-(self.hs + i * self.ls) + self.ls, 0, (self.nST-1) * (self.height / self.nST)])  # Left aself.lso y=0
-            nodes.append([-(self.hs + i * self.ls) + self.ls, self.hs, (self.nST-1) * (self.height / self.nST)])  # Right aself.lso y=self.hs
-            nodes.append([-(0.5 * self.hs + i * self.ls) + self.ls, self.hs / 2,(self.nST) * (self.height / self.nST)])  # nodes der Spitzen --> gleiches problem mit doppelter Höhe??
+            nodes.append([-(self.ls + i * self.ls) + self.ls, 0, (self.nST-1) * self.ls])  # Left aself.lso y=0
+            nodes.append([-(self.ls + i * self.ls) + self.ls, self.ls, (self.nST-1) * self.ls])  # Right aself.lso y=self.ls
+            nodes.append([-(0.5 * self.ls + i * self.ls) + self.ls, self.ls / 2,(self.nST) * self.ls])  # nodes der Spitzen --> gleiches problem mit doppelter Höhe??
 
         # Bars des Gegenausleger
 
@@ -317,9 +317,9 @@ class crane(Truss):
 
     def ausleger_pyramid(self, nodes, bars, offsetT, offsetTG):
         for i in range(1, self.nSA + 1):
-            nodes.append([self.hs + i * self.ls, 0, (self.nST-1) * (self.height / self.nST)])  # Left Bottom
-            nodes.append([self.hs + i * self.ls, self.hs, (self.nST-1) * (self.height / self.nST)])  # Right Bottom
-            nodes.append([(self.hs/2 + i * self.ls), self.hs / 2, (self.nST) * (self.height / self.nST)])  # Top
+            nodes.append([self.ls + i * self.ls, 0, (self.nST-1) * self.ls])  # Left Bottom
+            nodes.append([self.ls + i * self.ls, self.ls, (self.nST-1) * self.ls])  # Right Bottom
+            nodes.append([(self.ls/2 + i * self.ls), self.ls / 2, (self.nST) * self.ls])  # Top
 
 
         # x- und y-Richtung
@@ -396,11 +396,11 @@ class crane(Truss):
 #     Special truss that represents a crane
 #     """
 
-#     def __init__(self, height, length, hs, ls, A, rho, E):  # maybe we can add some unique function e.g. crane_variant_1 to generalize
+#     def __init__(self, height, length, ls, ls, A, rho, E):  # maybe we can add some unique function e.g. crane_variant_1 to generalize
 #         """
 #         :param height:
 #         :param length:
-#         :param hs:
+#         :param ls:
 #         :param ls:
 #         """
 
@@ -409,21 +409,21 @@ class crane(Truss):
 
 
 #         #Turm erstellen
-#         # for 10m high tower with segement size hs we need at least
-#         # height / hs segements. For now i would just ignore the last segement
-#         # size != hs
-#         numSegmentsT = np.ceil(height / hs).astype('int')
+#         # for 10m high tower with segement size ls we need at least
+#         # height / ls segements. For now i would just ignore the last segement
+#         # size != ls
+#         numSegmentsT = np.ceil(height / ls).astype('int')
 #         numSegmentsA = np.ceil(length / ls).astype('int')
-#         numSegmentsT = np.ceil(height / hs).astype('int')
+#         numSegmentsT = np.ceil(height / ls).astype('int')
 #         numSegmentsGA = 1 #np.ceil((length / 2) / (ls / 2)).astype('int')
 
 
 #         #Nodes des Turms
 #         for i in range(numSegmentsT):
-#             nodes.append([0, 0, i * hs])  # Left Top
-#             nodes.append([hs, 0, i * hs])  # Right Top
-#             nodes.append([0, hs, i * hs])  # Left Bottom
-#             nodes.append([hs, hs, i * hs])  # Right Bottom
+#             nodes.append([0, 0, i * ls])  # Left Top
+#             nodes.append([ls, 0, i * ls])  # Right Top
+#             nodes.append([0, ls, i * ls])  # Left Bottom
+#             nodes.append([ls, ls, i * ls])  # Right Bottom
 #         offset = len(nodes)
 
 
@@ -442,7 +442,7 @@ class crane(Truss):
 #             bars.append([4 * i + 2, 4 * i + 6])  # LB
 #             bars.append([4 * i + 3, 4 * i + 7])  # RB
 
-#         # Kreuzstreben (+1 jeweils für nächste Stufe)
+#         # Kreuzstreben (+1 jeweils für näclste Stufe)
 #         for i in range(numSegmentsT - 1):
 #             bars.append([4 * i, 4 * i + 5])  # LT -> RT+1
 #             # bars.append([4 * i + 1, 4 * i + 4])  # RT -> RT+1
@@ -457,10 +457,10 @@ class crane(Truss):
 #         #Gegenausleger erstellen
 #         #Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht
 #         for i in range(1, numSegmentsGA + 1):
-#             nodes.append([-(hs + i * ls)+1, 0, (numSegmentsT - 1) * hs])  # Left Top
-#             nodes.append([-(hs + i * ls)+1, hs, (numSegmentsT - 1) * hs])  # Right Top
-#             nodes.append([-(hs + i * ls)+1, 0, (numSegmentsT - 2) * hs])  # Left Bottom
-#             nodes.append([-(hs + i * ls)+1, hs, (numSegmentsT - 2) * hs])  # Right Bottom
+#             nodes.append([-(ls + i * ls)+1, 0, (numSegmentsT - 1) * ls])  # Left Top
+#             nodes.append([-(ls + i * ls)+1, ls, (numSegmentsT - 1) * ls])  # Right Top
+#             nodes.append([-(ls + i * ls)+1, 0, (numSegmentsT - 2) * ls])  # Left Bottom
+#             nodes.append([-(ls + i * ls)+1, ls, (numSegmentsT - 2) * ls])  # Right Bottom
 #         offsetTG = len(nodes) # Turm und Gegenausleger
 
 
@@ -505,10 +505,10 @@ class crane(Truss):
 
 #         #Nodes des Ausleger in positive x Richtung
 #         for i in range(1, numSegmentsA + 1):
-#             nodes.append([hs + i * ls, 0, (numSegmentsT - 1) * hs])  # Left Top
-#             nodes.append([hs + i * ls, hs, (numSegmentsT - 1) * hs])  # Right Top
-#             nodes.append([hs + i * ls, 0, (numSegmentsT - 2) * hs])  # Left Bottom
-#             nodes.append([hs + i * ls, hs, (numSegmentsT - 2) * hs])  # Right Bottom
+#             nodes.append([ls + i * ls, 0, (numSegmentsT - 1) * ls])  # Left Top
+#             nodes.append([ls + i * ls, ls, (numSegmentsT - 1) * ls])  # Right Top
+#             nodes.append([ls + i * ls, 0, (numSegmentsT - 2) * ls])  # Left Bottom
+#             nodes.append([ls + i * ls, ls, (numSegmentsT - 2) * ls])  # Right Bottom
 
 
 #         #Bars des Ausleger
@@ -568,6 +568,6 @@ class crane(Truss):
 #         self.rho = rho
 #         self.E = E
 
-#         self._computeLengths()
+#         self._computeLengtls()
 #         self._computeOrientations()
 #         self._computeMass()
