@@ -18,7 +18,7 @@ class Truss:
         self.A = A
         self.rho = rho
         self.E = E
-
+        self.I = A ** 2 / 12
         # indices of bars on a certain side of the crane
         self.x_side = []
         self.y_side = []
@@ -53,11 +53,11 @@ class Truss:
         self.supports[node, 2] = z
 
         # appends a 0 per suppressed degree of freedom # TODO can be optimized
-        if x==0:
+        if x == 0:
             self.Ur = np.append(self.Ur, 0)
-        if y==0:
+        if y == 0:
             self.Ur = np.append(self.Ur, 0)
-        if z==0:
+        if z == 0:
             self.Ur = np.append(self.Ur, 0)
 
     def addExternalForce(self, node, x, y, z):

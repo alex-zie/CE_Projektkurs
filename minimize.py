@@ -2,7 +2,7 @@ from crane import crane
 from fem import FEM
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import minimize
+from scipy.optimize import minimize, shgo
 from scipy.stats import norm
 
 E = 210e9  # E-Modul in Pa
@@ -45,7 +45,8 @@ def cem(iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=0.4):
             #for each batch
             #X = AZ + u
             #theta=(theta_cov + (np.identity(5)*max(1 - iteration / waning_time, 0) * additional_std**2)) @ np.random.randn(5) +theta_mean
-            theta = (A + (cons_cov * max(1 - iteration / waning_time, 0) * additional_std ** 2)) @ np.random.randn(5) + theta_mean
+            theta = (A + (cons_cov * max(1 - iteration / waning_time, 0) * additional_std ** 2)) @ np.random.randn(
+                5) + theta_mean
             theta=np.abs(theta)
             print(theta)
             # theta[0] = np.clip(theta[0], 6, 10)
@@ -73,6 +74,7 @@ def cem(iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=0.4):
         A = eigDecomposition(np.cov(matrix))
         mean_rewards.append(np.mean(rewards))
     return mean_rewards,theta_mean
+
 
 def tension(x: np.ndarray):
     myCrane = crane(1, x[0], x[1], x[2], x[3], x[4], rho, E,False)

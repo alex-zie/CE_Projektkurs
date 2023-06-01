@@ -37,14 +37,16 @@ class crane(Truss):
         self.y_side = []
 
         if (variant == 1):
-            if p : print("Creating crane with cuboid tower with "+str(self.nST)+" segments and pyramidal jib with "+str(self.nSA+self.nSGA)+" segments.")
+            if p: print(
+                "Creating crane with cuboid tower with " + str(self.nST) + " segments and pyramidal jib with " + str(
+                    self.nSA + self.nSGA) + " segments.")
             self.tower_pyramid(nodes, bars)
             offsetT = self.cur_offset(nodes)
             self.gegenausleger_pyramid(nodes, bars, offsetT)
             offsetTG = self.cur_offset(nodes)
             self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
         else:
-            #print("Default Kran")
+            # print("Default Kran")
             self.tower(nodes, bars)
             offsetT = self.cur_offset(nodes)
             self.gegenausleger(nodes, bars, offsetT)
@@ -67,11 +69,12 @@ class crane(Truss):
 
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
-        
+
         # Material
         self.A = A
         self.rho = rho
         self.E = E
+        self.I = A ** 2 / 12
 
         self._computeLengths()
         self._computeOrientations()
@@ -231,7 +234,6 @@ class crane(Truss):
             bars.append([4 * i, 4 * i + 2])  # LT -> LB
             bars.append([4 * i + 1, 4 * i + 3])  # RT -> RB
             self.selectXbar(bars)
-
         # z-Richtung
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 4])  # LT
@@ -319,8 +321,7 @@ class crane(Truss):
         for i in range(1, self.nSA + 1):
             nodes.append([self.hs + i * self.ls, 0, (self.nST - 1) * self.hs])  # Left Bottom
             nodes.append([self.hs + i * self.ls, self.hs, (self.nST - 1) * self.hs])  # Right Bottom
-            nodes.append([(self.hs/2 + i * self.ls), self.hs / 2, self.height])  # Top
-
+            nodes.append([(self.hs / 2 + i * self.ls), self.hs / 2, self.height])  # Top
 
         # x- und y-Richtung
         for i in range(self.nSA - 1):
@@ -328,7 +329,6 @@ class crane(Truss):
             self.selectYbar(bars)
             bars.append([offsetTG + i * 3, (offsetTG + 1) + i * 3])
             bars.append([(offsetTG + 1) + i * 3, (offsetTG + 4) + i * 3])
-
 
         # Bottom nodes with top nodes
         tmp_lastbar1 = 0
@@ -345,12 +345,10 @@ class crane(Truss):
         self.x_side.append(tmp_lastbar1)
         self.x_side.append(tmp_lastbar2)
 
-
         # Top Row
         for i in range(self.nSA - 1):
             bars.append([(offsetTG + 2) + i * 3, (offsetTG + 5) + i * 3])
             self.selectYbar(bars)
-
 
         # Extra bars
         offsetTO = len(nodes)  # offset after all the nodes
@@ -389,9 +387,6 @@ class crane(Truss):
         Select the last bar from the bar array and add this to another array to select the X bars
         """
         self.x_side.append(len(bars) - 1)
-
-
-
 
 # from truss import Truss
 # import numpy as np
@@ -577,8 +572,3 @@ class crane(Truss):
 #         self._computeLengths()
 #         self._computeOrientations()
 #         self._computeMass()
-
-
-
-
-

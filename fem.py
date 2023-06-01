@@ -12,7 +12,7 @@ class FEM:
         self.DOF = 3  # weil wir uns in 3D befinden
         self.NDOF = self.DOF * self.NN  # Gesamtanzahl der Freihetsgrade
         self.own_weight = own_weight
-        self.firstCreate = True # so that weights don't get added multiple times
+        self.firstCreate = True  # so that weights don't get added multiple times
         self.TrussAnalysis()
         self.firstCreate = False
 
@@ -31,19 +31,24 @@ class FEM:
         """Return deformations"""
         return self.__dict__["U"]
 
-    def TrussAnalysis(self,p=False):
+    def F_krit(self):
+        F_k = np.pi ** 2 * self.truss.E * self.truss.I / (self.truss.lengths ** 2)
+        F_k[40:44] = 1.43 ** 2 * F_k[0:4]
+        return F_k
+    def TrussAnalysis(self, p=False):
         """
         returns: axial forces, reactional forces, displacements
         """
         if p and self.firstCreate:
-            message = "Simulating truss with "+str(self.NN)+" nodes and "+str(self.NE)+" bars"
+            message = "Simulating truss with " + str(self.NN) + " nodes and " + str(self.NE) + " bars"
             message += " considering gravity." if self.own_weight else "."
             print(message)
 
         E = self.truss.E
         A = self.truss.A
         L = self.truss.lengths
-        trans = np.concatenate((-self.truss.orientations.T, self.truss.orientations.T), axis=1)  # Transformationsvektor lokal -> global
+        trans = np.concatenate((-self.truss.orientations.T, self.truss.orientations.T),
+                               axis=1)  # Transformationsvektor lokal -> global
         K = self.computeStiffnessMatrix(E, A, L, trans)
         # print("Determinant K:", np.linalg.det(K))
         freeDOF = self.truss.supports.flatten().nonzero()[0]  # Prüfe, welche Knoten FG > 0 haben
@@ -65,10 +70,11 @@ class FEM:
         U[freeDOF] = Uf
         U[supportDOF] = self.truss.Ur
         U = U.reshape(self.NN, self.DOF)
-        u = np.concatenate((U[self.truss.bars[:, 0]], U[self.truss.bars[:, 1]]), axis=1)  # Verschiebungsvektor für die einzelnen Elemente
+        u = np.concatenate((U[self.truss.bars[:, 0]], U[self.truss.bars[:, 1]]),
+                           axis=1)  # Verschiebungsvektor für die einzelnen Elemente
         N = E * A / L[:] * (trans[:] * u[:]).sum(axis=1)  # interne Kräfte
         R = (Krf[:] * Uf).sum(axis=1)  # + (Krr[:] * self.truss.Ur).sum(axis=1)  # Reaktionskräfte
-        #update N, R, U
+        # update N, R, U
         self.__dict__["N"] = N
         self.__dict__["R"] = R
         self.__dict__["U"] = U
@@ -111,8 +117,8 @@ class FEM:
             raise Exception("dir has to be either -1 or 1")
         if not (axis == 0 or axis == 1):
             raise Exception("axis can only take values 0 (x), 1 (y)")
-        
-        message = "Simulating wind with "+str(speed)+" m/s ("+str(round(speed*3.6, 2))+" km/h) blowing in "
+
+        message = "Simulating wind with " + str(speed) + " m/s (" + str(round(speed * 3.6, 2)) + " km/h) blowing in "
         message += "negative " if dir == -1 else "positive "
         message += "x" if axis == 0 else "y"
         message += "-direction."
@@ -143,17 +149,18 @@ class FEM:
         # Wind pressure: 0.5 * rho * v^2 [m/s] * A [m^2]
         forces = np.zeros_like(self.truss.nodes[:, 0])
         for i in range(len(bars)):
-            forces[bars[i]] = forces[bars[i]] + 0.5 * area_bars[i] * 1.2 * speed ** 2  # 1.2 is the air density at sea level
+            forces[bars[i]] = forces[bars[i]] + 0.5 * area_bars[
+                i] * 1.2 * speed ** 2  # 1.2 is the air density at sea level
 
         w_forces = np.zeros_like(self.truss.F)
-        nOutgoingBars[nOutgoingBars == 0] = 1 # prevent division by zero
+        nOutgoingBars[nOutgoingBars == 0] = 1  # prevent division by zero
         w_forces[:, axis] = dir * forces / nOutgoingBars
         self.truss.addExternalForces(w_forces)
         self.TrussAnalysis()
 
     def getTension(self):
         return self.N / self.truss.A
-    
+
     def reset(self):
         """Removes all external forces including gravity and wind"""
         self.firstCreate = True
