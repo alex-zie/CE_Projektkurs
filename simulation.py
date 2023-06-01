@@ -10,19 +10,20 @@ if __name__ == "__main__":
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3
 
-    myCrane = crane(1, 10, 5, 1, 1, h_b*b_b, rho, E)
+    myCrane = crane(1, 10, 5, 1, 1, h_b * b_b, rho, E)
 
     nodes = myCrane.nodes
     bars = myCrane.bars
 
-    points = [] # indices of points where an external force is applied
+    points = []  # indices of points where an external force is applied
     for i in range(-1, -5, -1):
-        myCrane.addExternalForce(i, 0, 0, -500e3/4)
+        myCrane.addExternalForce(i, 0, 0, -500e3 / 4)
         points.append(i)
     fem = FEM(myCrane, True)
-    print(fem.F_krit() > fem.N)
     fem.addWind(28, 0, -1)
-
+    #print(len(fem.N[np.where(fem.N < 0)[0]]))
+    #print(len(fem.F_krit()[np.where(fem.N < 0)[0]] > fem.N[np.where(fem.N < 0)[0]]))
+    #print(fem.check_bending_force())
     # Veranschauung
     print('\nAxial Forces (positive = tension, negative = compression)')
     # print(fem.N)
@@ -39,7 +40,7 @@ if __name__ == "__main__":
     Dnodes = fem.U * scale + nodes
     fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')
     fem.Plot(Dnodes, bars, 'yellow', '-', 2, 'Selected bars')
-    
+
     # for i in points:
     #     fem.plotPoint(Dnodes[i])
     plt.show()
