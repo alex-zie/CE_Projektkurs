@@ -7,7 +7,7 @@ class crane(Truss):
     Special truss that represents a crane
     """
 
-    def __init__(self, variant, height, length, hs, ls, A, rho, E, p=False):
+    def __init__(self, variant, height, length, hs, ls, A, rho, E, p=True):
         """
         :param variant:
         :param height:
@@ -15,6 +15,10 @@ class crane(Truss):
         :param hs:
         :param ls:
         """
+        if hs > height:
+            raise Exception("Height of segments cannot be greater than the height of the crane!")
+        if ls > length:
+            raise Exception("Length of segments cannot be greater than the length of the jib!")
 
         nodes = []
         bars = []

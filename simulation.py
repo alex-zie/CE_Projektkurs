@@ -10,7 +10,7 @@ if __name__ == "__main__":
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3
 
-    myCrane = crane(1, 1, 1, 1, 1, h_b*b_b, rho, E)
+    myCrane = crane(1, 2, 2, 1.5, 1.5, h_b*b_b, rho, E)
 
     nodes = myCrane.nodes
     bars = myCrane.bars
@@ -32,11 +32,11 @@ if __name__ == "__main__":
     # print("At node", np.where(U == U.max())[0], "is U:", U[-1:-5:-1])
     # print('\nDeformation')
     # print(fem.U)
-    fem.Plot(nodes, bars, 'gray', '--', 1, 'Undeformed')
-    #scale = 1
+    # fem.Plot(nodes, bars, 'gray', '--', 1, 'Undeformed')
+    scale = 1
     # Berechne die neue Position der Knoten
-    #Dnodes = fem.U * scale + nodes
-    #fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')
+    Dnodes = fem.U * scale + nodes
+    fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')
     #fem.Plot(Dnodes, bars, 'yellow', '-', 2, 'Selected bars')
     
     # for i in points:
