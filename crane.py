@@ -25,6 +25,8 @@ class crane(Truss):
         self.ls = ls
 
         self.nST = np.ceil(height / hs).astype('int')  # Number of segments of the Tower
+        if self.nST == 1:
+            raise Exception("number of towersegments cannot be one")
         self.nSA = np.ceil(length / ls).astype('int')  # Number of segments of the Ausleger
         self.nSGA = np.ceil((length / 2) / ls).astype('int')  # Number of segments of the Gegenausleger
 

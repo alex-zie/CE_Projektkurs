@@ -10,7 +10,7 @@ if __name__ == "__main__":
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3
 
-    myCrane = crane(1, 10, 10, 2, 2.00000001, 0.0225, rho, E)
+    myCrane = crane(1, 1, 1, 1, 1, h_b*b_b, rho, E)
 
     nodes = myCrane.nodes
     bars = myCrane.bars
@@ -20,11 +20,11 @@ if __name__ == "__main__":
     #     myCrane.addExternalForce(i, 0, 0, -500e3)
     #     points.append(i)
     fem = FEM(myCrane, False)
-    fem.addWind(2000, 0, -1)
+    #fem.addWind(28, 0, -1)
 
     # Veranschauung
     print('\nAxial Forces (positive = tension, negative = compression)')
-    print(fem.N)
+    # print(fem.N)
     # print('\nReaction Forces (positive = upward, negative = downward')
     # print(fem.R)
     # print(fem.getTension())
@@ -33,15 +33,14 @@ if __name__ == "__main__":
     # print('\nDeformation')
     # print(fem.U)
     fem.Plot(nodes, bars, 'gray', '--', 1, 'Undeformed')
-    scale = 1
+    #scale = 1
     # Berechne die neue Position der Knoten
-    Dnodes = fem.U * scale + nodes
-    fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')
-    fem.Plot(Dnodes, bars[myCrane.x_side], 'green', '-', 2, 'Selected bars')
-    fem.Plot(Dnodes, bars[myCrane.y_side], 'yellow', '-', 2, 'Selected bars')
+    #Dnodes = fem.U * scale + nodes
+    #fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')
+    #fem.Plot(Dnodes, bars, 'yellow', '-', 2, 'Selected bars')
     
-    for i in points:
-        fem.plotPoint(Dnodes[i])
+    # for i in points:
+    #     fem.plotPoint(Dnodes[i])
 
     plt.show()
     # plt.savefig('fig-1.png', dpi=300)
