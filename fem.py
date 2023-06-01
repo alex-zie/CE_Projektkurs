@@ -163,7 +163,17 @@ class FEM:
         w_forces[:, axis] = dir * forces / nOutgoingBars
         self.truss.addExternalForces(w_forces)
         self.TrussAnalysis()
-
+    def paintBars(self, bars):
+        max = np.max(self.N)
+        color = []
+        for bar in bars:
+            if (self.N[bar[0]]+self.N[bar[1]]) / 2 > 0.4 * max:
+                color.append('r')
+            elif (self.N[bar[0]]+self.N[bar[1]]) / 2 > 0.2 * max:
+                color.append('b')
+            else:
+                color.append('g')
+        return color
     def getTension(self):
         return self.N / self.truss.A
 
@@ -173,7 +183,9 @@ class FEM:
         self.truss.reset()
         self.TrussAnalysis()
 
-    def Plot(self, nodes, bars, c, lt, lw, lg):
+    def Plot(self, nodes, bars, c, lt, lw, lg,colors=None):
+        if colors is None:
+            colors = [c]*len(bars)
         plt.subplot(projection='3d')
         plt.gca().set_aspect('equal')
         # plt.gca(projection='3d')
@@ -183,7 +195,7 @@ class FEM:
             yi, yf = nodes[bars[i, 0], 1], nodes[bars[i, 1], 1]
             zi, zf = nodes[bars[i, 0], 2], nodes[bars[i, 1], 2]
             # Plotte die Elemente
-            line, = plt.plot([xi, xf], [yi, yf], [zi, zf], color=c, linestyle=lt, linewidth=lw)
+            line, = plt.plot([xi, xf], [yi, yf], [zi, zf], color=colors[i], linestyle=lt, linewidth=lw)
         line.set_label(lg)
         plt.legend(prop={'size': 7})
 

@@ -37,9 +37,10 @@ if __name__ == "__main__":
     fem.Plot(nodes, bars, 'gray', '--', 1, 'Undeformed')
     scale = 1
     # Berechne die neue Position der Knoten
+    colors = fem.paintBars(bars)
     Dnodes = fem.U * scale + nodes
-    fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')
-    fem.Plot(Dnodes, bars, 'yellow', '-', 2, 'Selected bars')
+    fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed', colors)
+    fem.Plot(Dnodes, bars, 'yellow', '-', 2, 'Selected bars',colors)
 
     # for i in points:
     #     fem.plotPoint(Dnodes[i])
