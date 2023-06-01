@@ -155,8 +155,7 @@ class FEM:
         # Wind pressure: 0.5 * rho * v^2 [m/s] * A [m^2]
         forces = np.zeros_like(self.truss.nodes[:, 0])
         for i in range(len(bars)):
-            forces[bars[i]] = forces[bars[i]] + 0.5 * area_bars[
-                i] * 1.2 * speed ** 2  # 1.2 is the air density at sea level
+            forces[bars[i]] = forces[bars[i]] + 0.5 * area_bars[i] * 1.2 * speed ** 2  # 1.2 is the air density at sea level
 
         w_forces = np.zeros_like(self.truss.F)
         nOutgoingBars[nOutgoingBars == 0] = 1  # prevent division by zero
