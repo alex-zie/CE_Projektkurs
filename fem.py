@@ -11,8 +11,11 @@ class FEM:
         self.NE = len(truss.bars)
         self.DOF = 3  # weil wir uns in 3D befinden
         self.NDOF = self.DOF * self.NN  # Gesamtanzahl der Freihetsgrade
+        self.own_weight = own_weight
+        self.firstCreate = True # so that weights don't get added multiple times
 
-        N, R, U = self.TrussAnalysis(own_weight)
+        N, R, U = self.TrussAnalysis()
+        self.firstCreate = False
         self.__dict__["N"] = N
         self.__dict__["R"] = R
         self.__dict__["U"] = U
@@ -32,7 +35,7 @@ class FEM:
         """Return deformations"""
         return self.__dict__["U"]
 
-    def TrussAnalysis(self, weight=False):
+    def TrussAnalysis(self):
         """
         returns: axial forces, reactional forces, displacements
         """
@@ -51,7 +54,7 @@ class FEM:
         # Krr = K[np.ix_(supportDOF, supportDOF)]  # für die Lagerkräfte
 
         # Weight
-        if (weight):
+        if (self.firstCreate and self.own_weight):
             weights = np.zeros_like(self.truss.F)
             weights[:, 2] = -self.computeWeight()
             self.truss.addExternalForces(weights)
@@ -111,7 +114,7 @@ class FEM:
         message = "Simulating wind with "+str(speed)+" m/s ("+str(round(speed*3.6, 2))+" km/h) coming from "
         message += "negative " if dir == -1 else "positive "
         message += "x" if dir == 0 else "y"
-        message += "-direction"
+        message += "-direction."
         print(message)
 
         bars = self.truss.bars
@@ -132,9 +135,16 @@ class FEM:
         w_forces = np.zeros_like(self.truss.F)
         w_forces[:, axis] = dir * forces / nOutgoingBars
         self.truss.addExternalForces(w_forces)
+        self.TrussAnalysis()
 
     def getTension(self):
         return self.N / self.truss.A
+    
+    def reset(self):
+        """Removes all external forces including gravity and wind"""
+        self.firstCreate = True
+        self.truss.reset()
+        self.TrussAnalysis()
 
     def Plot(self, nodes, bars, c, lt, lw, lg):
         plt.subplot(projection='3d')

@@ -81,6 +81,10 @@ class Truss:
         """
         self.F = self.F + forces
 
+    # removes external forces
+    def reset(self):
+        self.F = np.zeros_like(self.nodes)
+
     # def setLateralBars(self, x_side, y_side):
     #     self.xbars = x_side
     #     self.ybars = y_side

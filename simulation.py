@@ -21,22 +21,21 @@ if __name__ == "__main__":
         points.append(i)
     fem = FEM(myCrane, True)
     fem.addWind(28, 0, 1)
-    fem.TrussAnalysis(True)
 
     # Veranschauung
     # print('\nAxial Forces (positive = tension, negative = compression)')
     # print(np.max(N[np.newaxis].T))
     # print('\nReaction Forces (positive = upward, negative = downward')
-    # print(R)
+    # print(fem.R)
     # print(fem.getTension())
     # print('\nDeformation at nodes')
     # print("At node", np.where(U == U.max())[0], "is U:", U[-1:-5:-1])
     # print('\nDeformation')
-    # print(U)
+    # print(fem.U)
     fem.Plot(nodes, bars, 'gray', '--', 1, 'Undeformed')
     scale = 1
     # Berechne die neue Position der Knoten
-    Dnodes = U * scale + nodes
+    Dnodes = fem.U * scale + nodes
     fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')
     fem.Plot(Dnodes, bars[myCrane.x_side], 'green', '-', 2, 'Selected bars')
     fem.Plot(Dnodes, bars[myCrane.y_side], 'yellow', '-', 2, 'Selected bars')
