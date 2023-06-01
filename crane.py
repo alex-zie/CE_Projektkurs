@@ -35,7 +35,7 @@ class crane(Truss):
         self.y_side = []
 
         if (variant == 1):
-            print("Variante 1: Pyramiden")
+            print("Creating crane with cuboid tower with "+str(self.nST)+" segments and pyramidal jib with "+str(self.nSA+self.nSGA)+" segments.")
             self.tower_pyramid(nodes, bars)
             offsetT = self.cur_offset(nodes)
             self.gegenausleger_pyramid(nodes, bars, offsetT)
@@ -53,8 +53,9 @@ class crane(Truss):
         self.nodes = np.array(nodes).astype(float)
         self.bars = np.array(bars)
 
-        self.x_side = np.array(self.x_side).astype(int)
-        self.y_side = np.array(self.y_side).astype(int)
+        x_side = np.array(self.x_side).astype(int)
+        y_side = np.array(self.y_side).astype(int)
+        # super().setLateralBars(self.x_side, self.y_side)
 
         # Lager
         self.supports = np.ones_like(self.nodes).astype(int)
@@ -166,8 +167,6 @@ class crane(Truss):
             bars.append([offsetT + 7 + 8 * i, offsetT + 9 + 8 * i])
 
     def ausleger(self, nodes, bars, offsetT, offsetTG):
-        # Ausleger erstellen
-
         # Nodes des Ausleger in positive x Richtung
         for i in range(1, self.nSA + 1):
             nodes.append([self.hs + i * self.ls, 0, (self.nST - 1) * self.hs])  # Left Top
@@ -212,29 +211,6 @@ class crane(Truss):
 
     def cur_offset(self, nodes):
         return len(nodes)
-
-    # def gegenausleger_pyramid(self, nodes, bars, offsetT):
-    #         #Gegenausleger erstellen, der aus Pramiden besteht
-
-    #         #im Gegensatz zu vorher 3 nodes oben weniger
-    #         #ursprüngliches bottom wird nicht mehr gebraucht
-
-    #         #Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht
-    #         for i in range(1, self.nSGA + 1): #braucht nur noch die ursprüungliche bottoms
-    #             nodes.append([-(self.hs + i * self.ls)+1, 0, (self.nST - 2) * self.hs])  # Left also y=0
-    #             nodes.append([-(self.hs + i * self.ls)+1, self.hs, (self.nST - 2) * self.hs])  # Right also y=hs
-    #             nodes.append([-((self.hs + i * self.ls)+1)/2, self.hs/2, self.height]) #nodes der Spitzen --> gleiches problem mit doppelter Höhe??
-
-    #         #Bars des Gegenausleger
-    #         # x- und y-Richtung (LT für Left Top usw.)
-    #         bars.append([offsetT , offsetT +3])
-    #         #for i in range(self.nSGA):
-    #             #bars.append([offsetT + 3 * i, offsetT + 3*i +2])
-
-    #            # bars.append([3 * i + offsetT-1, 3 * i + offsetT-1 + 1])  # LT -> RT ?
-    #             #bars.append([3 * i + 2 + offsetT-1, 3 * i + 3 + offsetT-1])  # LB -> RB
-    #            # bars.append([4 * i + offsetT-1, 4 * i + 2 + offsetT-1])  # LT -> LB
-    #            # bars.append([4 * i + 1 + offsetT-1, 4 * i + 3 + offsetT-1])  # RT -> RB
 
     def tower_pyramid(self, nodes, bars):
         # Turm erstellen, der nur height-1 hoch ist und dann oben eine Spitze als Pyramide hat

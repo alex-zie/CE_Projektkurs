@@ -19,6 +19,10 @@ class Truss:
         self.rho = rho
         self.E = E
 
+        # indices of bars on a certain side of the crane
+        self.x_side = []
+        self.y_side = []
+
         self._computeLengths()
         self._computeOrientations()
         self._computeMass()
@@ -76,3 +80,7 @@ class Truss:
         forces: matrix of forces
         """
         self.F = self.F + forces
+
+    # def setLateralBars(self, x_side, y_side):
+    #     self.xbars = x_side
+    #     self.ybars = y_side
