@@ -37,15 +37,15 @@ class crane(Truss):
             self.tower_pyramid(nodes, bars)
             offsetT = self.cur_offset(nodes)
             self.gegenausleger_pyramid(nodes, bars, offsetT)
-            offsetTG = self.cur_offset(nodes)
-            self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
+            #offsetTG = self.cur_offset(nodes)
+            #self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
         else:
             #print("Default Kran")
             self.tower(nodes, bars)
             offsetT = self.cur_offset(nodes)
             self.gegenausleger(nodes, bars, offsetT)
-            offsetTG = self.cur_offset(nodes)
-            self.ausleger(nodes, bars, offsetT, offsetTG)
+            #offsetTG = self.cur_offset(nodes)
+            #self.ausleger(nodes, bars, offsetT, offsetTG)
 
         # convert python list to np.array
         self.nodes = np.array(nodes).astype(float)
@@ -211,12 +211,12 @@ class crane(Truss):
         # Turm erstellen, der nur height-1 hoch ist und dann oben eine Spitze als Pyramide hat
 
         # Nodes des Turms
-        for i in range(self.nST):
+        for i in range(self.nST-1):
             nodes.append([0, 0, i * self.hs])  # Left Top
             nodes.append([self.hs, 0, i * self.hs])  # Right Top
             nodes.append([0, self.hs, i * self.hs])  # Left Bottom
             nodes.append([self.hs, self.hs, i * self.hs])  # Right Bottom
-        nodes.append([self.hs / 2, self.hs / 2, self.height])
+        nodes.append([self.hs / 2, self.hs / 2, (self.nST-1)*self.hs])
 
         # Bars des Turms
         # x- und y-Richtung (LT für Left Top usw.)
@@ -267,26 +267,24 @@ class crane(Truss):
 
         # Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht
         for i in range(1, self.nSGA + 1):  # braucht nur noch die ursprüungliche bottoms
-            nodes.append([-(self.hs + i * self.ls) + self.ls, 0, (self.nST - 1) * self.hs])  # Left aself.lso y=0
-            nodes.append(
-                [-(self.hs + i * self.ls) + self.ls, self.hs, (self.nST - 1) * self.hs])  # Right aself.lso y=self.hs
-            nodes.append([-(0.5 * self.hs + i * self.ls) + self.ls, self.hs / 2,
-                          self.height])  # nodes der Spitzen --> gleiches problem mit doppelter Höhe??
+            nodes.append([-(self.hs + i * self.ls) + self.ls, 0, (self.nST - 2) * self.hs])  # Left aself.lso y=0
+            nodes.append([-(self.hs + i * self.ls) + self.ls, self.hs, (self.nST - 2) * self.hs])  # Right aself.lso y=self.hs
+            nodes.append([-(0.5 * self.hs + i * self.ls) + self.ls, self.hs / 2,(self.nST-1)*self.hs])  # nodes der Spitzen --> gleiches problem mit doppelter Höhe??
 
         # Bars des Gegenausleger
 
         # sonderfall erste pyramide
-        bars.append([offsetT, offsetT - 5])
-        self.selectYbar(bars)
-        bars.append([offsetT + 1, offsetT - 3])
-        bars.append([offsetT + 2, offsetT + 1])
-        bars.append([offsetT + 2, offsetT])
-        self.selectYbar(bars)
-        bars.append([offsetT + 2, offsetT - 5])
-        self.selectYbar(bars)
-        bars.append([offsetT + 2, offsetT - 3])
-        bars.append([offsetT + 2, offsetT - 1])
-        self.selectYbar(bars)
+        #bars.append([offsetT, offsetT - 5])
+        # self.selectYbar(bars)
+        # #bars.append([offsetT + 1, offsetT - 3])
+        # #bars.append([offsetT + 2, offsetT + 1])
+        # #bars.append([offsetT + 2, offsetT])
+        # self.selectYbar(bars)
+        # bars.append([offsetT + 2, offsetT - 5])
+        # self.selectYbar(bars)
+        # bars.append([offsetT + 2, offsetT - 3])
+        # bars.append([offsetT + 2, offsetT - 1])
+        # self.selectYbar(bars)
 
         # x- und y-Richtung (LT für Left Top usw.)
         for i in range(self.nSGA - 1):
@@ -313,9 +311,9 @@ class crane(Truss):
 
     def ausleger_pyramid(self, nodes, bars, offsetT, offsetTG):
         for i in range(1, self.nSA + 1):
-            nodes.append([self.hs + i * self.ls, 0, (self.nST - 1) * self.hs])  # Left Bottom
-            nodes.append([self.hs + i * self.ls, self.hs, (self.nST - 1) * self.hs])  # Right Bottom
-            nodes.append([(self.hs/2 + i * self.ls), self.hs / 2, self.height])  # Top
+            nodes.append([self.hs + i * self.ls, 0, (self.nST - 2) * self.hs])  # Left Bottom
+            nodes.append([self.hs + i * self.ls, self.hs, (self.nST - 2) * self.hs])  # Right Bottom
+            nodes.append([(self.hs/2 + i * self.ls), self.hs / 2, (self.nST-1)*self.hs])  # Top
 
 
         # x- und y-Richtung
