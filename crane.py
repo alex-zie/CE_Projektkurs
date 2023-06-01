@@ -7,7 +7,7 @@ class crane(Truss):
     Special truss that represents a crane
     """
 
-    def __init__(self, variant=0, height=10, length=10, hs=1, ls=1, A=25e-4, rho=7850, E=210e9):
+    def __init__(self, variant, height, length, hs, ls, A, rho, E):
         """
         :param height:
         :param length:
@@ -23,15 +23,18 @@ class crane(Truss):
         self.hs = hs
         self.ls = ls
 
-        self.nST = int(height / hs)  # Number of segments of the Tower
-        self.nSA = int(length / ls)  # Number of segments of the Ausleger
-        self.nSGA = int(length / (2 * ls))  # Number of segments of the Gegenausleger
+        self.nST = np.ceil(height / hs).astype('int')  # Number of segments of the Tower
+        print(self.nST)
+        self.nSA = np.ceil(length / ls).astype('int')  # Number of segments of the Ausleger
+        print(self.nSA)
+        self.nSGA = np.ceil((length / 2) / ls).astype('int')  # Number of segments of the Gegenausleger
+        print(self.nSGA)
 
         # indices of bars on a certain side of the crane
         self.x_side = []
         self.y_side = []
 
-        if variant == 1:
+        if (variant == 1):
             print("Variante 1: Pyramiden")
             self.tower_pyramid(nodes, bars)
             offsetT = self.cur_offset(nodes)
@@ -39,7 +42,7 @@ class crane(Truss):
             offsetTG = self.cur_offset(nodes)
             self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
         else:
-            print("Default Kran")
+            #print("Default Kran")
             self.tower(nodes, bars)
             offsetT = self.cur_offset(nodes)
             self.gegenausleger(nodes, bars, offsetT)
@@ -61,9 +64,9 @@ class crane(Truss):
 
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
-        # for i in range(-1, -5, -1):
-        #     self.addExternalForce(i, 0, 0, -5e4)  
-        # self.addExternalForce(-3, 0, 0, -1e9)
+        for i in range(-1, -5, -1):
+            self.addExternalForce(i, 0, 0, -5e4)
+            # self.addExternalForce(-3, 0, 0, -1e9)
         # self.addExternalForce(-4, 0, 0, -1e9)
         # Material
         self.A = A
@@ -94,23 +97,16 @@ class crane(Truss):
             self.y_side.append(len(bars) - 1)
             bars.append([4 * i + 2, 4 * i + 3])  # LB -> RB
             bars.append([4 * i, 4 * i + 2])  # LT -> LB
-            self.x_side.append(len(bars) - 1)
             bars.append([4 * i + 1, 4 * i + 3])  # RT -> RB
-        self.x_side.remove(self.x_side[-1])
-        self.x_side.remove(self.x_side[-1])
 
         # z-Richtung
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 4])  # LT
             self.y_side.append(len(bars) - 1)
-            self.x_side.append(len(bars) - 1)
             bars.append([4 * i + 1, 4 * i + 5])  # RT
             self.y_side.append(len(bars) - 1)
             bars.append([4 * i + 2, 4 * i + 6])  # LB
-            self.x_side.append(len(bars) - 1)
             bars.append([4 * i + 3, 4 * i + 7])  # RB
-        self.x_side.remove(self.x_side[-1])
-        self.x_side.remove(self.x_side[-1])
 
         # Kreuzstreben (+1 jeweils für nächste Stufe)
         for i in range(self.nST - 1):
@@ -122,19 +118,17 @@ class crane(Truss):
             bars.append([4 * i + 1, 4 * i + 7])  # RT -> RB+1
             # bars.append([4 * i + 3, 4 * i + 5])  # RB -> RT+1
             bars.append([4 * i + 2, 4 * i + 4])  # LB -> LT+1
-            self.x_side.append(len(bars) - 1)
             # bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
-        self.x_side.remove(self.x_side[-1])
 
     def gegenausleger(self, nodes, bars, offsetT):
         # Gegenausleger erstellen
 
         # Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht
         for i in range(1, self.nSGA + 1):
-            nodes.append([-(self.hs + i * self.ls) + self.ls, 0, (self.nST - 1) * self.hs])  # Left Top
-            nodes.append([-(self.hs + i * self.ls) + self.ls, self.hs, (self.nST - 1) * self.hs])  # Right Top
-            nodes.append([-(self.hs + i * self.ls) + self.ls, 0, (self.nST - 2) * self.hs])  # Left Bottom
-            nodes.append([-(self.hs + i * self.ls) + self.ls, self.hs, (self.nST - 2) * self.hs])  # Right Bottom
+            nodes.append([-(self.hs + i * self.ls) + 1, 0, (self.nST - 1) * self.hs])  # Left Top
+            nodes.append([-(self.hs + i * self.ls) + 1, self.hs, (self.nST - 1) * self.hs])  # Right Top
+            nodes.append([-(self.hs + i * self.ls) + 1, 0, (self.nST - 2) * self.hs])  # Left Bottom
+            nodes.append([-(self.hs + i * self.ls) + 1, self.hs, (self.nST - 2) * self.hs])  # Right Bottom
 
         # Bars des Gegenausleger
         bars.append([offsetT - 2, offsetT + 1])  # hinten oben
@@ -142,18 +136,14 @@ class crane(Truss):
         bars.append([offsetT - 6, offsetT + 3])  # hinten unten
         bars.append([offsetT - 8, offsetT + 2])  # vorne unten
 
-        # z-Richtung (LT für Left Top usw.)
+        # x- und y-Richtung (LT für Left Top usw.)
         for i in range(self.nSGA):
             bars.append([4 * i + offsetT, 4 * i + offsetT + 1])  # LT -> RT ?
             bars.append([4 * i + 2 + offsetT, 4 * i + 3 + offsetT])  # LB -> RB
             bars.append([4 * i + offsetT, 4 * i + 2 + offsetT])  # LT -> LB
             bars.append([4 * i + 1 + offsetT, 4 * i + 3 + offsetT])  # RT -> RB
-        self.x_side.append(len(bars) - 1)
-        self.x_side.append(len(bars) - 2)
-        self.x_side.append(len(bars) - 3)
-        self.x_side.append(len(bars) - 4)
 
-        # x- und y-Richtung
+        # z-Richtung
         for i in range(self.nSGA - 1):
             bars.append([4 * i + offsetT, 4 * i + 4 + offsetT])  # LT
             bars.append([4 * i + 1 + offsetT, 4 * i + 5 + offsetT])  # RT
@@ -208,7 +198,7 @@ class crane(Truss):
         bars.append([offsetT - 7, offsetTG])
         for i in range(self.nSA // 2):
             bars.append([offsetTG + 8 * i, offsetTG + 6 + 8 * i])
-            if self.nSGA % 2 != 0 and i == self.nSA / 2 - 1:  # funktioniert nicht immer... für 8
+            if self.nSGA % 2 != 0 and i == self.nSA // 2 - 1:
                 break
             bars.append([offsetTG + 6 + 8 * i, offsetTG + 8 + 8 * i])
 
@@ -222,6 +212,29 @@ class crane(Truss):
 
     def cur_offset(self, nodes):
         return len(nodes)
+
+    # def gegenausleger_pyramid(self, nodes, bars, offsetT):
+    #         #Gegenausleger erstellen, der aus Pramiden besteht
+
+    #         #im Gegensatz zu vorher 3 nodes oben weniger
+    #         #ursprüngliches bottom wird nicht mehr gebraucht
+
+    #         #Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht
+    #         for i in range(1, self.nSGA + 1): #braucht nur noch die ursprüungliche bottoms
+    #             nodes.append([-(self.hs + i * self.ls)+1, 0, (self.nST - 2) * self.hs])  # Left also y=0
+    #             nodes.append([-(self.hs + i * self.ls)+1, self.hs, (self.nST - 2) * self.hs])  # Right also y=hs
+    #             nodes.append([-((self.hs + i * self.ls)+1)/2, self.hs/2, self.height]) #nodes der Spitzen --> gleiches problem mit doppelter Höhe??
+
+    #         #Bars des Gegenausleger
+    #         # x- und y-Richtung (LT für Left Top usw.)
+    #         bars.append([offsetT , offsetT +3])
+    #         #for i in range(self.nSGA):
+    #             #bars.append([offsetT + 3 * i, offsetT + 3*i +2])
+
+    #            # bars.append([3 * i + offsetT-1, 3 * i + offsetT-1 + 1])  # LT -> RT ?
+    #             #bars.append([3 * i + 2 + offsetT-1, 3 * i + 3 + offsetT-1])  # LB -> RB
+    #            # bars.append([4 * i + offsetT-1, 4 * i + 2 + offsetT-1])  # LT -> LB
+    #            # bars.append([4 * i + 1 + offsetT-1, 4 * i + 3 + offsetT-1])  # RT -> RB
 
     def tower_pyramid(self, nodes, bars):
         # Turm erstellen, der nur height-1 hoch ist und dann oben eine Spitze als Pyramide hat
@@ -238,27 +251,36 @@ class crane(Truss):
         # x- und y-Richtung (LT für Left Top usw.)
         for i in range(self.nST):
             bars.append([4 * i, 4 * i + 1])  # LT -> RT
-            self.y_side.append(len(bars) - 1)
+            self.selectYbar(bars)
             bars.append([4 * i + 2, 4 * i + 3])  # LB -> RB
             bars.append([4 * i, 4 * i + 2])  # LT -> LB
             bars.append([4 * i + 1, 4 * i + 3])  # RT -> RB
+            self.selectXbar(bars)
 
         # z-Richtung
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 4])  # LT
+            self.selectYbar(bars)
             bars.append([4 * i + 1, 4 * i + 5])  # RT
+            self.selectYbar(bars)
+            self.selectXbar(bars)
             bars.append([4 * i + 2, 4 * i + 6])  # LB
             bars.append([4 * i + 3, 4 * i + 7])  # RB
+            self.selectXbar(bars)
 
         # Kreuzstreben (+1 jeweils für nächste Stufe)
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 5])  # LT -> RT+1
+            self.selectYbar(bars)
             # bars.append([4 * i + 1, 4 * i + 4])  # RT -> RT+1
             bars.append([4 * i + 3, 4 * i + 6])  # RB -> LB+1
+            self.selectYbar(bars)
             # bars.append([4 * i + 2, 4 * i + 7])  # LB -> RB+1
             bars.append([4 * i + 1, 4 * i + 7])  # RT -> RB+1
+            self.selectXbar(bars)
             # bars.append([4 * i + 3, 4 * i + 5])  # RB -> RT+1
             bars.append([4 * i + 2, 4 * i + 4])  # LB -> LT+1
+            self.selectXbar(bars)
             # bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
 
         # aller oberste Spitze
@@ -266,7 +288,9 @@ class crane(Truss):
         bars.append([offsetTO - 1, offsetTO - 2])
         bars.append([offsetTO - 1, offsetTO - 3])
         bars.append([offsetTO - 1, offsetTO - 4])
+        self.selectYbar(bars)
         bars.append([offsetTO - 1, offsetTO - 5])
+        self.selectYbar(bars)
 
     def gegenausleger_pyramid(self, nodes, bars, offsetT):
 
@@ -279,18 +303,24 @@ class crane(Truss):
                           self.height])  # nodes der Spitzen --> gleiches problem mit doppelter Höhe??
 
         # Bars des Gegenausleger
+
         # sonderfall erste pyramide
         bars.append([offsetT, offsetT - 5])
+        self.selectYbar(bars)
         bars.append([offsetT + 1, offsetT - 3])
         bars.append([offsetT + 2, offsetT + 1])
         bars.append([offsetT + 2, offsetT])
+        self.selectYbar(bars)
         bars.append([offsetT + 2, offsetT - 5])
+        self.selectYbar(bars)
         bars.append([offsetT + 2, offsetT - 3])
         bars.append([offsetT + 2, offsetT - 1])
+        self.selectYbar(bars)
 
         # x- und y-Richtung (LT für Left Top usw.)
         for i in range(self.nSGA - 1):
             bars.append([offsetT + 3 * i, offsetT + 3 + 3 * i])
+            self.selectYbar(bars)
             bars.append([offsetT + 1 + 3 * i, offsetT + 1 + 3 + 3 * i])
             bars.append([offsetT + 3 * i, offsetT + 1 + 3 * i])
         offsetGT = len(nodes)
@@ -300,40 +330,91 @@ class crane(Truss):
         for i in range(self.nSGA - 1):  # hier ab zweite pyramide
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 1])
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 2])
+            self.selectYbar(bars)
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 4])
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 5])
+            self.selectYbar(bars)
 
         # Linie oben
         for i in range(self.nSGA - 1):
             bars.append([offsetT + 2 + 3 * i, offsetT + 2 + 3 * i + 3])
+            self.selectYbar(bars)
 
     def ausleger_pyramid(self, nodes, bars, offsetT, offsetTG):
+        for i in range(1, self.nSA + 1):
+            nodes.append([self.hs + i * self.ls, 0, (self.nST - 1) * self.hs])  # Left Bottom
+            nodes.append([self.hs + i * self.ls, self.hs, (self.nST - 1) * self.hs])  # Right Bottom
+            nodes.append([(self.hs/2 + i * self.ls), self.hs / 2, self.height])  # Top
 
-        # Nodes des Auslegers
-        for i in range(1, self.nSA +1 ):  # braucht nur noch die ursprüungliche bottoms
-            nodes.append([(self.hs + i * self.ls), 0, (self.nST - 1) * self.hs])  # Left bottem  also y=0
-            nodes.append(
-                [(self.hs + i * self.ls), self.hs, (self.nST - 1) * self.hs])  # Right bottom aself.lso y=self.hs
-            nodes.append([(0.5 * self.hs + i * self.ls), self.hs / 2, self.height])  # tops
 
-        # Bars des Ausleger
+        # x- und y-Richtung
         for i in range(self.nSA - 1):
-            bars.append([offsetTG + 3 * i, offsetTG + 3 + 3 * i])
-            bars.append([offsetTG + 1 + 3 * i, offsetTG + 1 + 3 + 3 * i])
-            bars.append([offsetTG + 3 * i, offsetTG + 1 + 3 * i])
-        offsetGTA = len(nodes)
-        bars.append([offsetGTA - 2, offsetGTA - 3])  # aller letzter vorne hinten Strich
+            bars.append([offsetTG + i * 3, (offsetTG + 3) + i * 3])
+            self.selectYbar(bars)
+            bars.append([offsetTG + i * 3, (offsetTG + 1) + i * 3])
+            bars.append([(offsetTG + 1) + i * 3, (offsetTG + 4) + i * 3])
 
-        # Pyramiden
-        for i in range(self.nSA - 1):  # hier ab zweite pyramide
-            bars.append([offsetTG + 5 + 3 * i, offsetTG + 5 + 3 * i - 1])
-            bars.append([offsetTG + 5 + 3 * i, offsetTG + 5 + 3 * i - 2])
-            bars.append([offsetTG + 5 + 3 * i, offsetTG + 5 + 3 * i - 4])
-            bars.append([offsetTG + 5 + 3 * i, offsetTG + 5 + 3 * i - 5])
 
-        # Linie oben
+        # Bottom nodes with top nodes
         for i in range(self.nSA - 1):
-            bars.append([offsetTG + 2 + 3 * i, offsetTG + 2 + 3 * i + 3])
+            bars.append([offsetTG + i * 3, (offsetTG + 5) + i * 3])
+            self.selectYbar(bars)
+            bars.append([offsetTG + 1 + i * 3, (offsetTG + 5) + i * 3])
+            bars.append([(offsetTG + 5) + i * 3, offsetTG + 3 + i * 3])
+            self.selectYbar(bars)
+            tmp_lastbar1 = len(bars) - 1
+            bars.append([(offsetTG + 5) + i * 3, offsetTG + 4 + i * 3])
+            tmp_lastbar2 = len(bars) - 1
+        self.x_side.append(tmp_lastbar1)
+        self.x_side.append(tmp_lastbar2)
+
+
+        # Top Row
+        for i in range(self.nSA - 1):
+            bars.append([(offsetTG + 2) + i * 3, (offsetTG + 5) + i * 3])
+            self.selectYbar(bars)
+
+
+        # Extra bars
+        offsetTO = len(nodes)  # offset after all the nodes
+
+        # Last bar ate the end of the crane
+        bars.append([offsetTO - 2, offsetTO - 3])
+        self.selectXbar(bars)
+
+        # Top of the Tower with first Node Ausleger
+        bars.append([offsetT - 1, offsetTG + 2])
+        self.selectYbar(bars)
+
+        # Tower with the base of the Ausleger
+        bars.append([offsetT - 4, offsetTG])
+        self.selectYbar(bars)
+        bars.append([offsetT - 2, offsetTG + 1])
+
+        # Tower with the first Top Node in Ausleger
+        bars.append([offsetT - 4, offsetTG + 2])
+        self.selectYbar(bars)
+        bars.append([offsetT - 2, offsetTG + 2])
+
+        # First Top Node to base Ausleger2
+        bars.append([offsetTG + 2, offsetTG + 1])
+        bars.append([offsetTG + 2, offsetTG])
+        self.selectYbar(bars)
+
+    def selectYbar(self, bars):
+        """
+        Select the last bar from the bar array and add this to another array to select the Y bars
+        """
+        self.y_side.append(len(bars) - 1)
+
+    def selectXbar(self, bars):
+        """
+        Select the last bar from the bar array and add this to another array to select the X bars
+        """
+        self.x_side.append(len(bars) - 1)
+
+
+
 
 # from truss import Truss
 # import numpy as np
@@ -372,7 +453,7 @@ class crane(Truss):
 #             nodes.append([hs, 0, i * hs])  # Right Top
 #             nodes.append([0, hs, i * hs])  # Left Bottom
 #             nodes.append([hs, hs, i * hs])  # Right Bottom
-#         offset = len(nodes) 
+#         offset = len(nodes)
 
 
 #         #Bars des Turms
@@ -403,7 +484,7 @@ class crane(Truss):
 
 
 #         #Gegenausleger erstellen
-#         #Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht 
+#         #Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht
 #         for i in range(1, numSegmentsGA + 1):
 #             nodes.append([-(hs + i * ls)+1, 0, (numSegmentsT - 1) * hs])  # Left Top
 #             nodes.append([-(hs + i * ls)+1, hs, (numSegmentsT - 1) * hs])  # Right Top
@@ -413,7 +494,7 @@ class crane(Truss):
 
 
 #             #Bars des Gegenausleger
-#         bars.append([offset-2, offset+1])  # hinten oben      
+#         bars.append([offset-2, offset+1])  # hinten oben
 #         bars.append([offset-4, offset])    # vorne oben
 #         bars.append([offset-6, offset+3])  # hinten unten
 #         bars.append([offset-8, offset+2])  # vorne unten
@@ -519,3 +600,8 @@ class crane(Truss):
 #         self._computeLengths()
 #         self._computeOrientations()
 #         self._computeMass()
+
+
+
+
+
