@@ -16,15 +16,15 @@ if __name__ == "__main__":
     bars = myCrane.bars
 
     points = [] # indices of points where an external force is applied
-    for i in range(-1, -4, -1):
-        myCrane.addExternalForce(i, 0, 0, -500e3)
-        points.append(i)
-    fem = FEM(myCrane, True)
-    fem.addWind(28, 0, 1)
+    # for i in range(-1, -4, -1):
+    #     myCrane.addExternalForce(i, 0, 0, -500e3)
+    #     points.append(i)
+    fem = FEM(myCrane, False)
+    fem.addWind(2000, 1, 1)
 
     # Veranschauung
-    # print('\nAxial Forces (positive = tension, negative = compression)')
-    # print(np.max(N[np.newaxis].T))
+    print('\nAxial Forces (positive = tension, negative = compression)')
+    print(fem.N)
     # print('\nReaction Forces (positive = upward, negative = downward')
     # print(fem.R)
     # print(fem.getTension())

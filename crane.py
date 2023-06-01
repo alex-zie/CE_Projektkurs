@@ -51,8 +51,8 @@ class crane(Truss):
         self.nodes = np.array(nodes).astype(float)
         self.bars = np.array(bars)
 
-        x_side = np.array(self.x_side).astype(int)
-        y_side = np.array(self.y_side).astype(int)
+        self.x_side = np.array(self.x_side).astype(int)
+        self.y_side = np.array(self.y_side).astype(int)
         # super().setLateralBars(self.x_side, self.y_side)
 
         # Lager
