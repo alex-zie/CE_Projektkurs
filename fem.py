@@ -32,9 +32,15 @@ class FEM:
         return self.__dict__["U"]
 
     def F_krit(self):
+        """Return critical bending force """
         F_k = np.pi ** 2 * self.truss.E * self.truss.I / (self.truss.lengths ** 2)
         F_k[40:44] = 1.43 ** 2 * F_k[0:4]
         return F_k
+
+    def check_bending_force(self):
+        b = self.N[np.where(self.N < 0)[0]] < self.F_krit()[np.where(self.N < 0)[0]]
+        return len(np.where(~b)[0]) == 0
+
     def TrussAnalysis(self, p=False):
         """
         returns: axial forces, reactional forces, displacements
