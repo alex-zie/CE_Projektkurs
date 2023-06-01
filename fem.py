@@ -155,24 +155,27 @@ class FEM:
         # Wind pressure: 0.5 * rho * v^2 [m/s] * A [m^2]
         forces = np.zeros_like(self.truss.nodes[:, 0])
         for i in range(len(bars)):
-            forces[bars[i]] = forces[bars[i]] + 0.5 * area_bars[i] * 1.2 * speed ** 2  # 1.2 is the air density at sea level
+            forces[bars[i]] = forces[bars[i]] + 0.5 * area_bars[
+                i] * 1.2 * speed ** 2  # 1.2 is the air density at sea level
 
         w_forces = np.zeros_like(self.truss.F)
         nOutgoingBars[nOutgoingBars == 0] = 1  # prevent division by zero
         w_forces[:, axis] = dir * forces / nOutgoingBars
         self.truss.addExternalForces(w_forces)
         self.TrussAnalysis()
+
     def paintBars(self, bars):
         max = np.max(self.N)
         color = []
         for bar in bars:
-            if (self.N[bar[0]]+self.N[bar[1]]) / 2 > 0.4 * max:
+            if (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.4 * max:
                 color.append('r')
-            elif (self.N[bar[0]]+self.N[bar[1]]) / 2 > 0.2 * max:
+            elif (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.2 * max:
                 color.append('b')
             else:
                 color.append('g')
         return color
+
     def getTension(self):
         return self.N / self.truss.A
 
@@ -182,9 +185,9 @@ class FEM:
         self.truss.reset()
         self.TrussAnalysis()
 
-    def Plot(self, nodes, bars, c, lt, lw, lg,colors=None):
+    def Plot(self, nodes, bars, c, lt, lw, lg, colors=None):
         if colors is None:
-            colors = [c]*len(bars)
+            colors = [c] * len(bars)
         plt.subplot(projection='3d')
         plt.gca().set_aspect('equal')
         # plt.gca(projection='3d')
