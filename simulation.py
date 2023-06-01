@@ -20,7 +20,7 @@ if __name__ == "__main__":
     #     myCrane.addExternalForce(i, 0, 0, -500e3)
     #     points.append(i)
     fem = FEM(myCrane, False)
-    fem.addWind(2000, 1, 1)
+    fem.addWind(2000, 0, -1)
 
     # Veranschauung
     print('\nAxial Forces (positive = tension, negative = compression)')

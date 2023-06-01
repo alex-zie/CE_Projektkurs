@@ -142,14 +142,12 @@ class FEM:
         # add wind force to node for each bar that is connected to it
         # Wind pressure: 0.5 * rho * v^2 [m/s] * A [m^2]
         forces = np.zeros_like(self.truss.nodes[:, 0])
-        print("forces: ", len(forces))
-        print("bars: ", len(bars))
-        print("areas: ", len(area_bars))
         for i in range(len(bars)):
             forces[bars[i]] = forces[bars[i]] + 0.5 * area_bars[i] * 1.2 * speed ** 2  # 1.2 is the air density at sea level
 
         w_forces = np.zeros_like(self.truss.F)
-        w_forces[:, axis] = dir * forces[nOutgoingBars.nonzero()] / nOutgoingBars[nOutgoingBars.nonzero()]
+        nOutgoingBars[nOutgoingBars == 0] = 1 # prevent division by zero
+        w_forces[:, axis] = dir * forces / nOutgoingBars
         self.truss.addExternalForces(w_forces)
         self.TrussAnalysis()
 
