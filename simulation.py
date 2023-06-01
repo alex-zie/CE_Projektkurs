@@ -10,7 +10,7 @@ if __name__ == "__main__":
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3
 
-    myCrane = crane(1, 10, 5, 1, 1, h_b*b_b, rho, E)
+    myCrane = crane(1, 10, 5, 1, h_b*b_b, rho, E)
 
     nodes = myCrane.nodes
     bars = myCrane.bars
