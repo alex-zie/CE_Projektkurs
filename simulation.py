@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
+
     h_b = 5e-2  # Höhe des Querschnitts der Balken in m
     b_b = 5e-2  # Breite des Querschnitts der Balken in m
     E = 210e9  # E-Modul in Pa
@@ -32,6 +33,7 @@ if __name__ == "__main__":
     # print("At node", np.where(U == U.max())[0], "is U:", U[-1:-5:-1])
     # print('\nDeformation')
     # print(fem.U)
+
     fem.Plot(nodes, bars, 'gray', '--', 1, 'Undeformed')
     scale = 1
     # Berechne die neue Position der Knoten
@@ -44,4 +46,4 @@ if __name__ == "__main__":
         fem.plotPoint(Dnodes[i])
 
     plt.show()
-    # plt.savefig('fig-1.png', dpi=300)
+#plt.savefig('fig-1.png', dpi=300)
