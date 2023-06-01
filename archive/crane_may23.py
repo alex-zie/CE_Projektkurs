@@ -1,3 +1,6 @@
+# The pyramid crane doesnt work in this version
+# This is the version we created on May 18
+
 from truss import Truss
 import numpy as np
 
