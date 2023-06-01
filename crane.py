@@ -25,8 +25,6 @@ class crane(Truss):
         self.ls = ls
 
         self.nST = np.ceil(height / hs).astype('int')  # Number of segments of the Tower
-        if self.nST == 1:
-            raise Exception("number of towersegments cannot be one")
         self.nSA = np.ceil(length / ls).astype('int')  # Number of segments of the Ausleger
         self.nSGA = np.ceil((length / 2) / ls).astype('int')  # Number of segments of the Gegenausleger
 
@@ -329,6 +327,8 @@ class crane(Truss):
 
 
         # Bottom nodes with top nodes
+        tmp_lastbar1 = 0
+        tmp_lastbar2 = 0
         for i in range(self.nSA - 1):
             bars.append([offsetTG + i * 3, (offsetTG + 5) + i * 3])
             self.selectYbar(bars)
