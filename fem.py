@@ -32,9 +32,9 @@ class FEM:
         return self.__dict__["U"]
 
     def F_krit(self):
-        F = np.pi**2 * self.truss.E * self.truss.I / (self.truss.lengths ** 2)
-        F[40:44] = 1.43**2 * F[0:4]
-        return F
+        F_k = np.pi ** 2 * self.truss.E * self.truss.I / (self.truss.lengths ** 2)
+        F_k[40:44] = 1.43 ** 2 * F_k[0:4]
+        return F_k
     def TrussAnalysis(self, p=False):
         """
         returns: axial forces, reactional forces, displacements
