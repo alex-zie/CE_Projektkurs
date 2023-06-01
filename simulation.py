@@ -9,36 +9,40 @@ if __name__ == "__main__":
     E = 210e9  # E-Modul in Pa
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3
-    g = 9.81  # m/s^2
+
     myCrane = crane(1, 10, 10, 2, 2.00000001, 0.0225, rho, E)
 
     nodes = myCrane.nodes
     bars = myCrane.bars
-    # for i in range(-1, -5, -1):
-    #     myCrane.addExternalForce(i, 0, 0, -500e3/4)
-    fem = FEM(myCrane)
-    # fem.addWind(28, 1, 1)
-    N, R, U = fem.TrussAnalysis(False)
+
+    points = [] # indices of points where an external force is applied
+    for i in range(-1, -4, -1):
+        myCrane.addExternalForce(i, 0, 0, -500e3)
+        points.append(i)
+    fem = FEM(myCrane, True)
+    fem.addWind(28, 0, 1)
+    fem.TrussAnalysis(True)
 
     # Veranschauung
-    print('\nAxial Forces (positive = tension, negative = compression)')
-    print(np.max(N[np.newaxis].T))
-    print('\nReaction Forces (positive = upward, negative = downward')
-    print(R)
-    print(fem.getTension())
+    # print('\nAxial Forces (positive = tension, negative = compression)')
+    # print(np.max(N[np.newaxis].T))
+    # print('\nReaction Forces (positive = upward, negative = downward')
+    # print(R)
+    # print(fem.getTension())
     # print('\nDeformation at nodes')
     # print("At node", np.where(U == U.max())[0], "is U:", U[-1:-5:-1])
-    print('\nDeformation')
-    print(U)
+    # print('\nDeformation')
+    # print(U)
     fem.Plot(nodes, bars, 'gray', '--', 1, 'Undeformed')
     scale = 1
     # Berechne die neue Position der Knoten
     Dnodes = U * scale + nodes
     fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')
+    fem.Plot(Dnodes, bars[myCrane.x_side], 'green', '-', 2, 'Selected bars')
     fem.Plot(Dnodes, bars[myCrane.y_side], 'yellow', '-', 2, 'Selected bars')
-    fem.plotPoint(Dnodes[-1])
-    fem.plotPoint(Dnodes[-2])
-    fem.plotPoint(Dnodes[-3])
-    fem.plotPoint(Dnodes[-4])
+    
+    for i in points:
+        fem.plotPoint(Dnodes[i])
+
     plt.show()
     # plt.savefig('fig-1.png', dpi=300)

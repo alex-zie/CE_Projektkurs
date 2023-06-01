@@ -9,6 +9,7 @@ class crane(Truss):
 
     def __init__(self, variant, height, length, hs, ls, A, rho, E):
         """
+        :param variant:
         :param height:
         :param length:
         :param hs:
@@ -24,11 +25,8 @@ class crane(Truss):
         self.ls = ls
 
         self.nST = np.ceil(height / hs).astype('int')  # Number of segments of the Tower
-        print(self.nST)
         self.nSA = np.ceil(length / ls).astype('int')  # Number of segments of the Ausleger
-        print(self.nSA)
         self.nSGA = np.ceil((length / 2) / ls).astype('int')  # Number of segments of the Gegenausleger
-        print(self.nSGA)
 
         # indices of bars on a certain side of the crane
         self.x_side = []
@@ -65,10 +63,7 @@ class crane(Truss):
 
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
-        for i in range(-1, -5, -1):
-            self.addExternalForce(i, 0, 0, -5e4)
-            # self.addExternalForce(-3, 0, 0, -1e9)
-        # self.addExternalForce(-4, 0, 0, -1e9)
+        
         # Material
         self.A = A
         self.rho = rho
