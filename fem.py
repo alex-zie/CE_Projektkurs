@@ -31,11 +31,11 @@ class FEM:
         """Return deformations"""
         return self.__dict__["U"]
 
-    def TrussAnalysis(self):
+    def TrussAnalysis(self,p=False):
         """
         returns: axial forces, reactional forces, displacements
         """
-        if self.firstCreate:
+        if p and self.firstCreate:
             message = "Simulating truss with "+str(self.NN)+" nodes and "+str(self.NE)+" bars"
             message += " considering gravity." if self.own_weight else "."
             print(message)

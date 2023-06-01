@@ -62,7 +62,7 @@ def tension(x: np.ndarray):
     myCrane = crane(1, x[0], x[1], x[2], x[3], x[4], rho, E)
     for i in range(-1, -5, -1):
         myCrane.addExternalForce(i, 0, 0, -500e3 / 4)
-    fem = FEM(myCrane)
+    fem = FEM(myCrane,True)
     # N, R, U = fem.TrussAnalysis()
     # t = np.max(N[np.newaxis]) / x[4]
     t = np.abs(np.max(fem.getTension()))
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     #                bounds=((5, 10), (5, 10), (0.5, 2), (0.5, 2), (2.5e-3, 6.25e-2)),
     #                constraints=cons)
     # print(res)
-    rewards,x=cem(100,30)
+    rewards,x=cem(30,30)
     plt.plot(rewards,x)
     plt.legend()
     plt.show()

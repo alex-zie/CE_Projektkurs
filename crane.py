@@ -7,7 +7,7 @@ class crane(Truss):
     Special truss that represents a crane
     """
 
-    def __init__(self, variant, height, length, hs, ls, A, rho, E):
+    def __init__(self, variant, height, length, hs, ls, A, rho, E, p=False):
         """
         :param variant:
         :param height:
@@ -33,7 +33,7 @@ class crane(Truss):
         self.y_side = []
 
         if (variant == 1):
-            print("Creating crane with cuboid tower with "+str(self.nST)+" segments and pyramidal jib with "+str(self.nSA+self.nSGA)+" segments.")
+            if p : print("Creating crane with cuboid tower with "+str(self.nST)+" segments and pyramidal jib with "+str(self.nSA+self.nSGA)+" segments.")
             self.tower_pyramid(nodes, bars)
             offsetT = self.cur_offset(nodes)
             self.gegenausleger_pyramid(nodes, bars, offsetT)
