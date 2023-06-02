@@ -17,7 +17,7 @@ def tower(self, nodes, bars):
         # x- und y-Richtung (LT für Left Top usw.)
         for i in range(self.nST):
             bars.append([4 * i, 4 * i + 1])  # LT -> RT
-            self.y_side.append(len(bars) - 1)
+            self.y_positive_side.append(len(bars) - 1)
             bars.append([4 * i + 2, 4 * i + 3])  # LB -> RB
             bars.append([4 * i, 4 * i + 2])  # LT -> LB
             bars.append([4 * i + 1, 4 * i + 3])  # RT -> RB
@@ -25,16 +25,16 @@ def tower(self, nodes, bars):
         # z-Richtung
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 4])  # LT
-            self.y_side.append(len(bars) - 1)
+            self.y_positive_side.append(len(bars) - 1)
             bars.append([4 * i + 1, 4 * i + 5])  # RT
-            self.y_side.append(len(bars) - 1)
+            self.y_positive_side.append(len(bars) - 1)
             bars.append([4 * i + 2, 4 * i + 6])  # LB
             bars.append([4 * i + 3, 4 * i + 7])  # RB
 
         # Kreuzstreben (+1 jeweils für näclste Stufe)
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 5])  # LT -> RT+1
-            self.y_side.append(len(bars) - 1)
+            self.y_positive_side.append(len(bars) - 1)
             # bars.append([4 * i + 1, 4 * i + 4])  # RT -> RT+1
             bars.append([4 * i + 3, 4 * i + 6])  # RB -> LB+1
             # bars.append([4 * i + 2, 4 * i + 7])  # LB -> RB+1

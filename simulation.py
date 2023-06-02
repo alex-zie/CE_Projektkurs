@@ -16,11 +16,11 @@ if __name__ == "__main__":
     bars = myCrane.bars
 
     points = []  # indices of points where an external force is applied
-    for i in range(-1, -5, -1):
-        myCrane.addExternalForce(i, 0, 0, -500e3 / 4)
-        points.append(i)
+    #for i in range(-1, -5, -1):
+    #    myCrane.addExternalForce(i, 0, 0, -500e3 / 4)
+    #    points.append(i)
     fem = FEM(myCrane, True)
-    fem.addWind(28, 0, -1)
+    #fem.addWind(28, 0, -1)
     #print(len(fem.N[np.where(fem.N < 0)[0]]))
     #print(len(fem.F_krit()[np.where(fem.N < 0)[0]] > fem.N[np.where(fem.N < 0)[0]]))
     #print(fem.check_bending_force())
@@ -37,10 +37,20 @@ if __name__ == "__main__":
     fem.Plot(nodes, bars, 'gray', '--', 1, 'Undeformed')
     scale = 1
     # Berechne die neue Position der Knoten
-    colors = fem.paintBars(bars)
+    #colors = fem.paintBars(bars)
     Dnodes = fem.U * scale + nodes
-    fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed', colors)
-    fem.Plot(Dnodes, bars, 'yellow', '-', 2, 'Selected bars',colors)
+    fem.Plot(Dnodes, bars, 'red', '-', 2, 'Deformed')
+    plot_sides_x = True
+    plot_sides_y = True
+    if plot_sides_x:
+        fem.Plot(Dnodes, bars[myCrane.x_negative_side], 'yellow', '-', 2, 'Selected bars')
+        fem.Plot(Dnodes, bars[myCrane.x_positive_side], 'green', '-', 2, 'Selected bars')
+        pass
+    if plot_sides_y:
+        fem.Plot(Dnodes, bars[myCrane.y_negative_side], 'yellow', '-', 2, 'Selected bars')
+        fem.Plot(Dnodes, bars[myCrane.y_positive_side], 'green', '-', 2, 'Selected bars')
+        pass
+
 
     # for i in points:
     #     fem.plotPoint(Dnodes[i])

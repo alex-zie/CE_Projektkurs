@@ -20,8 +20,10 @@ class Truss:
         self.E = E
         self.I = A ** 2 / 12
         # indices of bars on a certain side of the crane
-        self.x_side = []
-        self.y_side = []
+        self.x_negative_side = []
+        self.x_positive_side = []
+        self.y_negative_side = []
+        self.y_positive_side = []
 
         self._computeLengths()
         self._computeOrientations()

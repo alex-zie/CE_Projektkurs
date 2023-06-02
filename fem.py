@@ -132,16 +132,18 @@ class FEM:
 
         if axis == 0:
             if dir == -1:
-                bars = self.truss.bars[self.truss.x_side]
-                lengths = self.truss.lengths[self.truss.x_side]
+                bars = self.truss.bars[self.truss.x_negative_side]
+                lengths = self.truss.lengths[self.truss.x_negative_side]
             else:
-                raise Exception("positive x-direction not implemented yet!")
+                bars = self.truss.bars[self.truss.x_positive_side]
+                lengths = self.truss.lengths[self.truss.x_positive_side]
         else:
             if dir == -1:
-                raise Exception("negative y-direction not implemented yet!")
+                bars = self.truss.bars[self.truss.y_negative_side]
+                lengths = self.truss.lengths[self.truss.y_negative_side]
             else:
-                bars = self.truss.bars[self.truss.y_side]
-                lengths = self.truss.lengths[self.truss.y_side]
+                bars = self.truss.bars[self.truss.y_positive_side]
+                lengths = self.truss.lengths[self.truss.y_positive_side]
 
         nOutgoingBars = np.zeros_like(self.truss.nodes[:, 0])
         # compute for each node (index) the number of outgoing bars
