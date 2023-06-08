@@ -43,12 +43,12 @@ if __name__ == "__main__":
     plot_sides_x = True
     plot_sides_y = True
     if plot_sides_x:
-        fem.Plot(Dnodes, bars[myCrane.x_negative_side], 'yellow', '-', 2, 'Selected bars')
-        fem.Plot(Dnodes, bars[myCrane.x_positive_side], 'green', '-', 2, 'Selected bars')
+        fem.Plot(Dnodes, bars[myCrane.x_negative_side], 'yellow', '-', 2, 'neg. x')
+        fem.Plot(Dnodes, bars[myCrane.x_positive_side], 'orange', '-', 2, 'pos. x')
         pass
     if plot_sides_y:
-        fem.Plot(Dnodes, bars[myCrane.y_negative_side], 'yellow', '-', 2, 'Selected bars')
-        fem.Plot(Dnodes, bars[myCrane.y_positive_side], 'green', '-', 2, 'Selected bars')
+        fem.Plot(Dnodes, bars[myCrane.y_negative_side], 'green', '-', 2, 'neg. y')
+        fem.Plot(Dnodes, bars[myCrane.y_positive_side], 'cyan', '-', 2, 'pos. y')
         pass
 
 
