@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     points = []  # indices of points where an external force is applied
     # for i in range(-1, -5, -1):
-    #    myCrane.addExternalForce(i, 0, 0, -500e3)
+    #    myCrane.addExternalForce(i, 0, 0, -500e3/4)
     #    points.append(i)
     # for i in range(-2, -6, -1):
     #    myCrane.addExternalForce(i, 0, 0, -1.5e3)

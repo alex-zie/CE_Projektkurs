@@ -50,12 +50,11 @@ class crane(Truss):
             offsetTG = self.cur_offset(nodes)
             self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
         elif (variant == 2):
-            print(self.nST)
             self.tower_ver2(nodes, bars)
-            offsetT = self.cur_offset(nodes)
-            self.gegenausleger_pyramid(nodes, bars, offsetT)
+            offsetT = self.cur_offset(nodes)-8
+            self.ausleger_ver2(nodes, bars, offsetT)
             offsetTG = self.cur_offset(nodes)
-            self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
+            # self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
         else:
             raise Exception("Variant "+str(variant)+" does not exist!")
 
@@ -348,6 +347,11 @@ class crane(Truss):
             nodes.append([self.ls, 0, i * self.ls])  # Right Top
             nodes.append([0, self.ls, i * self.ls])  # Left Bottom
             nodes.append([self.ls, self.ls, i * self.ls])  # Right Bottom
+        #Spitze
+        nodes.append([self.ls*0.25, self.ls*0.25, self.ls * self.nST - self.ls])
+        nodes.append([self.ls*0.25, self.ls*0.75, self.ls * self.nST - self.ls])
+        nodes.append([self.ls*0.75, self.ls*0.25, self.ls * self.nST - self.ls])
+        nodes.append([self.ls*0.75, self.ls*0.75, self.ls * self.nST - self.ls])
         nodes.append([self.ls/2, self.ls/2, self.ls * self.nST])
 
         # Bars des Turms
@@ -407,87 +411,88 @@ class crane(Truss):
                 self.selectXNegativeBar(bars)
                 self.selectXPositiveBar(bars)
 
+        offset = len(nodes)
         #aller oberste Spitze
-        offsetTO = len(nodes)
-        bars.append([offsetTO - 1, offsetTO - 2])
+        bars.append([offset-2, offset-6])
         self.selectYNegativeBar(bars)
-        bars.append([offsetTO - 1, offsetTO - 3])
+        bars.append([offset-3, offset-8])
         self.selectYNegativeBar(bars)
-        bars.append([offsetTO - 1, offsetTO - 4])
+        bars.append([offset-4, offset-7])
         self.selectYPositiveBar(bars)
-        bars.append([offsetTO - 1, offsetTO - 5])
+        bars.append([offset-5, offset-9])
+        self.selectYPositiveBar(bars)
+        bars.append([offset-2, offset-1])
+        self.selectYNegativeBar(bars)
+        bars.append([offset-3, offset-1])
+        self.selectYNegativeBar(bars)
+        bars.append([offset-4, offset-1])
+        self.selectYPositiveBar(bars)
+        bars.append([offset-5, offset-1])
         self.selectYPositiveBar(bars)
 
+        #kreuzstreben der Spitze
+        bars.append([offset-6, offset-4])
+        self.selectYNegativeBar(bars)
+        bars.append([offset-7, offset-5])
+        self.selectYNegativeBar(bars)
+        bars.append([offset-8, offset-2])
+        self.selectYNegativeBar(bars)
+        bars.append([offset-9, offset-3])
+        self.selectYNegativeBar(bars)
 
-    # def tower_ver2(self, nodes, bars):
-    #     #
+    def ausleger_ver2(self, nodes, bars, offsetT):
+            print("last index tower:", len(nodes)-1)
+            for i in range(1, self.nSA + 1):
+                nodes.append([self.ls + i * self.ls, 0, (self.nST-2) * self.ls])  # Left Bottom
+                nodes.append([self.ls + i * self.ls, self.ls, (self.nST-2) * self.ls])  # Right Bottom
+                nodes.append([(self.ls/2 + i * self.ls), self.ls / 2, (self.nST-1) * self.ls])  # Top
 
-    #     # Nodes des Turms
-    #     for i in range(self.nST-1):
-    #         nodes.append([0, 0, i * self.ls/2])  # Left Top
-    #         nodes.append([self.ls, 0, i * self.ls/2])  # Right Top
-    #         nodes.append([0, self.ls, i * self.ls/2])  # Left Bottom
-    #         nodes.append([self.ls, self.ls, i * self.ls/2])  # Right Bottom
-    #     #nodes.append([self.ls/4, self.ls/4, self.ls/4 * self.nST])
+            # x- und y-Richtung
+            bars.append([offsetT, offsetT+2])
+            bars.append([offsetT, offsetT + 8])
+            bars.append([offsetT+2, offsetT + 9])
+            for i in range(0, self.nSA - 1):
+                bars.append([offsetT+8 + 3*i, offsetT+9 + 3*i])
+                self.selectYPositiveBar(bars)
+                bars.append([offsetT+8 + 3*i, offsetT + 11 + 3*i])
+                self.selectYNegativeBar(bars)
+                bars.append([offsetT+9 + 3*i, offsetT + 12 + 3*i])
+                self.selectYNegativeBar(bars)
+            bars.append([offsetT+8 + (self.nSA - 1)*3, offsetT+9 + (self.nSA - 1)*i])
 
-    #     # Bars des Turms
+            # making the pyramids
+            bars.append([offsetT, offsetT + 10])
+            self.selectYPositiveBar(bars)
+            bars.append([offsetT + 2, offsetT + 10])
+            self.selectYNegativeBar(bars)
+            bars.append([offsetT + 8, offsetT + 10])
+            self.selectYPositiveBar(bars)
+            bars.append([offsetT + 9, offsetT + 10])
+            self.selectYNegativeBar(bars)
+            tmp_lastbar1 = 0
+            tmp_lastbar2 = 0
+            for i in range(self.nSA - 1):
+                bars.append([offsetT + 8 + i * 3, (offsetT + 8 + 5) + i * 3])
+                self.selectYPositiveBar(bars)
+                bars.append([offsetT + 8 + 1 + i * 3, (offsetT + 8 + 5) + i * 3])
+                self.selectYNegativeBar(bars)
+                bars.append([(offsetT + 8 + 5) + i * 3, offsetT + 8 + 3 + i * 3])
+                self.selectYPositiveBar(bars)
+                tmp_lastbar1 = len(bars) - 1
+                bars.append([(offsetT + 8 + 5) + i * 3, offsetT + 8 + 4 + i * 3])
+                self.selectYNegativeBar(bars)
+                tmp_lastbar2 = len(bars) - 1
+            self.x_negative_side.append(tmp_lastbar1)
+            self.x_negative_side.append(tmp_lastbar2)
+
+            # Top Row
+            for i in range(self.nSA - 1):
+                bars.append([(offsetT + 10) + i * 3, (offsetT + 13) + i * 3])
+                self.selectYPositiveBar(bars)
+                self.selectYNegativeBar(bars)
+
+            # rope
+            bars.append([offsetT+7, offsetT + (self.nSA//2)*3 + 10])
+
+
         
-    #     # z-Richtung
-    #     for i in range(self.nST - 2):
-    #         bars.append([4 * i, 4 * i + 4])  # LT
-    #         self.selectYPositiveBar(bars)
-    #         self.selectXPositiveBar(bars)
-    #         bars.append([4 * i + 1, 4 * i + 5])  # RT
-    #         self.selectYPositiveBar(bars)
-    #         self.selectXNegativeBar(bars)
-    #         bars.append([4 * i + 2, 4 * i + 6])  # LB
-    #         self.selectXPositiveBar(bars)
-    #         self.selectYNegativeBar(bars)
-    #         bars.append([4 * i + 3, 4 * i + 7])  # RB
-    #         self.selectXNegativeBar(bars)
-    #         self.selectYNegativeBar(bars)
-
-    #     # Kreuzstreben
-    #     for i in range(self.nST - 12):      #for i in range(self.nST - 15):
-    #         bars.append([16 * i, 16 * i + 9])  # LT -> RT+1
-    #         self.selectYPositiveBar(bars)
-    #         self.selectYNegativeBar(bars)
-    #         if i != 0:
-    #             bars.append([16 * i - 7, 16 * i])  # RT -> RT+1
-    #             self.selectYPositiveBar(bars)
-    #             self.selectYNegativeBar(bars)
-
-    #         bars.append([16 * i + 3, 16 * i + 10])  # RB -> LB+1
-    #         self.selectYPositiveBar(bars)
-    #         self.selectYNegativeBar(bars)
-    #         if i != 0:
-    #             bars.append([16 * i - 6, 16 * i + 3])  # LB -> RB+1
-    #             self.selectYPositiveBar(bars)
-    #             self.selectYNegativeBar(bars)
-
-    #         bars.append([16 * i + 1, 16 * i + 11])  # RT -> RB+1
-    #         self.selectXNegativeBar(bars)
-    #         self.selectXPositiveBar(bars)
-    #         if i != 0:
-    #             bars.append([16 * i - 5, 16 * i + 1])  # RB -> RT+1
-    #             self.selectXNegativeBar(bars)
-    #             self.selectXPositiveBar(bars)
-
-    #         bars.append([16 * i + 2, 16 * i + 8])  # LB -> LT+1
-    #         self.selectXNegativeBar(bars)
-    #         self.selectXPositiveBar(bars)
-    #         if i != 0:
-    #             bars.append([16 * i - 8, 16 * i + 2])  # LT -> LB+1
-    #             self.selectXNegativeBar(bars)
-    #             self.selectXPositiveBar(bars)
-
-    #     # #aller oberste Spitze
-    #     # offsetTO = len(nodes)
-    #     # bars.append([offsetTO - 1, offsetTO - 2])
-    #     # self.selectYNegativeBar(bars)
-    #     # bars.append([offsetTO - 1, offsetTO - 3])
-    #     # self.selectYNegativeBar(bars)
-    #     # bars.append([offsetTO - 1, offsetTO - 4])
-    #     # self.selectYPositiveBar(bars)
-    #     # bars.append([offsetTO - 1, offsetTO - 5])
-    #     # self.selectYPositiveBar(bars)
