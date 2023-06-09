@@ -89,6 +89,9 @@ class crane(Truss):
 
     def cur_offset(self, nodes):
         return len(nodes)
+    
+
+    
 
     def tower_pyramid(self, nodes, bars):
         # Turm erstellen, der nur height-1 hoch ist und dann oben eine Spitze als Pyramide hat
@@ -156,6 +159,10 @@ class crane(Truss):
         self.selectYPositiveBar(bars)
         bars.append([offsetTO - 1, offsetTO - 5])
         self.selectYPositiveBar(bars)
+        
+        #Hilfslinie
+        bars.append([offsetTO - 3, offsetTO - 4])
+        bars.append([offsetTO - 2, offsetTO - 5])
 
     def gegenausleger_pyramid(self, nodes, bars, offsetT):
 
@@ -197,6 +204,15 @@ class crane(Truss):
         bars.append([offsetGT - 2, offsetGT - 3])  # aller letzter vorne hinten Strich
         self.selectXPositiveBar(bars)
 
+
+        #Hilfslinien unten
+        bars.append([offsetT + 1, offsetT -5])        #sonderfall erster Strich
+
+        for i in range(self.nSGA - 1):
+            bars.append([offsetT + 3 * i, offsetT + 4 + 3 * i])
+
+
+
         # Pyramiden
         for i in range(self.nSGA - 1):  # hier ab zweite pyramide
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 1])
@@ -219,6 +235,9 @@ class crane(Truss):
             self.selectYPositiveBar(bars)
             self.selectYNegativeBar(bars)
 
+
+
+
     def ausleger_pyramid(self, nodes, bars, offsetT, offsetTG):
         for i in range(1, self.nSA + 1):
             nodes.append([self.ls + i * self.ls, 0, (self.nST-1) * self.ls])  # Left Bottom
@@ -233,6 +252,11 @@ class crane(Truss):
             bars.append([offsetTG + i * 3, (offsetTG + 1) + i * 3])
             bars.append([(offsetTG + 1) + i * 3, (offsetTG + 4) + i * 3])
             self.selectYNegativeBar(bars)
+
+        #Hilfslinie unten
+        bars.append([offsetT - 2, offsetTG]) #Sonderfall erste Linie
+        for i in range(self.nSA -1):
+            bars.append([offsetTG + 1 + i*3, offsetTG + 3 + i*3])
 
         # Bottom nodes with top nodes
         tmp_lastbar1 = 0
@@ -286,6 +310,10 @@ class crane(Truss):
         self.selectYNegativeBar(bars)
         bars.append([offsetTG + 2, offsetTG])
         self.selectYPositiveBar(bars)
+
+
+
+
 
     def selectYNegativeBar(self, bars):
         """
