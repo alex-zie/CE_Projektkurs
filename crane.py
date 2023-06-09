@@ -30,7 +30,7 @@ class crane(Truss):
         self.nSA = np.ceil(length / ls).astype('int')  # Number of segments of the Ausleger
         self.nSGA = np.ceil((length / 2) / ls).astype('int')  # Number of segments of the Gegenausleger
 
-        self.ls = np.min([self.height / self.nST, self.length / self.nST])
+        self.ls = np.min([self.height / self.nST, self.length / self.nSA])
         # TODO Das ist ein Problem, weil der Turm sehr klein wird, wenn der Ausleger klein ist
 
         # indices of bars on a certain side of the crane
@@ -52,12 +52,12 @@ class crane(Truss):
         elif (variant == 2):
             print(self.nST)
             self.tower_ver2(nodes, bars)
-            # offsetT = self.cur_offset(nodes)
-            # self.gegenausleger_pyramid(nodes, bars, offsetT)
-            # offsetTG = self.cur_offset(nodes)
-            # self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
+            offsetT = self.cur_offset(nodes)
+            self.gegenausleger_pyramid(nodes, bars, offsetT)
+            offsetTG = self.cur_offset(nodes)
+            self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
         else:
-            raise("Variant "+str(variant)+" does not exist!")
+            raise Exception("Variant "+str(variant)+" does not exist!")
 
         # convert python list to np.array
         self.nodes = np.array(nodes).astype(float)

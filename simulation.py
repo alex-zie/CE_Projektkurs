@@ -19,9 +19,9 @@ if __name__ == "__main__":
     # for i in range(-1, -5, -1):
     #    myCrane.addExternalForce(i, 0, 0, -500e3)
     #    points.append(i)
-    for i in range(-2, -6, -1):
-       myCrane.addExternalForce(i, 0, 0, -1.5e3)
-       points.append(i)
+    # for i in range(-2, -6, -1):
+    #    myCrane.addExternalForce(i, 0, 0, -1.5e3)
+    #    points.append(i)
     fem = FEM(myCrane, True)
     #fem.addWind(28, 0, -1)
     #print(len(fem.N[np.where(fem.N < 0)[0]]))
