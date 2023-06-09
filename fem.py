@@ -170,12 +170,24 @@ class FEM:
         max = np.max(self.N)
         color = []
         for bar in bars:
-            if (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.4 * max:
+            if (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.5 * max:
                 color.append('r')
+            elif (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.35 * max:
+                color.append('orangered')
+            elif (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.3 * max:
+                color.append('darkorange')
+            elif (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.25 * max:
+                color.append('darkorange')
             elif (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.2 * max:
-                color.append('b')
-            else:
+                color.append('yellow')
+            elif (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.1 * max:
+                color.append('limegreen')
+            elif (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.05 * max:
                 color.append('g')
+            elif (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.01 * max:
+                color.append('mediumturquoise')
+            else:
+                color.append('b')
         return color
 
     def getTension(self):
