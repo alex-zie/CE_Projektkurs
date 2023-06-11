@@ -1,4 +1,6 @@
-from crane import crane
+from crane import crane_1
+from crane import crane_2_1
+from crane import crane_2_2
 from fem import FEM
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,19 +11,26 @@ if __name__ == "__main__":
     E = 210e9  # E-Modul in Pa
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     rho = 7850  # Dichte in kg/m^3
+    load = 500e3 # angebrachte Last in kg
 
-    myCrane = crane(2, 10, 5, 1, 1, h_b * b_b, rho, E)
+    # myCrane = crane_1(7, 5, 1, h_b * b_b, rho, E)
+    myCrane = crane_2_1(7, 5, 1, h_b * b_b, rho, E)
+    # myCrane = crane_2_1(7, 5, 1, h_b * b_b, rho, E)
 
     nodes = myCrane.nodes
     bars = myCrane.bars
 
     points = []  # indices of points where an external force is applied
-    # for i in range(-1, -5, -1):
-    #    myCrane.addExternalForce(i, 0, 0, -500e3/4)
-    #    points.append(i)
-    # for i in range(-2, -6, -1):
-    #    myCrane.addExternalForce(i, 0, 0, -1.5e3)
-    #    points.append(i)
+    # Gewicht
+    for i in myCrane.tip_nodes:
+       myCrane.addExternalForce(i, 0, 0, -load/len(myCrane.tip_nodes))
+       points.append(i)
+
+    # Gegengewicht
+    for i in myCrane.counterweight_nodes:
+       myCrane.addExternalForce(i, 0, 0, -1.45*load/len(myCrane.counterweight_nodes))
+       points.append(i)
+    
     fem = FEM(myCrane, True)
     #fem.addWind(28, 0, -1)
     #print(len(fem.N[np.where(fem.N < 0)[0]]))
