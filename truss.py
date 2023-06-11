@@ -9,9 +9,9 @@ class Truss:
     def __init__(self, nodes, bars, A, rho, E):
         self.nodes = np.array(nodes).astype(float)
         self.bars = np.array(bars)
-        self.F = np.zeros_like(nodes)  # externe Kräfte
-        self.supports = np.ones_like(nodes).astype(
-            int)  # Freiheitsgrade (1 = beweglich, 0 = fest), 3 mal für (x,y,z) # evtl. booleans benutzen?
+        self.F = np.zeros_like(nodes) # externe Kräfte
+        self.force_points = [] # indices von Punkten, an denen einzelne externe Kräfte angreifen
+        self.supports = np.ones_like(nodes).astype(int) # Freiheitsgrade (1 = beweglich, 0 = fest), 3 mal für (x,y,z) # evtl. booleans benutzen?
         self.Ur = np.array([]).astype(int)
 
         # Material
@@ -19,11 +19,6 @@ class Truss:
         self.rho = rho
         self.E = E
         self.I = A ** 2 / 12
-        # indices of bars on a certain side of the crane
-        self.x_negative_side = []
-        self.x_positive_side = []
-        self.y_negative_side = []
-        self.y_positive_side = []
 
         self._computeLengths()
         self._computeOrientations()
@@ -75,6 +70,8 @@ class Truss:
         self.F[node][1] = self.F[node][1] + y
         self.F[node][2] = self.F[node][2] + z
 
+        self.force_points.append(node) # speichere Angriffspunkt
+
     def addExternalForces(self, forces):
         """
         Adds multiple external forces. If there already is an external force at a node,
@@ -86,7 +83,5 @@ class Truss:
     # removes external forces
     def reset(self):
         self.F = np.zeros_like(self.nodes)
+        self.force_points = []
 
-    # def setLateralBars(self, x_side, y_side):
-    #     self.xbars = x_side
-    #     self.ybars = y_side

@@ -4,7 +4,7 @@ import numpy as np
 
 class crane_1(Truss):
     """
-    Special truss that represents a crane
+    Simpler Kran mit Turm aus kubischen und Ausleger aus pyramidalen Segmenten
     """
 
     def __init__(self, height, length, ls, A, rho, E, p=True):
@@ -48,9 +48,7 @@ class crane_1(Truss):
         self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
         self.tip_nodes = [-2, -3] # Knoten an der Spitze des Auslegers zur Lastanbringung
 
-        # convert python list to np.array
-        self.nodes = np.array(nodes).astype(float)
-        self.bars = np.array(bars)
+        super().__init__(nodes, bars, A, rho, E)
 
         self.x_negative_side = np.array(self.x_negative_side).astype(int)
         self.x_positive_side = np.array(self.x_positive_side).astype(int)
@@ -63,18 +61,15 @@ class crane_1(Truss):
         for i in range(4):
             self.addSupport(i, 0, 0, 0)
 
-        # Externe Kräfte
-        self.F = np.zeros_like(self.nodes)
-
-        # Material
-        self.A = A
-        self.rho = rho
-        self.E = E
-        self.I = A ** 2 / 12
-
         self._computeLengths()
         self._computeOrientations()
         self._computeMass()
+
+    def __str__(self):
+        return self.to_string()
+
+    def to_string(self):
+        return "Kran 1: "+str(self.height)+" "+str(self.length)+" "+str(self.ls)
     
     def tower_pyramid(self, nodes, bars):
         # Turm erstellen, der nur height-1 hoch ist und dann oben eine Spitze als Pyramide hat
@@ -317,12 +312,11 @@ class crane_1(Truss):
 
 class crane_2_1(Truss):
     """
-    Special truss that represents a crane
+    Kran mit ausgedünntem Turm mit höherer Spitze, pyramidalen Ausleger und Zugseilen
     """
 
     def __init__(self, height, length, ls, A, rho, E, p=True):
         """
-        :param variant:
         :param height:
         :param length:
         :param ls:
@@ -361,14 +355,11 @@ class crane_2_1(Truss):
         self.counterweight_nodes = [] # Knoten des Gegenauslegers zur Anbringung der Gegenlast
         self.gegenausleger_ver2(nodes, bars, offsetT, offsetA)
 
-        # convert python list to np.array
-        self.nodes = np.array(nodes).astype(float)
-        self.bars = np.array(bars)
+        super().__init__(nodes, bars, A, rho, E)
 
         self.x_negative_side = np.array(self.x_negative_side).astype(int)
         self.x_positive_side = np.array(self.x_positive_side).astype(int)
         self.y_positive_side = np.array(self.y_positive_side).astype(int)
-        # super().setLateralBars(self.x_side, self.y_side)
 
         # Lager
         self.supports = np.ones_like(self.nodes).astype(int)
@@ -379,15 +370,15 @@ class crane_2_1(Truss):
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
 
-        # Material
-        self.A = A
-        self.rho = rho
-        self.E = E
-        self.I = A ** 2 / 12
-
         self._computeLengths()
         self._computeOrientations()
         self._computeMass()
+
+    def __str__(self):
+        return self.to_string()
+
+    def to_string(self):
+        return "Kran 2.1: "+str(self.height)+" "+str(self.length)+" "+str(self.ls)
 
     def selectYNegativeBar(self, bars):
         """
@@ -524,7 +515,6 @@ class crane_2_1(Truss):
         self.selectYNegativeBar(bars)
 
     def ausleger_ver2(self, nodes, bars, offsetT):
-        print("last index tower:", len(nodes)-1)
         for i in range(1, self.nSA + 1):
             nodes.append([self.ls + i * self.ls, 0, (self.nST-2) * self.ls])  # Left Bottom
             nodes.append([self.ls + i * self.ls, self.ls, (self.nST-2) * self.ls])  # Right Bottom
@@ -541,7 +531,7 @@ class crane_2_1(Truss):
             self.selectYNegativeBar(bars)
             bars.append([offsetT+9 + 3*i, offsetT + 12 + 3*i])
             self.selectYNegativeBar(bars)
-        bars.append([offsetT+8 + (self.nSA - 1)*3, offsetT+9 + (self.nSA - 1)*i])
+        bars.append([offsetT+8 + (self.nSA - 1)*3, offsetT+9 + (self.nSA - 1)*3])
 
         # making the pyramids
         bars.append([offsetT, offsetT + 10])
@@ -580,7 +570,7 @@ class crane_2_1(Truss):
             bars.append([offsetT+8 + 3*i, offsetT+12 + 3*i])
 
         # rope
-        #bars.append([offsetT+7, offsetT + (self.nSA//2)*3 + 10])
+        bars.append([offsetT+7, offsetT + (self.nSA//2)*3 + 10])
 
     def gegenausleger_ver2(self, nodes, bars, offsetT, offsetA):
         nodes.append([(self.ls/2 - self.ls), self.ls / 2, (self.nST-1) * self.ls]) # first top
@@ -636,11 +626,11 @@ class crane_2_1(Truss):
             bars.append([offsetA+1 + 3*i, offsetA+3 + 3*i])
 
         # rope
-        #bars.append([offsetT+7, -3])
+        bars.append([offsetT+7, -3])
 
 class crane_2_2(Truss):
     """
-    Special truss that represents a crane
+    Kran mit ausgedünntem Turm und pyramidalen Ausleger
     """
 
     def __init__(self, height, length, ls, A, rho, E, p=True):
@@ -684,9 +674,7 @@ class crane_2_2(Truss):
         self.counterweight_nodes = [] # Knoten des Gegenauslegers zur Anbringung der Gegenlast
         self.gegenausleger_ver2(nodes, bars, offsetT, offsetA)
 
-        # convert python list to np.array
-        self.nodes = np.array(nodes).astype(float)
-        self.bars = np.array(bars)
+        super().__init__(nodes, bars, A, rho, E)
 
         self.x_negative_side = np.array(self.x_negative_side).astype(int)
         self.x_positive_side = np.array(self.x_positive_side).astype(int)
@@ -702,15 +690,15 @@ class crane_2_2(Truss):
         # Externe Kräfte
         self.F = np.zeros_like(self.nodes)
 
-        # Material
-        self.A = A
-        self.rho = rho
-        self.E = E
-        self.I = A ** 2 / 12
-
         self._computeLengths()
         self._computeOrientations()
         self._computeMass()
+
+    def __str__(self):
+        return self.to_string()
+
+    def to_string(self):
+        return "Kran 2.2: "+str(self.height)+" "+str(self.length)+" "+str(self.ls)
 
     def selectYNegativeBar(self, bars):
         """
@@ -763,10 +751,16 @@ class crane_2_2(Truss):
             self.selectYNegativeBar(bars)
 
         # Kreuzstreben
-        weird_offset = self.nST//2+1
-        for i in range(self.nST + 1 - int(np.ceil(self.nST/2))):
+        if self.nST%2 == 0:
+            weird_offset = self.nST//2 - 1
+            nseg = self.nST
+        else:
+            nseg = self.nST+1
+            weird_offset = self.nST//2
+        
+        for i in range(nseg - int(np.ceil(nseg/2))):
 
-            if i != self.nST - weird_offset:
+            if i != nseg - weird_offset:
                 bars.append([8 * i, 8 * i + 5])  # LT -> RT+1
                 self.selectYPositiveBar(bars)
                 self.selectYNegativeBar(bars)
@@ -775,7 +769,7 @@ class crane_2_2(Truss):
                 self.selectYPositiveBar(bars)
                 self.selectYNegativeBar(bars)
 
-            if i != self.nST - weird_offset:
+            if i != nseg - weird_offset:
                 bars.append([8 * i + 3, 8 * i + 6])  # RB -> LB+1
                 self.selectYPositiveBar(bars)
                 self.selectYNegativeBar(bars)
@@ -784,7 +778,7 @@ class crane_2_2(Truss):
                 self.selectYPositiveBar(bars)
                 self.selectYNegativeBar(bars)
 
-            if i != self.nST - weird_offset:
+            if i != nseg - weird_offset:
                 bars.append([8 * i + 1, 8 * i + 7])  # RT -> RB+1
                 self.selectXNegativeBar(bars)
                 self.selectXPositiveBar(bars)
@@ -793,7 +787,7 @@ class crane_2_2(Truss):
                 self.selectXNegativeBar(bars)
                 self.selectXPositiveBar(bars)
 
-            if i != self.nST - weird_offset:
+            if i != nseg - weird_offset:
                 bars.append([8 * i + 2, 8 * i + 4])  # LB -> LT+1
                 self.selectXNegativeBar(bars)
                 self.selectXPositiveBar(bars)
@@ -835,7 +829,7 @@ class crane_2_2(Truss):
             self.selectYNegativeBar(bars)
             bars.append([offsetT+1 + 3*i, offsetT + 4 + 3*i])
             self.selectYNegativeBar(bars)
-        bars.append([offsetT + (self.nSA - 1)*3, offsetT+1 + (self.nSA - 1)*i])
+        bars.append([offsetT + (self.nSA - 1)*3, offsetT+1 + (self.nSA - 1)*3])
 
         # making the pyramids
         bars.append([offsetT, offsetT + 2])
@@ -863,7 +857,7 @@ class crane_2_2(Truss):
         self.x_negative_side.append(tmp_lastbar2)
 
         # Top Row
-        #bars.append([offsetT-1, offsetT + 2])
+        bars.append([offsetT-1, offsetT + 2])
         for i in range(self.nSA - 1):
             bars.append([(offsetT + 2) + i * 3, (offsetT + 5) + i * 3])
             self.selectYPositiveBar(bars)
@@ -918,7 +912,7 @@ class crane_2_2(Truss):
         self.x_negative_side.append(tmp_lastbar2)
 
         # Top Row
-        #bars.append([offsetA - 1, offsetT-1]) # verbindung zur Spitze
+        bars.append([offsetA - 1, offsetT-1]) # verbindung zur Spitze
         for i in range(self.nSA//2):
             bars.append([offsetA - 1 + i * 3, offsetA + 2 + i * 3])
             self.selectYPositiveBar(bars)

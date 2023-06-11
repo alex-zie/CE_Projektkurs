@@ -166,18 +166,6 @@ class FEM:
         self.truss.addExternalForces(w_forces)
         self.TrussAnalysis()
 
-    def paintBars(self, bars):
-        max = np.max(self.N)
-        color = []
-        for bar in bars:
-            if (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.4 * max:
-                color.append('r')
-            elif (self.N[bar[0]] + self.N[bar[1]]) / 2 > 0.2 * max:
-                color.append('b')
-            else:
-                color.append('g')
-        return color
-
     def getTension(self):
         return self.N / self.truss.A
 
@@ -187,9 +175,78 @@ class FEM:
         self.truss.reset()
         self.TrussAnalysis()
 
-    def Plot(self, nodes, bars, c, lt, lw, lg, colors=None):
-        if colors is None:
-            colors = [c] * len(bars)
+    def map_value_to_color(self, value):
+        if value < 0 or value > 1:
+            raise Exception("The input value must lay between 0 and one!")
+
+        # Define the color scale
+        color_scale = [
+            (0, (0, 255, 0)),      # Green
+            (0.2, (255, 255, 0)),  # Yellow
+            (0.4, (255, 165, 0)),  # Orange
+            (0.6, (255, 0, 0)),    # Red
+            (1, (128, 0, 128))     # Purple
+        ]
+        
+        # Find the appropriate color range for the value
+        for i in range(len(color_scale) - 1):
+            if value <= color_scale[i + 1][0]:
+                break
+        
+        # Interpolate between the colors
+        start_value, start_color = color_scale[i]
+        end_value, end_color = color_scale[i + 1]
+        ratio = (value - start_value) / (end_value - start_value)
+        color = (
+            int(start_color[0] + ratio * (end_color[0] - start_color[0])),
+            int(start_color[1] + ratio * (end_color[1] - start_color[1])),
+            int(start_color[2] + ratio * (end_color[2] - start_color[2]))
+        )
+        
+        # Convert the color to HEX format
+        hex_color = '#{:02x}{:02x}{:02x}'.format(*color)
+        
+        return hex_color
+    
+    def getColorMap(self):
+        min = np.min(self.N)
+        max = np.max(self.N)
+        color = []
+        for bar in self.truss.bars:
+            force = (self.N[bar[0]] + self.N[bar[1]]) / 2
+            value = (force - min) / (max - min) # Wert normalisieren
+            color.append(self.map_value_to_color(value))
+        return color
+
+    def display(self, scale=1, external_forces=True, tension=False):
+        # Zeichne undeformierten Kran
+        self.plot(self.truss.nodes, self.truss.bars, 'gray', '--', 1)
+
+        # Zeichne deformierten Kran
+        dnodes = self.U * scale + self.truss.nodes # Verschiebung der Knoten
+
+        if not tension:
+            self.plot(dnodes, self.truss.bars, 'red', '-', 2)
+        else:
+            # Normalkräfte farblich visualisieren
+            colors = self.getColorMap()
+            self.plot(dnodes, self.truss.bars, colors, '-', 2)
+
+        if external_forces:
+            for i in self.truss.force_points:
+                self.plotPoint(dnodes[i])
+
+        plt.title(self.truss)
+        # Graphik speichern
+        plt.savefig('figures/fig3', dpi=600)
+        plt.show()
+        
+    
+
+
+    def plot(self, nodes, bars, color, lt, lw, lg=None):
+        if isinstance(color, str):
+            color = [color] * len(bars)
         plt.subplot(projection='3d')
         plt.gca().set_aspect('equal')
         # plt.gca(projection='3d')
@@ -199,9 +256,11 @@ class FEM:
             yi, yf = nodes[bars[i, 0], 1], nodes[bars[i, 1], 1]
             zi, zf = nodes[bars[i, 0], 2], nodes[bars[i, 1], 2]
             # Plotte die Elemente
-            line, = plt.plot([xi, xf], [yi, yf], [zi, zf], color=colors[i], linestyle=lt, linewidth=lw)
-        line.set_label(lg)
-        plt.legend(prop={'size': 7})
+            line, = plt.plot([xi, xf], [yi, yf], [zi, zf], color=color[i], linestyle=lt, linewidth=lw)
+        if lg is not None:
+            line.set_label(lg)
+            plt.legend(prop={'size': 7})
+        
 
     def plotNode(self, node):
         plt.subplot(projection='3d')
