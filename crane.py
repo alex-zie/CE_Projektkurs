@@ -46,7 +46,7 @@ class crane_1(Truss):
         self.gegenausleger_pyramid(nodes, bars, offsetT)
         offsetTG = cur_offset(nodes)
         self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
-        self.tip_nodes = [-2, -3] # Knoten an der Spitze des Auslegers zur Lastanbringung
+        self.tip_nodes = [-2, -3, -5, -6] # Knoten an der Spitze des Auslegers zur Lastanbringung
 
         super().__init__(nodes, bars, A, rho, E)
 
@@ -351,7 +351,7 @@ class crane_2_1(Truss):
         offsetT = cur_offset(nodes) - 8
         self.ausleger_ver2(nodes, bars, offsetT)
         offsetA = cur_offset(nodes) + 1
-        self.tip_nodes = [offsetA-3, offsetA-4] # Knoten an der Spitze des Auslegers zur Lastanbringung
+        self.tip_nodes = [offsetA-3, offsetA-4, offsetA-6, offsetA-7] # Knoten an der Spitze des Auslegers zur Lastanbringung
         self.counterweight_nodes = [] # Knoten des Gegenauslegers zur Anbringung der Gegenlast
         self.gegenausleger_ver2(nodes, bars, offsetT, offsetA)
 

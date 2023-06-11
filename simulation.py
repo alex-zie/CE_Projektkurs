@@ -14,11 +14,11 @@ if __name__ == "__main__":
     A = h_b * b_b  # Querschnittsfläche der Balken in m^2
     E = 210e9  # E-Modul in Pa
     rho = 7850  # Dichte in kg/m^3
-    load = 0 # angebrachte Last in kg
+    load = 500e3 # angebrachte Last in kg
 
-    # myCrane = crane_1(tower_height, jib_length, length_segments, A, rho, E)
+    myCrane = crane_1(tower_height, jib_length, length_segments, A, rho, E)
     # myCrane = crane_2_1(10, 10, 1, A, rho, E)
-    myCrane = crane_2_2(10, 10, 1, A, rho, E)
+    # myCrane = crane_2_2(10, 10, 1, A, rho, E)
 
     nodes = myCrane.nodes
     bars = myCrane.bars

@@ -236,9 +236,10 @@ class FEM:
             for i in self.truss.force_points:
                 self.plotPoint(dnodes[i])
 
-        plt.title(self.truss)
+        plt.suptitle(self.truss)
+        plt.title("forces: ["+str(int(np.min(self.N)/1000))+", "+str(int(np.max(self.N)/1000))+"] kN", fontsize=10)
         # Graphik speichern
-        plt.savefig('figures/fig3', dpi=600)
+        plt.savefig('figures/fig1', dpi=600)
         plt.show()
         
     
