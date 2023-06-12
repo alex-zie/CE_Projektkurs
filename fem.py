@@ -186,6 +186,7 @@ class FEM:
         self.truss.reset()
         self.TrussAnalysis()
 
+    #TODO change colors
     def map_value_to_color(self, value):
         if value < 0 or value > 1:
             raise Exception("The input value must lay between 0 and one!")
@@ -287,10 +288,19 @@ class FEM:
 
         if wind:
             if not self.wind:
-                pass
+                print("There is no wind.")
+            else:
+                if self.wind_dir == 0:
+                    self.plot(dnodes, self.truss.bars[self.truss.x_positive_side], 'lightskyblue', '-', 2, 'wind exposed area')
+                elif self.wind_dir == 1:
+                    self.plot(dnodes, self.truss.bars[self.truss.x_negative_side], 'lightskyblue', '-', 2, 'wind exposed area')
+                elif self.wind_dir == 2:
+                    self.plot(dnodes, self.truss.bars[self.truss.y_positive_side], 'lightskyblue', '-', 2, 'wind exposed area')
+                elif self.wind_dir == 3:
+                    self.plot(dnodes, self.truss.bars[self.truss.y_negative_side], 'lightskyblue', '-', 2, 'wind exposed area')
 
         plt.suptitle(self.truss)
-        plt.title("spannung: ["+str(int(minTension))+", "+str(int(maxTension))+"] MPa", fontsize=10)
+        plt.title("tension: ["+str(int(minTension))+", "+str(int(maxTension))+"] MPa", fontsize=10)
         # save plot
         # plt.savefig('figures/fig1', dpi=600)
         plt.show()

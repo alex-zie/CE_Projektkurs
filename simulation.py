@@ -14,35 +14,28 @@ if __name__ == "__main__":
    A = h_b * b_b  # area of bars profile  [m^2]
    E = 210e9  # E-module [Pa]
    rho = 7850  # density [kg/m^3]
-   load = 500e3 # attached weight [kg]
+   load = 500e3 # attached weight [N]
 
-   # myCrane = crane_1(tower_height, jib_length, length_segments, A, rho, E)
+   #myCrane = crane_1(tower_height, jib_length, length_segments, A, rho, E)
    # myCrane = crane_2_1(10, 10, 1, A, rho, E)
    myCrane = crane_2_2(10, 10, 1, A, rho, E)
 
    nodes = myCrane.nodes
    bars = myCrane.bars
 
-   # weight
-   for i in myCrane.tip_nodes:
-      myCrane.addExternalForce(i, 0, 0, -load/len(myCrane.tip_nodes))
+   # # weight
+   # for i in myCrane.tip_nodes:
+   #    myCrane.addExternalForce(i, 0, 0, -load/len(myCrane.tip_nodes))
 
-   # counter weight
-   for i in myCrane.counterweight_nodes:
-      myCrane.addExternalForce(i, 0, 0, load/len(myCrane.counterweight_nodes))
+   # # counter weight
+   # for i in myCrane.counterweight_nodes:
+   #    myCrane.addExternalForce(i, 0, 0, load/len(myCrane.counterweight_nodes))
    
-   fem = FEM(myCrane, True)
+   fem = FEM(myCrane, own_weight=False)
 
-   # fem.addWind(28, 0, -1) #TODO maybe pass arrays to wind
+   fem.addWind(28, 1, 1)
    
    # visualization
-   fem.display(tension=True)
-
-   # highlight target surface of the wind 
-   # fem.plot(nodes, bars, 'gray', '--', 1)
-   # fem.plot(nodes, bars[myCrane.x_positive_side], 'green', '-', 2, 'pos. x')
-   # fem.plot(nodes, bars[myCrane.x_negative_side], 'green', '-', 2, 'neg. x')
-   # fem.plot(nodes, bars[myCrane.y_positive_side], 'green', '-', 2, 'pos. y')
-   # fem.plot(nodes, bars[myCrane.y_negative_side], 'green', '-', 2, 'neg. y')
+   fem.display(scale=1, tension=True)
 
    plt.show()
