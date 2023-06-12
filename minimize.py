@@ -6,8 +6,8 @@ from scipy.optimize import minimize, shgo
 from scipy.stats import norm
 from scipy.stats import multivariate_normal
 
-E = 210e9  # E-Modul in Pa
-rho = 7850  # Dichte in kg/m^
+E = 210e9  # E-module [Pa]
+rho = 7850  # density [kg/m^3]
 price = 10
 
 def calculateCov(range_min:np.ndarray,range_max: np.ndarray):
@@ -65,8 +65,7 @@ def cem(iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=0.2):
             # X = AZ + u
             # see multi-variant distribution
             # theta=(theta_cov + (np.identity(5)*max(1 - iteration / waning_time, 0) * additional_std**2)) @ np.random.randn(5) +theta_mean
-            x = (A + (cons_cov * max(1 - iteration / waning_time, 0) * additional_std ** 2)) @ np.random.randn(
-                4) + theta_mean
+            x = (A + (cons_cov * max(1 - iteration / waning_time, 0) * additional_std ** 2)) @ np.random.randn(4) + theta_mean
             # normal distribution generate some samples with negative value, need absolute value
             x=np.abs(x)
             # initialize crane object
@@ -122,13 +121,10 @@ def cost(x: np.ndarray):
 
 if __name__ == "__main__":
     #print(tension(np.array([7.5, 7.5, 1, 1, 0.0225])))
-    # cons = (
-    #     {'type': 'ineq', 'fun': lambda x: tension(x) + 0.2e9},  # tension < 0.2e9
-    # )
-    # res = shgo(cost,
-    #                bounds=((5, 10), (5, 10), (0.5, 2), (0.5, 2), (2.5e-3, 6.25e-2)),
-    #                constraints=cons)
+    # cons = ({'type': 'ineq', 'fun': lambda x: tension(x) + 0.2e9},  # tension < 0.2e9)
+    # res = shgo(cost, bounds=((5, 10), (5, 10), (0.5, 2), (0.5, 2), (2.5e-3, 6.25e-2)),constraints=cons)
     # print(res)
+
     rewards,x=cem(100,200)
     vol=[]
     for s in x:
