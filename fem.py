@@ -12,6 +12,8 @@ class FEM:
         self.DOF = 3  # because we are in 3D 
         self.NDOF = self.DOF * self.NN  # total number of degrees of freedom
         self.own_weight = own_weight
+        self.wind = False
+        self.wind_dir = -1
         self.firstCreate = True  # so that weights don't get added multiple times
         self.TrussAnalysis()
         self.firstCreate = False
@@ -122,6 +124,8 @@ class FEM:
             raise Exception("dir has to be either -1 or 1")
         if not (axis == 0 or axis == 1):
             raise Exception("axis can only take values 0 (x), 1 (y)")
+        
+        self.wind = True
 
         message = "Simulating wind with " + str(speed) + " m/s (" + str(round(speed * 3.6, 2)) + " km/h) blowing in "
         message += "negative " if dir == -1 else "positive "
@@ -131,18 +135,22 @@ class FEM:
 
         if axis == 0:
             if dir == -1:
-                bars = self.truss.bars[self.truss.x_negative_side]
-                lengths = self.truss.lengths[self.truss.x_negative_side]
-            else:
                 bars = self.truss.bars[self.truss.x_positive_side]
                 lengths = self.truss.lengths[self.truss.x_positive_side]
+                self.wind_dir = 0
+            else:
+                bars = self.truss.bars[self.truss.x_negative_side]
+                lengths = self.truss.lengths[self.truss.x_negative_side]
+                self.wind_dir = 1
         else:
             if dir == -1:
-                bars = self.truss.bars[self.truss.y_negative_side]
-                lengths = self.truss.lengths[self.truss.y_negative_side]
-            else:
                 bars = self.truss.bars[self.truss.y_positive_side]
                 lengths = self.truss.lengths[self.truss.y_positive_side]
+                self.wind_dir = 2
+            else:
+                bars = self.truss.bars[self.truss.y_negative_side]
+                lengths = self.truss.lengths[self.truss.y_negative_side]
+                self.wind_dir = 3
 
         nOutgoingBars = np.zeros_like(self.truss.nodes[:, 0])
         # compute for each node (index) the number of outgoing bars
@@ -169,8 +177,12 @@ class FEM:
         return self.N / self.truss.A
 
     def reset(self):
-        """Removes all external forces including gravity and wind"""
+        """
+        Removes all external forces including gravity and wind
+        """
         self.firstCreate = True
+        self.wind = False
+        self.wind_dir = -1
         self.truss.reset()
         self.TrussAnalysis()
 
@@ -218,7 +230,20 @@ class FEM:
             color.append(self.map_value_to_color(value))
         return color
 
-    def display(self, scale=1, external_forces=True, tension=False):
+    def display(self, scale=1, external_forces=True, tension=False, wind=False):
+        """
+        scale : float
+            the scale in which the deformations should be displayed
+        external_forces : bool
+            display points where single external are being applied
+        tension : bool
+            highlight the tension in each bar using a color map
+        wind : bool
+            highlight the surface at which wind is attacking
+        """
+        if tension and wind:
+            print("It is not recommended to have both tension and wind exposed surfaces displayed!")
+
         minTension = np.min(self.getTension())/1e6 # minimum tension [MPa]
         maxTension = np.max(self.getTension())/1e6 # maximum tension [MPa]
 
@@ -259,6 +284,10 @@ class FEM:
         if external_forces:
             for i in self.truss.force_points:
                 self.plotPoint(dnodes[i])
+
+        if wind:
+            if not self.wind:
+                pass
 
         plt.suptitle(self.truss)
         plt.title("spannung: ["+str(int(minTension))+", "+str(int(maxTension))+"] MPa", fontsize=10)

@@ -36,13 +36,13 @@ if __name__ == "__main__":
    # fem.addWind(28, 0, -1) #TODO maybe pass arrays to wind
    
    # visualization
-   # fem.display()
+   fem.display(tension=True)
 
-   # point out target surface of the wind 
-   fem.plot(nodes, bars, 'gray', '--', 1)
-   #fem.plot(nodes, bars[myCrane.x_positive_side], 'green', '-', 2, 'pos. x')
-   #fem.plot(nodes, bars[myCrane.x_negative_side], 'green', '-', 2, 'neg. x')
-   #fem.plot(nodes, bars[myCrane.y_positive_side], 'green', '-', 2, 'pos. y')
-   fem.plot(nodes, bars[myCrane.y_negative_side], 'green', '-', 2, 'neg. y')
+   # highlight target surface of the wind 
+   # fem.plot(nodes, bars, 'gray', '--', 1)
+   # fem.plot(nodes, bars[myCrane.x_positive_side], 'green', '-', 2, 'pos. x')
+   # fem.plot(nodes, bars[myCrane.x_negative_side], 'green', '-', 2, 'neg. x')
+   # fem.plot(nodes, bars[myCrane.y_positive_side], 'green', '-', 2, 'pos. y')
+   # fem.plot(nodes, bars[myCrane.y_negative_side], 'green', '-', 2, 'neg. y')
 
    plt.show()

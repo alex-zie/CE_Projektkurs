@@ -895,27 +895,29 @@ def cur_offset(nodes):
     return len(nodes)
 
 def selectXPositiveBar(crane, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the X negative bars
-        """
-        crane.x_positive_side.append(len(bars) - 1)
+    """
+    Select the index from the last bar added in bars array and add to X positive bars
+    """
+    crane.x_positive_side.append(len(bars) - 1)
 
 def selectXNegativeBar(crane, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the X negative bars
-        """
-        crane.x_negative_side.append(len(bars) - 1)
+    """
+    Select the index from the last bar added in bars array and add to X negative bars
+    """
+    crane.x_negative_side.append(len(bars) - 1)
+    
+def selectYPositiveBar(crane, bars):
+    """
+    Select the index from the last bar added in bars array and add to Y positive bars
+    """
+    crane.y_positive_side.append(len(bars) - 1)
 
 def selectYNegativeBar(crane, bars):
     """
-    Select the last bar from the bar array and add this to another array to select the Y bars
+    Select the index from the last bar added in bars array and add to Y negative bars
     """
     crane.y_negative_side.append(len(bars) - 1)
 
-def selectYPositiveBar(crane, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the Y bars
-        """
-        crane.y_positive_side.append(len(bars) - 1)
+
 
     
