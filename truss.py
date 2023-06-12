@@ -9,12 +9,12 @@ class Truss:
     def __init__(self, nodes, bars, A, rho, E):
         self.nodes = np.array(nodes).astype(float)
         self.bars = np.array(bars)
-        self.F = np.zeros_like(nodes) # externe Kräfte
-        self.force_points = [] # indices von Punkten, an denen einzelne externe Kräfte angreifen
-        self.supports = np.ones_like(nodes).astype(int) # Freiheitsgrade (1 = beweglich, 0 = fest), 3 mal für (x,y,z) # evtl. booleans benutzen?
+        self.F = np.zeros_like(nodes) # external forces
+        self.force_points = [] # indices of points, where external forces attack
+        self.supports = np.ones_like(nodes).astype(int) # degrees of freedom (1 = movable, 0 = fixed), 3 times for (x,y,z) # maybe use booleans?
         self.Ur = np.array([]).astype(int)
 
-        # Material
+        # material
         self.A = A
         self.rho = rho
         self.E = E
@@ -24,16 +24,16 @@ class Truss:
         self._computeOrientations()
         self._computeMass()
 
-    # Geometrie
+    # geometry
     def _computeLengths(self):
-        d = self.nodes[self.bars[:, 1], :] - self.nodes[self.bars[:, 0], :]  # Endknoten - Anfangsknoten
-        self.lengths = np.sqrt((d ** 2).sum(axis=1))  # Länge der Balken (Euklidische Norm)
+        d = self.nodes[self.bars[:, 1], :] - self.nodes[self.bars[:, 0], :]  # endnode - startnode
+        self.lengths = np.sqrt((d ** 2).sum(axis=1))  #  length of bars (euclidian norm)
 
     def _computeOrientations(self):
-        d = self.nodes[self.bars[:, 1], :] - self.nodes[self.bars[:, 0], :]  # Endknoten - Anfangsknoten
-        self.orientations = d.T / self.lengths  # Richtungsvektoren der Balken (Transponieren für Dimensionen)
+        d = self.nodes[self.bars[:, 1], :] - self.nodes[self.bars[:, 0], :]  # endnode - startnode
+        self.orientations = d.T / self.lengths  # orientation vector of bars (transpose for matching dimensions)
 
-    # Physik
+    # pysics
     def _computeMass(self):
         self.mass = self.lengths * self.A * self.rho
 
@@ -70,7 +70,7 @@ class Truss:
         self.F[node][1] = self.F[node][1] + y
         self.F[node][2] = self.F[node][2] + z
 
-        self.force_points.append(node) # speichere Angriffspunkt
+        self.force_points.append(node) # save attack point
 
     def addExternalForces(self, forces):
         """

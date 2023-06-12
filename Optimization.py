@@ -50,8 +50,8 @@ def optimize_lengths(E, rho, A):
 
 
 def f(x):
-    E = 210e9  # E-Modul in Pa
-    rho = 7850  # Dichte in kg/m^
+    E = 210e9  # E-module [Pa]
+    rho = 7850  # density [kg/m^3]
     crane1 = crane(10, 10, x[0], x[0], x[1], rho, E)
     fem = FEM(crane1)
     weight = np.sum(fem.computeWeight() / 9.81)
@@ -59,8 +59,8 @@ def f(x):
 
 
 def cons(x):
-    E = 210e9  # E-Modul in Pa
-    rho = 7850  # Dichte in kg/m^
+    E = 210e9  # E-module [Pa]
+    rho = 7850  # density  [kg/m^3]
     crane1 = crane(10, 10, x[0], x[0], x[1], rho, E)
     fem = FEM(crane1)
     return 2e8 - fem.TrussAnalysis()[0]
@@ -72,8 +72,8 @@ A_min = 0.01
 A_max = 0.75
 o_y = 2e8
 A = 0.018
-E = 210e9  # E-Modul in Pa
-rho = 7850  # Dichte in kg/m^
-g = 9.81  # m/s^2
+E = 210e9  # E-module [Pa]
+rho = 7850  # density [kg/m^3]
+g = 9.81  # gravitational acceleration [m/s^2]
 print(sp.minimize(f, np.array([0.8, 0.02]), bounds=[[A_min, A_max], [l_min, l_max]],
                   constraints={'type': 'ineq', 'fun': cons}))

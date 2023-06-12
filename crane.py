@@ -4,7 +4,7 @@ import numpy as np
 
 class crane_1(Truss):
     """
-    Simpler Kran mit Turm aus kubischen und Ausleger aus pyramidalen Segmenten
+    simple crane with cubicle tower and jib made from pyramids
     """
 
     def __init__(self, height, length, ls, A, rho, E, p=True):
@@ -26,36 +26,36 @@ class crane_1(Truss):
         self.length = length
         self.ls = ls
 
-        self.nST = np.ceil(height / ls).astype('int')  # Number of segments of the Tower
-        self.nSA = np.ceil(length / ls).astype('int')  # Number of segments of the Ausleger
-        self.nSGA = np.ceil((length / 2) / ls).astype('int')  # Number of segments of the Gegenausleger
-
+        self.nST = np.ceil(height / ls).astype('int')  # number of segments of the tower
+        self.nSA = np.ceil(length / ls).astype('int')  # number of segments of the Jib
+        self.nSGA = np.ceil((length / 2) / ls).astype('int')  # number of segments of the counter Jib
         self.ls = np.min([self.height / self.nST, self.length / self.nSA])
 
         # indices of bars on a certain side of the crane
-        self.x_negative_side = []  # Done
-        self.x_positive_side = []  # Done
-        self.y_negative_side = []
-        self.y_positive_side = []  # Done
+        self.x_positive_side = []  
+        self.x_negative_side = []  
+        self.y_positive_side = []
+        self.y_negative_side = []  
 
         if p:
             print("Creating crane with cuboid tower with " + str(self.nST) + " segments of length "+str(self.ls)+" and pyramidal jib with " + str(self.nSA) + " segments.")
         self.tower_pyramid(nodes, bars)
         offsetT = cur_offset(nodes)
-        self.counterweight_nodes = [] # Knoten des Gegenauslegers zur Anbringung der Gegenlast
+        self.counterweight_nodes = [] # nodes of counter jib for counter weight 
         self.gegenausleger_pyramid(nodes, bars, offsetT)
         offsetTG = cur_offset(nodes)
         self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
-        self.tip_nodes = [-2, -3, -5, -6] # Knoten an der Spitze des Auslegers zur Lastanbringung
+        self.tip_nodes = [-2, -3, -5, -6] # nodes at front of jib for weights
 
         super().__init__(nodes, bars, A, rho, E)
 
-        self.x_negative_side = np.array(self.x_negative_side).astype(int)
         self.x_positive_side = np.array(self.x_positive_side).astype(int)
+        self.x_negative_side = np.array(self.x_negative_side).astype(int)
         self.y_positive_side = np.array(self.y_positive_side).astype(int)
+        self.y_negative_side = np.array(self.y_negative_side).astype(int)
         # super().setLateralBars(self.x_side, self.y_side)
 
-        # Lager
+        # supports
         self.supports = np.ones_like(self.nodes).astype(int)
         self.Ur = np.array([]).astype('int')
         for i in range(4):
@@ -72,225 +72,212 @@ class crane_1(Truss):
         return "Kran 1: "+str(self.height)+" "+str(self.length)+" "+str(self.ls)
     
     def tower_pyramid(self, nodes, bars):
-        # Turm erstellen, der nur height-1 hoch ist und dann oben eine Spitze als Pyramide hat
-
-        # Nodes des Turms
+        # nodes
         for i in range(self.nST):
-            nodes.append([0, 0, i * self.ls])  # Left Top
-            nodes.append([self.ls, 0, i * self.ls])  # Right Top
-            nodes.append([0, self.ls, i * self.ls])  # Left Bottom
-            nodes.append([self.ls, self.ls, i * self.ls])  # Right Bottom
+            nodes.append([0, 0, i * self.ls])  
+            nodes.append([self.ls, 0, i * self.ls])  
+            nodes.append([0, self.ls, i * self.ls])  
+            nodes.append([self.ls, self.ls, i * self.ls])  
         nodes.append([self.ls / 2, self.ls / 2, self.ls * self.nST])
 
-        # Bars des Turms
-        # x- und y-Richtung (LT für Left Top usw.)
+        # bars 
+        # x- and y-direction (LT for Left Top usw.)
         for i in range(self.nST):
-            bars.append([4 * i, 4 * i + 1])  # LT -> RT
-            self.selectYPositiveBar(bars)
-            bars.append([4 * i + 2, 4 * i + 3])  # LB -> RB
-            self.selectYNegativeBar(bars)
-            bars.append([4 * i, 4 * i + 2])  # LT -> LB
-            self.selectXPositiveBar(bars)
-            bars.append([4 * i + 1, 4 * i + 3])  # RT -> RB
-            self.selectXNegativeBar(bars)
-        # z-Richtung
+            bars.append([4 * i, 4 * i + 1])  
+            selectYNegativeBar(self, bars)
+            bars.append([4 * i + 2, 4 * i + 3])  
+            selectYPositiveBar(self, bars)
+            bars.append([4 * i, 4 * i + 2]) 
+            selectXNegativeBar(self, bars)
+            bars.append([4 * i + 1, 4 * i + 3])  
+            selectXPositiveBar(self, bars)
+        # z-direction
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 4])  # LT
-            self.selectYPositiveBar(bars)
-            self.selectXPositiveBar(bars)
+            selectYNegativeBar(self, bars)
+            selectXNegativeBar(self, bars)
             bars.append([4 * i + 1, 4 * i + 5])  # RT
-            self.selectYPositiveBar(bars)
-            self.selectXNegativeBar(bars)
+            selectYNegativeBar(self, bars)
+            selectXPositiveBar(self, bars)
             bars.append([4 * i + 2, 4 * i + 6])  # LB
-            self.selectXPositiveBar(bars)
-            self.selectYNegativeBar(bars)
+            selectXNegativeBar(self, bars)
+            selectYPositiveBar(self, bars)
             bars.append([4 * i + 3, 4 * i + 7])  # RB
-            self.selectXNegativeBar(bars)
-            self.selectYNegativeBar(bars)
+            selectXPositiveBar(self, bars)
+            selectYPositiveBar(self, bars)
 
-        # Kreuzstreben (+1 jeweils für näclste Stufe)
+        # crossbars 
         for i in range(self.nST - 1):
-            bars.append([4 * i, 4 * i + 5])  # LT -> RT+1
-            self.selectYPositiveBar(bars)
-            self.selectYNegativeBar(bars)
-            # bars.append([4 * i + 1, 4 * i + 4])  # RT -> RT+1
-            bars.append([4 * i + 3, 4 * i + 6])  # RB -> LB+1
-            self.selectYPositiveBar(bars)
-            self.selectYNegativeBar(bars)
-            # bars.append([4 * i + 2, 4 * i + 7])  # LB -> RB+1
-            bars.append([4 * i + 1, 4 * i + 7])  # RT -> RB+1
-            self.selectXNegativeBar(bars)
-            self.selectXPositiveBar(bars)
-            # bars.append([4 * i + 3, 4 * i + 5])  # RB -> RT+1
-            bars.append([4 * i + 2, 4 * i + 4])  # LB -> LT+1
-            self.selectXNegativeBar(bars)
-            self.selectXPositiveBar(bars)
-            # bars.append([4 * i, 4 * i + 6])  # LT -> LB+1
+            bars.append([4 * i, 4 * i + 5])  
+            selectYNegativeBar(self, bars)
+            selectYPositiveBar(self, bars)
+            
+            bars.append([4 * i + 3, 4 * i + 6])  
+            selectYNegativeBar(self, bars)
+            selectYPositiveBar(self, bars)
 
-        #aller oberste Spitze
+            bars.append([4 * i + 1, 4 * i + 7]) 
+            selectXPositiveBar(self, bars)
+            selectXNegativeBar(self, bars)
+
+            bars.append([4 * i + 2, 4 * i + 4])  
+            selectXPositiveBar(self, bars)
+            selectXNegativeBar(self, bars)
+
+        # top
         offsetTO = len(nodes)
         bars.append([offsetTO - 1, offsetTO - 2])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offsetTO - 1, offsetTO - 3])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offsetTO - 1, offsetTO - 4])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
         bars.append([offsetTO - 1, offsetTO - 5])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
         
-        #Hilfslinie
+        # support line (optional)
         bars.append([offsetTO - 3, offsetTO - 4])
         bars.append([offsetTO - 2, offsetTO - 5])
 
     def gegenausleger_pyramid(self, nodes, bars, offsetT):
+        # nodes 
+        for i in range(1, self.nSGA + 1):  
+            nodes.append([-(self.ls + i * self.ls) + self.ls, 0, (self.nST - 1) * self.ls])  
+            nodes.append([-(self.ls + i * self.ls) + self.ls, self.ls, (self.nST - 1) * self.ls])  
+            self.counterweight_nodes.append(len(nodes) - 2)
+            self.counterweight_nodes.append(len(nodes) - 1)
+            nodes.append([-(0.5 * self.ls + i * self.ls) + self.ls, self.ls / 2,(self.nST) * self.ls])  
 
-        # Nodes des Gegenauslegers in negative x Richtung, x Koordinaten mit +1, weil der Turm auf x= 0 bix x=1 steht
-        for i in range(1, self.nSGA + 1):  # braucht nur noch die ursprüngliche bottoms
-            nodes.append([-(self.ls + i * self.ls) + self.ls, 0, (self.nST-1) * self.ls])  # Left aself.lso y=0
-            nodes.append([-(self.ls + i * self.ls) + self.ls, self.ls, (self.nST-1) * self.ls])  # Right aself.lso y=self.ls
-            self.counterweight_nodes.append(len(nodes)-2)
-            self.counterweight_nodes.append(len(nodes)-1)
-            nodes.append([-(0.5 * self.ls + i * self.ls) + self.ls, self.ls / 2,(self.nST) * self.ls])  # nodes der Spitzen --> gleiches problem mit doppelter Höhe??
-
-        # Bars des Gegenausleger
-
-        #sonderfall erste pyramide
+        # bars 
+        # first pyramid
         bars.append([offsetT, offsetT - 5])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
         bars.append([offsetT + 1, offsetT - 3])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offsetT + 2, offsetT + 1])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offsetT + 2, offsetT])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
 
         bars.append([offsetT + 2, offsetT - 5])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
 
         bars.append([offsetT + 2, offsetT - 3])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offsetT + 2, offsetT - 1])
-        self.selectYPositiveBar(bars)
-        self.selectYNegativeBar(bars)
+        selectYNegativeBar(self, bars)
+        selectYPositiveBar(self, bars)
 
-        # x- und y-Richtung (LT für Left Top usw.)
+        # x- and y-direction 
         for i in range(self.nSGA - 1):
             bars.append([offsetT + 3 * i, offsetT + 3 + 3 * i])
-            self.selectYPositiveBar(bars)
+            selectYNegativeBar(self, bars)
             bars.append([offsetT + 1 + 3 * i, offsetT + 1 + 3 + 3 * i])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
             bars.append([offsetT + 3 * i, offsetT + 1 + 3 * i])
         offsetGT = len(nodes)
-        bars.append([offsetGT - 2, offsetGT - 3])  # aller letzter vorne hinten Strich
-        self.selectXPositiveBar(bars)
+        bars.append([offsetGT - 2, offsetGT - 3])  # last bar
+        selectXNegativeBar(self, bars)
 
-        #Hilfslinien unten
-        bars.append([offsetT + 1, offsetT -5])        #sonderfall erster Strich
-
+        # support lines at the bottom (optional) 
+        bars.append([offsetT + 1, offsetT -5])  #first line
         for i in range(self.nSGA - 1):
             bars.append([offsetT + 3 * i, offsetT + 4 + 3 * i])
 
-        # Pyramiden
+        # making the pyramids
         tmp_lastbar1 = 0
         tmp_lastbar2 = 0
-        for i in range(self.nSGA - 1):  # hier ab zweite pyramide
+        for i in range(self.nSGA - 1):  # starting from second pyramid
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 1])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
             tmp_lastbar1 = len(bars) - 1
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 2])
-            self.selectYPositiveBar(bars)
+            selectYNegativeBar(self, bars)
             tmp_lastbar2 = len(bars) - 1
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 4])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
             bars.append([offsetT + 5 + 3 * i, offsetT + 5 + 3 * i - 5])
-            self.selectYPositiveBar(bars)
-        self.x_positive_side.append(tmp_lastbar1)
-        self.x_positive_side.append(tmp_lastbar2)
+            selectYNegativeBar(self, bars)
+        self.x_negative_side.append(tmp_lastbar1)
+        self.x_negative_side.append(tmp_lastbar2)
 
-        # Linie oben
+        # line on top
         for i in range(self.nSGA - 1):
             bars.append([offsetT + 2 + 3 * i, offsetT + 2 + 3 * i + 3])
-            self.selectYPositiveBar(bars)
-            self.selectYNegativeBar(bars)
+            selectYNegativeBar(self, bars)
+            selectYPositiveBar(self, bars)
+
 
     def ausleger_pyramid(self, nodes, bars, offsetT, offsetTG):
+        # nodes
         for i in range(1, self.nSA + 1):
             nodes.append([self.ls + i * self.ls, 0, (self.nST-1) * self.ls])  # Left Bottom
             nodes.append([self.ls + i * self.ls, self.ls, (self.nST-1) * self.ls])  # Right Bottom
             nodes.append([(self.ls/2 + i * self.ls), self.ls / 2, (self.nST) * self.ls])  # Top
+        offsetTO = len(nodes)  
 
 
-        # x- und y-Richtung
+        # bars
+        # x- und y-dircetion
         for i in range(self.nSA - 1):
             bars.append([offsetTG + i * 3, (offsetTG + 3) + i * 3])
-            self.selectYPositiveBar(bars)
+            selectYNegativeBar(self, bars)
             bars.append([offsetTG + i * 3, (offsetTG + 1) + i * 3])
             bars.append([(offsetTG + 1) + i * 3, (offsetTG + 4) + i * 3])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
 
-        #Hilfslinie unten
-        bars.append([offsetT - 2, offsetTG]) #Sonderfall erste Linie
+        # support line at bottom
+        bars.append([offsetT - 2, offsetTG]) #first line
         for i in range(self.nSA -1):
             bars.append([offsetTG + 1 + i*3, offsetTG + 3 + i*3])
 
-        # Bottom nodes with top nodes
+        # bottom nodes with top nodes
         tmp_lastbar1 = 0
         tmp_lastbar2 = 0
         for i in range(self.nSA - 1):
             bars.append([offsetTG + i * 3, (offsetTG + 5) + i * 3])
-            self.selectYPositiveBar(bars)
+            selectYNegativeBar(self, bars)
             bars.append([offsetTG + 1 + i * 3, (offsetTG + 5) + i * 3])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
             bars.append([(offsetTG + 5) + i * 3, offsetTG + 3 + i * 3])
-            self.selectYPositiveBar(bars)
+            selectYNegativeBar(self, bars)
             tmp_lastbar1 = len(bars) - 1
             bars.append([(offsetTG + 5) + i * 3, offsetTG + 4 + i * 3])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
             tmp_lastbar2 = len(bars) - 1
-        self.x_negative_side.append(tmp_lastbar1)
-        self.x_negative_side.append(tmp_lastbar2)
+        self.x_positive_side.append(tmp_lastbar1)
+        self.x_positive_side.append(tmp_lastbar2)
 
-        # Top Row
+        # top row
         for i in range(self.nSA - 1):
             bars.append([(offsetTG + 2) + i * 3, (offsetTG + 5) + i * 3])
-            self.selectYPositiveBar(bars)
-            self.selectYNegativeBar(bars)
+            selectYNegativeBar(self, bars)
+            selectYPositiveBar(self, bars)
 
-        # Extra bars
-        offsetTO = len(nodes)  # offset after all the nodes
+        bars.append([offsetTO - 2, offsetTO - 3]) # last bar at the end of the crane
+        selectXPositiveBar(self, bars)
 
-        # Last bar ate the end of the crane
-        bars.append([offsetTO - 2, offsetTO - 3])
-        self.selectXNegativeBar(bars)
+        bars.append([offsetT - 1, offsetTG + 2]) # top of the Tower with first Node Ausleger
+        selectYNegativeBar(self, bars)
+        selectYPositiveBar(self, bars)
 
-        # Top of the Tower with first Node Ausleger
-        bars.append([offsetT - 1, offsetTG + 2])
-        self.selectYPositiveBar(bars)
-        self.selectYNegativeBar(bars)
-
-        # Tower with the base of the Ausleger
+        # tower with the base of the jib
         bars.append([offsetT - 4, offsetTG])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
         bars.append([offsetT - 2, offsetTG + 1])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
 
-        # Tower with the first Top Node in Ausleger
+        # tower with the first Top Node in jib
         bars.append([offsetT - 4, offsetTG + 2])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
         bars.append([offsetT - 2, offsetTG + 2])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
 
-        # First Top Node to base Ausleger2
+        # first Top Node to base jib
         bars.append([offsetTG + 2, offsetTG + 1])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offsetTG + 2, offsetTG])
-        self.selectYPositiveBar(bars)
-
-    def selectYNegativeBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the Y bars
-        """
-        self.y_negative_side.append(len(bars) - 1)
+        selectYNegativeBar(self, bars)
 
     def selectYPositiveBar(self, bars):
         """
@@ -298,21 +285,27 @@ class crane_1(Truss):
         """
         self.y_positive_side.append(len(bars) - 1)
 
+    def selectYNegativeBar(self, bars):
+        """
+        Select the last bar from the bar array and add this to another array to select the Y bars
+        """
+        self.y_negative_side.append(len(bars) - 1)
+
     def selectXNegativeBar(self, bars):
         """
         Select the last bar from the bar array and add this to another array to select the X negative bars
         """
-        self.x_negative_side.append(len(bars) - 1)
+        self.x_positive_side.append(len(bars) - 1)
 
     def selectXPositiveBar(self, bars):
         """
         Select the last bar from the bar array and add this to another array to select the X positive bars
         """
-        self.x_positive_side.append(len(bars) - 1)
+        self.x_negative_side.append(len(bars) - 1)
 
 class crane_2_1(Truss):
     """
-    Kran mit ausgedünntem Turm mit höherer Spitze, pyramidalen Ausleger und Zugseilen
+    crane with almost cubicles in the tower and higher top,  jib made from pyramids and rope
     """
 
     def __init__(self, height, length, ls, A, rho, E, p=True):
@@ -333,17 +326,17 @@ class crane_2_1(Truss):
         self.length = length
         self.ls = ls
 
-        self.nST = np.ceil(height / ls).astype('int')  # Number of segments of the Tower
-        self.nSA = np.ceil(length / ls).astype('int')  # Number of segments of the Ausleger
-        self.nSGA = np.ceil((length / 2) / ls).astype('int')  # Number of segments of the Gegenausleger
+        self.nST = np.ceil(height / ls).astype('int')  # number of segments of the tower
+        self.nSA = np.ceil(length / ls).astype('int')  # number of segments of the jib
+        self.nSGA = np.ceil((length / 2) / ls).astype('int')  # number of segments of the counter Jib
 
         self.ls = np.min([self.height / self.nST, self.length / self.nSA])
 
         # indices of bars on a certain side of the crane
-        self.x_negative_side = []  # Done
-        self.x_positive_side = []  # Done
-        self.y_negative_side = []
-        self.y_positive_side = []  # Done
+        self.x_positive_side = []  
+        self.x_negative_side = []  
+        self.y_positive_side = []
+        self.y_negative_side = []  
 
         if p:
             print("Creating crane with zig-zag tower with " + str(self.nST) + " segments of length "+str(self.ls)+" and pyramidal jib with " + str(self.nSA) + " segments.")
@@ -351,23 +344,24 @@ class crane_2_1(Truss):
         offsetT = cur_offset(nodes) - 8
         self.ausleger_ver2(nodes, bars, offsetT)
         offsetA = cur_offset(nodes) + 1
-        self.tip_nodes = [offsetA-3, offsetA-4, offsetA-6, offsetA-7] # Knoten an der Spitze des Auslegers zur Lastanbringung
-        self.counterweight_nodes = [] # Knoten des Gegenauslegers zur Anbringung der Gegenlast
+        self.tip_nodes = [offsetA-3, offsetA-4, offsetA-6, offsetA-7] # nodes at front of jib for weights
+        self.counterweight_nodes = [] # nodes of counter jib for counter weight
         self.gegenausleger_ver2(nodes, bars, offsetT, offsetA)
 
         super().__init__(nodes, bars, A, rho, E)
 
-        self.x_negative_side = np.array(self.x_negative_side).astype(int)
         self.x_positive_side = np.array(self.x_positive_side).astype(int)
+        self.x_negative_side = np.array(self.x_negative_side).astype(int)
         self.y_positive_side = np.array(self.y_positive_side).astype(int)
+        self.y_negative_side = np.array(self.y_negative_side).astype(int)
 
-        # Lager
+        # supports
         self.supports = np.ones_like(self.nodes).astype(int)
         self.Ur = np.array([]).astype('int')
         for i in range(4):
             self.addSupport(i, 0, 0, 0)
 
-        # Externe Kräfte
+        # external Forces
         self.F = np.zeros_like(self.nodes)
 
         self._computeLengths()
@@ -380,189 +374,169 @@ class crane_2_1(Truss):
     def to_string(self):
         return "Kran 2.1: "+str(self.height)+" "+str(self.length)+" "+str(self.ls)
 
-    def selectYNegativeBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the Y bars
-        """
-        self.y_negative_side.append(len(bars) - 1)
-
-    def selectYPositiveBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the Y bars
-        """
-        self.y_positive_side.append(len(bars) - 1)
-
-    def selectXNegativeBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the X negative bars
-        """
-        self.x_negative_side.append(len(bars) - 1)
-
-    def selectXPositiveBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the X positive bars
-        """
-        self.x_positive_side.append(len(bars) - 1)
-
     def tower_ver2(self, nodes, bars):
-        # Nodes des Turms
+        # nodes 
         for i in range(self.nST-1):
             nodes.append([0, 0, i * self.ls])  # Left Top
             nodes.append([self.ls, 0, i * self.ls])  # Right Top
             nodes.append([0, self.ls, i * self.ls])  # Left Bottom
             nodes.append([self.ls, self.ls, i * self.ls])  # Right Bottom
-        #Spitze
+        # top
         nodes.append([self.ls*0.25, self.ls*0.25, self.ls * self.nST - self.ls])
         nodes.append([self.ls*0.25, self.ls*0.75, self.ls * self.nST - self.ls])
         nodes.append([self.ls*0.75, self.ls*0.25, self.ls * self.nST - self.ls])
         nodes.append([self.ls*0.75, self.ls*0.75, self.ls * self.nST - self.ls])
         nodes.append([self.ls/2, self.ls/2, self.ls * self.nST])
 
-        # Bars des Turms
-        
-        # z-Richtung
+        # bars 
+        # z-direction
         for i in range(self.nST - 2):
             bars.append([4 * i, 4 * i + 4])  # LT
-            self.selectYPositiveBar(bars)
-            self.selectXPositiveBar(bars)
+            selectYNegativeBar(self, bars)
+            selectXNegativeBar(self, bars)
             bars.append([4 * i + 1, 4 * i + 5])  # RT
-            self.selectYPositiveBar(bars)
-            self.selectXNegativeBar(bars)
+            selectYNegativeBar(self, bars)
+            selectXPositiveBar(self, bars)
             bars.append([4 * i + 2, 4 * i + 6])  # LB
-            self.selectXPositiveBar(bars)
-            self.selectYNegativeBar(bars)
+            selectXNegativeBar(self, bars)
+            selectYPositiveBar(self, bars)
             bars.append([4 * i + 3, 4 * i + 7])  # RB
-            self.selectXNegativeBar(bars)
-            self.selectYNegativeBar(bars)
+            selectXPositiveBar(self, bars)
+            selectYPositiveBar(self, bars)
 
-        # Kreuzstreben
+        # crossbars
         weird_offset = self.nST//2+1
         for i in range(self.nST - int(np.ceil(self.nST/2))):
 
             if i != self.nST - weird_offset:
-                bars.append([8 * i, 8 * i + 5])  # LT -> RT+1
-                self.selectYPositiveBar(bars)
-                self.selectYNegativeBar(bars)
+                bars.append([8 * i, 8 * i + 5])  
+                selectYNegativeBar(self, bars)
+                selectYPositiveBar(self, bars)
             if i != 0:
-                bars.append([8 * i - 3, 8 * i])  # RT -> RT+1
-                self.selectYPositiveBar(bars)
-                self.selectYNegativeBar(bars)
+                bars.append([8 * i - 3, 8 * i])  
+                selectYNegativeBar(self, bars)
+                selectYPositiveBar(self, bars)
 
             if i != self.nST - weird_offset:
-                bars.append([8 * i + 3, 8 * i + 6])  # RB -> LB+1
-                self.selectYPositiveBar(bars)
-                self.selectYNegativeBar(bars)
+                bars.append([8 * i + 3, 8 * i + 6])  
+                selectYNegativeBar(self, bars)
+                selectYPositiveBar(self, bars)
             if i != 0:
-                bars.append([8 * i - 2, 8 * i + 3])  # LB -> RB+1
-                self.selectYPositiveBar(bars)
-                self.selectYNegativeBar(bars)
+                bars.append([8 * i - 2, 8 * i + 3])  
+                selectYNegativeBar(self, bars)
+                selectYPositiveBar(self, bars)
 
             if i != self.nST - weird_offset:
-                bars.append([8 * i + 1, 8 * i + 7])  # RT -> RB+1
-                self.selectXNegativeBar(bars)
-                self.selectXPositiveBar(bars)
+                bars.append([8 * i + 1, 8 * i + 7])  
+                selectXPositiveBar(self, bars)
+                selectXNegativeBar(self, bars)
             if i != 0:
-                bars.append([8 * i - 1, 8 * i + 1])  # RB -> RT+1
-                self.selectXNegativeBar(bars)
-                self.selectXPositiveBar(bars)
+                bars.append([8 * i - 1, 8 * i + 1])  
+                selectXPositiveBar(self, bars)
+                selectXNegativeBar(self, bars)
 
             if i != self.nST - weird_offset:
-                bars.append([8 * i + 2, 8 * i + 4])  # LB -> LT+1
-                self.selectXNegativeBar(bars)
-                self.selectXPositiveBar(bars)
+                bars.append([8 * i + 2, 8 * i + 4])  
+                selectXPositiveBar(self, bars)
+                selectXNegativeBar(self, bars)
             if i != 0:
-                bars.append([8 * i - 4, 8 * i + 2])  # LT -> LB+1
-                self.selectXNegativeBar(bars)
-                self.selectXPositiveBar(bars)
+                bars.append([8 * i - 4, 8 * i + 2])  
+                selectXPositiveBar(self, bars)
+                selectXNegativeBar(self, bars)
 
+        # peak
         offset = len(nodes)
-        #aller oberste Spitze
         bars.append([offset-2, offset-6])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offset-3, offset-8])
-        self.selectYNegativeBar(bars)
+        selectYNegativeBar(self, bars)
         bars.append([offset-4, offset-7])
-        self.selectYPositiveBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offset-5, offset-9])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
         bars.append([offset-2, offset-1])
-        self.selectYNegativeBar(bars)
+        selectXPositiveBar(self, bars)
+        selectYPositiveBar(self, bars)
         bars.append([offset-3, offset-1])
-        self.selectYNegativeBar(bars)
+        selectXPositiveBar(self, bars)
+        selectYNegativeBar(self, bars)
         bars.append([offset-4, offset-1])
-        self.selectYPositiveBar(bars)
+        selectXNegativeBar(self, bars)
+        selectYPositiveBar(self, bars)
         bars.append([offset-5, offset-1])
-        self.selectYPositiveBar(bars)
+        selectXNegativeBar(self, bars)
+        selectYNegativeBar(self, bars)
 
-        bars.append([offset-6, offset-7]) # x-Richtung
-        bars.append([offset-8, offset-9]) # x-Richtung
-        bars.append([offset-6, offset-9]) # Diagonale unten
+        bars.append([offset-6, offset-7]) # x-direction
+        bars.append([offset-8, offset-9]) # x-direction
+        bars.append([offset-6, offset-9]) # diagonal bottom
 
-        # spitze verstärkung mitte 
-        # bars.append([offset-2, offset-3]) # y-Richtung
-        # bars.append([offset-4, offset-5]) # y-Richtung
-        # bars.append([offset-2, offset-4]) # y-Richtung
+        # top support in the middle 
+        # bars.append([offset-2, offset-3]) # y-direction
+        # bars.append([offset-4, offset-5]) # y-direction
+        # bars.append([offset-2, offset-4]) # y-direction
         # bars.append([offset-3, offset-5])
 
-        #kreuzstreben der Spitze
+        # crossbars of top
         bars.append([offset-6, offset-4])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offset-7, offset-5])
-        self.selectYNegativeBar(bars)
         bars.append([offset-8, offset-2])
-        self.selectYNegativeBar(bars)
         bars.append([offset-9, offset-3])
-        self.selectYNegativeBar(bars)
+        selectYNegativeBar(self, bars)
 
     def ausleger_ver2(self, nodes, bars, offsetT):
+        # nodes
         for i in range(1, self.nSA + 1):
             nodes.append([self.ls + i * self.ls, 0, (self.nST-2) * self.ls])  # Left Bottom
             nodes.append([self.ls + i * self.ls, self.ls, (self.nST-2) * self.ls])  # Right Bottom
             nodes.append([(self.ls/2 + i * self.ls), self.ls / 2, (self.nST-1) * self.ls])  # Top
 
-        # x- und y-Richtung
+        # bars
+        # x- and y-dircetion
         bars.append([offsetT, offsetT+2])
         bars.append([offsetT, offsetT + 8])
+        selectYNegativeBar(self, bars)
         bars.append([offsetT+2, offsetT + 9])
+        selectYPositiveBar(self, bars)
         for i in range(self.nSA - 1):
-            bars.append([offsetT+8 + 3*i, offsetT+9 + 3*i])
-            self.selectYPositiveBar(bars)
-            bars.append([offsetT+8 + 3*i, offsetT + 11 + 3*i])
-            self.selectYNegativeBar(bars)
-            bars.append([offsetT+9 + 3*i, offsetT + 12 + 3*i])
-            self.selectYNegativeBar(bars)
+            bars.append([offsetT+8 + 3*i, offsetT+9 + 3*i]) # y
+            bars.append([offsetT+8 + 3*i, offsetT + 11 + 3*i]) # x front
+            selectYNegativeBar(self, bars)
+            bars.append([offsetT+9 + 3*i, offsetT + 12 + 3*i]) # x back
+            selectYPositiveBar(self, bars)
         bars.append([offsetT+8 + (self.nSA - 1)*3, offsetT+9 + (self.nSA - 1)*3])
 
         # making the pyramids
         bars.append([offsetT, offsetT + 10])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
         bars.append([offsetT + 2, offsetT + 10])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offsetT + 8, offsetT + 10])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
         bars.append([offsetT + 9, offsetT + 10])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         tmp_lastbar1 = 0
         tmp_lastbar2 = 0
         for i in range(self.nSA - 1):
             bars.append([offsetT + 8 + i * 3, (offsetT + 8 + 5) + i * 3])
-            self.selectYPositiveBar(bars)
+            selectYNegativeBar(self, bars)
             bars.append([offsetT + 8 + 1 + i * 3, (offsetT + 8 + 5) + i * 3])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
             bars.append([(offsetT + 8 + 5) + i * 3, offsetT + 8 + 3 + i * 3])
-            self.selectYPositiveBar(bars)
+            selectYNegativeBar(self, bars)
             tmp_lastbar1 = len(bars) - 1
             bars.append([(offsetT + 8 + 5) + i * 3, offsetT + 8 + 4 + i * 3])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
             tmp_lastbar2 = len(bars) - 1
-        self.x_negative_side.append(tmp_lastbar1)
-        self.x_negative_side.append(tmp_lastbar2)
+        self.x_positive_side.append(tmp_lastbar1)
+        self.x_positive_side.append(tmp_lastbar2)
 
-        # Top Row
+        # top row
         for i in range(self.nSA - 1):
             bars.append([(offsetT + 10) + i * 3, (offsetT + 13) + i * 3])
-            self.selectYPositiveBar(bars)
-            self.selectYNegativeBar(bars)
+            selectYNegativeBar(self, bars)
+            selectYPositiveBar(self, bars)
 
         # diagonals
         bars.append([offsetT, offsetT+9])
@@ -573,6 +547,7 @@ class crane_2_1(Truss):
         bars.append([offsetT+7, offsetT + (self.nSA//2)*3 + 10])
 
     def gegenausleger_ver2(self, nodes, bars, offsetT, offsetA):
+        # nodes
         nodes.append([(self.ls/2 - self.ls), self.ls / 2, (self.nST-1) * self.ls]) # first top
         for i in range(2, self.nSA//2 + 3):
             nodes.append([self.ls - i * self.ls, 0, (self.nST-2) * self.ls])  # Left Bottom
@@ -582,43 +557,47 @@ class crane_2_1(Truss):
             if i!=self.nSA//2 + 2:
                 nodes.append([(self.ls/2 - i * self.ls), self.ls / 2, (self.nST-1) * self.ls])  # Top
 
-        # x- und y-Richtung
-        bars.append([offsetT-1, offsetA])
-        bars.append([offsetT+1, offsetA+1])
+        #bars
+        # x- and y-dircetion
+        bars.append([offsetT-1, offsetA]) # x
+        selectYNegativeBar(self, bars)
+        bars.append([offsetT+1, offsetA+1]) # x
+        selectYPositiveBar(self, bars)
         bars.append([offsetT-1, offsetT+1]) # y
         for i in range(self.nSA//2):
             bars.append([offsetA + 3*i, offsetA + 1 + 3*i]) # y
-            self.selectYPositiveBar(bars)
-            bars.append([offsetA + 3*i, offsetA + 3 + 3*i]) # x vorne
-            self.selectYNegativeBar(bars)
-            bars.append([offsetA + 3*i + 1, offsetA + 4 + 3*i]) # x hinten
-            self.selectYNegativeBar(bars)
+            bars.append([offsetA + 3*i, offsetA + 3 + 3*i]) # x front
+            selectYNegativeBar(self, bars)
+            bars.append([offsetA + 3*i + 1, offsetA + 4 + 3*i]) # x back
+            selectYPositiveBar(self, bars)
         bars.append([offsetA + 3*(self.nSA//2), offsetA + 1 + 3*(self.nSA//2)])
 
         # making the pyramids
-        tmp_lastbar1 = 0
-        tmp_lastbar2 = 0
         bars.append([offsetT-1, offsetA-1])
+        selectYNegativeBar(self, bars)
         bars.append([offsetT+1, offsetA-1])
+        selectYPositiveBar(self, bars)
         bars.append([offsetA, offsetA-1])
+        selectYNegativeBar(self, bars)
         bars.append([offsetA+1, offsetA-1])
+        selectYPositiveBar(self, bars)
         for i in range(self.nSA//2):
             bars.append([offsetA + 3*i, offsetA + 2 + 3*i])
-            self.selectYPositiveBar(bars)
+            selectYNegativeBar(self, bars)
             bars.append([offsetA + 3*i + 1, offsetA + 2 + 3*i])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
             bars.append([offsetA + 3*i + 4, offsetA + 2 + 3*i])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
             bars.append([offsetA + 3*i + 3, offsetA + 2 + 3*i])
-            self.selectYNegativeBar(bars)
-        self.x_negative_side.append(tmp_lastbar1)
-        self.x_negative_side.append(tmp_lastbar2)
+            selectYNegativeBar(self, bars)
+        self.x_negative_side.append(len(bars)-2)
+        self.x_negative_side.append(len(bars)-1)
 
-        # Top Row
+        # top row
         for i in range(self.nSA//2):
             bars.append([offsetA - 1 + i * 3, offsetA + 2 + i * 3])
-            self.selectYPositiveBar(bars)
-            self.selectYNegativeBar(bars)
+            selectYNegativeBar(self, bars)
+            selectYPositiveBar(self, bars)
 
         # diagonals
         bars.append([offsetT+1, offsetA])
@@ -630,7 +609,8 @@ class crane_2_1(Truss):
 
 class crane_2_2(Truss):
     """
-    Kran mit ausgedünntem Turm und pyramidalen Ausleger
+    crane with almost cubicals in the tower,  jib made from pyramids and rope
+
     """
 
     def __init__(self, height, length, ls, A, rho, E, p=True):
@@ -652,17 +632,17 @@ class crane_2_2(Truss):
         self.length = length
         self.ls = ls
 
-        self.nST = np.ceil(height / ls).astype('int')  # Number of segments of the Tower
-        self.nSA = np.ceil(length / ls).astype('int')  # Number of segments of the Ausleger
-        self.nSGA = np.ceil((length / 2) / ls).astype('int')  # Number of segments of the Gegenausleger
+        self.nST = np.ceil(height / ls).astype('int')  # number of segments of the tower
+        self.nSA = np.ceil(length / ls).astype('int')  # number of segments of the jib
+        self.nSGA = np.ceil((length / 2) / ls).astype('int')  # number of segments of the counter jib
 
         self.ls = np.min([self.height / self.nST, self.length / self.nSA])
 
         # indices of bars on a certain side of the crane
-        self.x_negative_side = []  # Done
-        self.x_positive_side = []  # Done
-        self.y_negative_side = []
-        self.y_positive_side = []  # Done
+        self.x_positive_side = []  
+        self.x_negative_side = []  
+        self.y_positive_side = []
+        self.y_negative_side = []  
 
         if p:
             print("Creating crane with zig-zag tower with " + str(self.nST) + " segments of length "+str(self.ls)+" and pyramidal jib with " + str(self.nSA) + " segments.")
@@ -670,24 +650,25 @@ class crane_2_2(Truss):
         offsetT = cur_offset(nodes)
         self.ausleger_ver2(nodes, bars, offsetT)
         offsetA = cur_offset(nodes) + 1
-        self.tip_nodes = [offsetA-3, offsetA-4, offsetA-6, offsetA-7] # Knoten an der Spitze des Auslegers zur Lastanbringung
-        self.counterweight_nodes = [] # Knoten des Gegenauslegers zur Anbringung der Gegenlast
+        self.tip_nodes = [offsetA-3, offsetA-4, offsetA-6, offsetA-7] # nodes at front of jib for weights
+        self.counterweight_nodes = [] # nodes of counter jib for counter weight
         self.gegenausleger_ver2(nodes, bars, offsetT, offsetA)
 
         super().__init__(nodes, bars, A, rho, E)
 
-        self.x_negative_side = np.array(self.x_negative_side).astype(int)
         self.x_positive_side = np.array(self.x_positive_side).astype(int)
+        self.x_negative_side = np.array(self.x_negative_side).astype(int)
         self.y_positive_side = np.array(self.y_positive_side).astype(int)
+        self.y_negative_side = np.array(self.y_negative_side).astype(int)
         # super().setLateralBars(self.x_side, self.y_side)
 
-        # Lager
+        # supports
         self.supports = np.ones_like(self.nodes).astype(int)
         self.Ur = np.array([]).astype('int')
         for i in range(4):
             self.addSupport(i, 0, 0, 0)
 
-        # Externe Kräfte
+        # external forces
         self.F = np.zeros_like(self.nodes)
 
         self._computeLengths()
@@ -700,32 +681,9 @@ class crane_2_2(Truss):
     def to_string(self):
         return "Kran 2.2: "+str(self.height)+" "+str(self.length)+" "+str(self.ls)
 
-    def selectYNegativeBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the Y bars
-        """
-        self.y_negative_side.append(len(bars) - 1)
-
-    def selectYPositiveBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the Y bars
-        """
-        self.y_positive_side.append(len(bars) - 1)
-
-    def selectXNegativeBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the X negative bars
-        """
-        self.x_negative_side.append(len(bars) - 1)
-
-    def selectXPositiveBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the X positive bars
-        """
-        self.x_positive_side.append(len(bars) - 1)
 
     def tower_ver2(self, nodes, bars):
-        # Nodes des Turms
+        # nodes 
         for i in range(self.nST):
             nodes.append([0, 0, i * self.ls])  # Left Top
             nodes.append([self.ls, 0, i * self.ls])  # Right Top
@@ -733,24 +691,23 @@ class crane_2_2(Truss):
             nodes.append([self.ls, self.ls, i * self.ls])  # Right Bottom
         nodes.append([self.ls/2, self.ls/2, self.ls * self.nST]) #Spitze
 
-        # Bars des Turms
-        
-        # z-Richtung
+        # bars des Turms
+        # z-dircetion
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 4])  # LT
-            self.selectYPositiveBar(bars)
-            self.selectXPositiveBar(bars)
+            selectYNegativeBar(self, bars)
+            selectXNegativeBar(self, bars)
             bars.append([4 * i + 1, 4 * i + 5])  # RT
-            self.selectYPositiveBar(bars)
-            self.selectXNegativeBar(bars)
+            selectYNegativeBar(self, bars)
+            selectXPositiveBar(self, bars)
             bars.append([4 * i + 2, 4 * i + 6])  # LB
-            self.selectXPositiveBar(bars)
-            self.selectYNegativeBar(bars)
+            selectXNegativeBar(self, bars)
+            selectYPositiveBar(self, bars)
             bars.append([4 * i + 3, 4 * i + 7])  # RB
-            self.selectXNegativeBar(bars)
-            self.selectYNegativeBar(bars)
+            selectXPositiveBar(self, bars)
+            selectYPositiveBar(self, bars)
 
-        # Kreuzstreben
+        # crossbars
         if self.nST%2 == 0:
             weird_offset = self.nST//2 - 1
             nseg = self.nST
@@ -762,54 +719,57 @@ class crane_2_2(Truss):
 
             if i != nseg - weird_offset:
                 bars.append([8 * i, 8 * i + 5])  # LT -> RT+1
-                self.selectYPositiveBar(bars)
-                self.selectYNegativeBar(bars)
+                selectYNegativeBar(self, bars)
+                selectYPositiveBar(self, bars)
             if i != 0:
                 bars.append([8 * i - 3, 8 * i])  # RT -> RT+1
-                self.selectYPositiveBar(bars)
-                self.selectYNegativeBar(bars)
+                selectYNegativeBar(self, bars)
+                selectYPositiveBar(self, bars)
 
             if i != nseg - weird_offset:
                 bars.append([8 * i + 3, 8 * i + 6])  # RB -> LB+1
-                self.selectYPositiveBar(bars)
-                self.selectYNegativeBar(bars)
+                selectYNegativeBar(self, bars)
+                selectYPositiveBar(self, bars)
             if i != 0:
                 bars.append([8 * i - 2, 8 * i + 3])  # LB -> RB+1
-                self.selectYPositiveBar(bars)
-                self.selectYNegativeBar(bars)
+                selectYNegativeBar(self, bars)
+                selectYPositiveBar(self, bars)
 
             if i != nseg - weird_offset:
                 bars.append([8 * i + 1, 8 * i + 7])  # RT -> RB+1
-                self.selectXNegativeBar(bars)
-                self.selectXPositiveBar(bars)
+                selectXPositiveBar(self, bars)
+                selectXNegativeBar(self, bars)
             if i != 0:
                 bars.append([8 * i - 1, 8 * i + 1])  # RB -> RT+1
-                self.selectXNegativeBar(bars)
-                self.selectXPositiveBar(bars)
+                selectXPositiveBar(self, bars)
+                selectXNegativeBar(self, bars)
 
             if i != nseg - weird_offset:
                 bars.append([8 * i + 2, 8 * i + 4])  # LB -> LT+1
-                self.selectXNegativeBar(bars)
-                self.selectXPositiveBar(bars)
+                selectXPositiveBar(self, bars)
+                selectXNegativeBar(self, bars)
             if i != 0:
                 bars.append([8 * i - 4, 8 * i + 2])  # LT -> LB+1
-                self.selectXNegativeBar(bars)
-                self.selectXPositiveBar(bars)
+                selectXPositiveBar(self, bars)
+                selectXNegativeBar(self, bars)
 
         offset = len(nodes)
-        #aller oberste Spitze
+        
+        # top
         bars.append([offset-2, offset-1])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offset-3, offset-1])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offset-4, offset-1])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
         bars.append([offset-5, offset-1])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
 
-        bars.append([offset-2, offset-3]) # x-Richtung
-        bars.append([offset-4, offset-5]) # x-Richtung
-        bars.append([offset-2, offset-5]) # Diagonale unten
+        bars.append([offset-2, offset-3]) # x-direction
+        selectYPositiveBar(self, bars)
+        bars.append([offset-4, offset-5]) # x-direction
+        selectYNegativeBar(self, bars)
+        bars.append([offset-2, offset-5]) # digonal bottom 
 
     def ausleger_ver2(self, nodes, bars, offsetT):
 
@@ -818,50 +778,50 @@ class crane_2_2(Truss):
             nodes.append([self.ls + i * self.ls, self.ls, (self.nST-1) * self.ls])  # Right Bottom
             nodes.append([(self.ls/2 + i * self.ls), self.ls / 2, self.nST * self.ls])  # Top
 
-        # x- und y-Richtung
+        # x- and y-dircetion
         bars.append([offsetT-2, offsetT-4])
         bars.append([offsetT-4, offsetT + 3])
+        selectYNegativeBar(self, bars)
         bars.append([offsetT-2, offsetT + 4])
+        selectYPositiveBar(self, bars)
         for i in range(self.nSA - 1):
             bars.append([offsetT + 3*i, offsetT+1 + 3*i]) # y
-            self.selectYPositiveBar(bars)
-            bars.append([offsetT + 3*i, offsetT + 3 + 3*i])
-            self.selectYNegativeBar(bars)
-            bars.append([offsetT+1 + 3*i, offsetT + 4 + 3*i])
-            self.selectYNegativeBar(bars)
+            bars.append([offsetT + 3*i, offsetT + 3 + 3*i]) # front
+            selectYNegativeBar(self, bars)
+            bars.append([offsetT+1 + 3*i, offsetT + 4 + 3*i]) # back
+            selectYPositiveBar(self, bars)
         bars.append([offsetT + (self.nSA - 1)*3, offsetT+1 + (self.nSA - 1)*3])
 
         # making the pyramids
         bars.append([offsetT, offsetT + 2])
-        self.selectYPositiveBar(bars)
+        selectYNegativeBar(self, bars)
         bars.append([offsetT + 1, offsetT + 2])
-        self.selectYNegativeBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offsetT - 2, offsetT + 2])
-        self.selectYPositiveBar(bars)
+        selectYPositiveBar(self, bars)
         bars.append([offsetT - 4, offsetT + 2])
-        self.selectYNegativeBar(bars)
-        tmp_lastbar1 = 0
-        tmp_lastbar2 = 0
+        selectYNegativeBar(self, bars)
         for i in range(self.nSA - 1):
             bars.append([offsetT + i * 3, (offsetT + 5) + i * 3])
-            self.selectYPositiveBar(bars)
+            selectYNegativeBar(self, bars)
             bars.append([offsetT + 1 + i * 3, (offsetT + 5) + i * 3])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
             bars.append([(offsetT + 5) + i * 3, offsetT + 3 + i * 3])
-            self.selectYPositiveBar(bars)
-            tmp_lastbar1 = len(bars) - 1
+            selectYNegativeBar(self, bars)
             bars.append([(offsetT + 5) + i * 3, offsetT + 4 + i * 3])
-            self.selectYNegativeBar(bars)
-            tmp_lastbar2 = len(bars) - 1
-        self.x_negative_side.append(tmp_lastbar1)
-        self.x_negative_side.append(tmp_lastbar2)
+            selectYPositiveBar(self, bars)
+        self.x_positive_side.append(len(bars)-2)
+        self.x_positive_side.append(len(bars)-1)
+    
 
-        # Top Row
+        # top row
         bars.append([offsetT-1, offsetT + 2])
+        selectYPositiveBar(self, bars)
+        selectYNegativeBar(self, bars)
         for i in range(self.nSA - 1):
             bars.append([(offsetT + 2) + i * 3, (offsetT + 5) + i * 3])
-            self.selectYPositiveBar(bars)
-            self.selectYNegativeBar(bars)
+            selectYNegativeBar(self, bars)
+            selectYPositiveBar(self, bars)
 
         # diagonals
         bars.append([offsetT-4, offsetT+1])
@@ -870,7 +830,7 @@ class crane_2_2(Truss):
 
 
     def gegenausleger_ver2(self, nodes, bars, offsetT, offsetA):
-        nodes.append([(self.ls/2 - self.ls), self.ls / 2, self.nST * self.ls]) # first top
+        nodes.append([(self.ls/2 - self.ls), self.ls / 2, self.nST * self.ls]) # First top
         for i in range(2, self.nSA//2 + 3):
             nodes.append([self.ls - i * self.ls, 0, (self.nST-1) * self.ls])  # Left Bottom
             self.counterweight_nodes.append(len(nodes) - 1)
@@ -879,44 +839,49 @@ class crane_2_2(Truss):
             if i!=self.nSA//2 + 2:
                 nodes.append([(self.ls/2 - i * self.ls), self.ls / 2, self.nST * self.ls])  # Top
 
-        # x- und y-Richtung
-        bars.append([offsetT-3, offsetA+1]) # erstes x
-        bars.append([offsetT-5, offsetA]) # erstes x
+        # x- and y-dircetion
+        bars.append([offsetT-3, offsetA+1]) # First x back
+        selectYPositiveBar(self, bars)
+        bars.append([offsetT-5, offsetA]) # First x front
+        selectYNegativeBar(self, bars)
         bars.append([offsetT-3, offsetT-5]) # y
         for i in range(self.nSA//2):
             bars.append([offsetA + 3*i, offsetA + 1 + 3*i]) # y
-            self.selectYPositiveBar(bars)
-            bars.append([offsetA + 3*i, offsetA + 3 + 3*i]) # x vorne
-            self.selectYNegativeBar(bars)
-            bars.append([offsetA + 3*i + 1, offsetA + 4 + 3*i]) # x hinten
-            self.selectYNegativeBar(bars)
+            bars.append([offsetA + 3*i, offsetA + 3 + 3*i]) # x front
+            selectYNegativeBar(self, bars)
+            bars.append([offsetA + 3*i + 1, offsetA + 4 + 3*i]) # x back
+            selectYPositiveBar(self, bars)
         bars.append([offsetA + 3*(self.nSA//2), offsetA + 1 + 3*(self.nSA//2)])
 
         # making the pyramids
-        tmp_lastbar1 = 0
-        tmp_lastbar2 = 0
         bars.append([offsetT-5, offsetA-1])
+        selectYNegativeBar(self, bars)
         bars.append([offsetT-3, offsetA-1])
+        selectYPositiveBar(self, bars)
         bars.append([offsetA, offsetA-1])
+        selectYNegativeBar(self, bars)
         bars.append([offsetA+1, offsetA-1])
+        selectYPositiveBar(self, bars)
         for i in range(self.nSA//2):
             bars.append([offsetA + 3*i, offsetA + 2 + 3*i])
-            self.selectYPositiveBar(bars)
+            selectYNegativeBar(self, bars)
             bars.append([offsetA + 3*i + 1, offsetA + 2 + 3*i])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
             bars.append([offsetA + 3*i + 4, offsetA + 2 + 3*i])
-            self.selectYNegativeBar(bars)
+            selectYPositiveBar(self, bars)
             bars.append([offsetA + 3*i + 3, offsetA + 2 + 3*i])
-            self.selectYNegativeBar(bars)
-        self.x_negative_side.append(tmp_lastbar1)
-        self.x_negative_side.append(tmp_lastbar2)
+            selectYNegativeBar(self, bars)
+        self.x_negative_side.append(len(bars)-2)
+        self.x_negative_side.append(len(bars)-1)
 
-        # Top Row
-        bars.append([offsetA - 1, offsetT-1]) # verbindung zur Spitze
+        # top row
+        bars.append([offsetA - 1, offsetT-1]) # connect to top
+        selectYPositiveBar(self, bars)
+        selectYNegativeBar(self, bars)
         for i in range(self.nSA//2):
             bars.append([offsetA - 1 + i * 3, offsetA + 2 + i * 3])
-            self.selectYPositiveBar(bars)
-            self.selectYNegativeBar(bars)
+            selectYNegativeBar(self, bars)
+            selectYPositiveBar(self, bars)
 
         # diagonals
         bars.append([offsetT-3, offsetA])
@@ -928,4 +893,29 @@ class crane_2_2(Truss):
 
 def cur_offset(nodes):
     return len(nodes)
+
+def selectXPositiveBar(crane, bars):
+        """
+        Select the last bar from the bar array and add this to another array to select the X negative bars
+        """
+        crane.x_positive_side.append(len(bars) - 1)
+
+def selectXNegativeBar(crane, bars):
+        """
+        Select the last bar from the bar array and add this to another array to select the X negative bars
+        """
+        crane.x_negative_side.append(len(bars) - 1)
+
+def selectYNegativeBar(crane, bars):
+    """
+    Select the last bar from the bar array and add this to another array to select the Y bars
+    """
+    crane.y_negative_side.append(len(bars) - 1)
+
+def selectYPositiveBar(crane, bars):
+        """
+        Select the last bar from the bar array and add this to another array to select the Y bars
+        """
+        crane.y_positive_side.append(len(bars) - 1)
+
     

@@ -9,8 +9,8 @@ class FEM:
         self.truss = truss
         self.NN = len(truss.nodes)
         self.NE = len(truss.bars)
-        self.DOF = 3  # weil wir uns in 3D befinden
-        self.NDOF = self.DOF * self.NN  # Gesamtanzahl der Freihetsgrade
+        self.DOF = 3  # because we are in 3D 
+        self.NDOF = self.DOF * self.NN  # total number of degrees of freedom
         self.own_weight = own_weight
         self.firstCreate = True  # so that weights don't get added multiple times
         self.TrussAnalysis()
@@ -54,32 +54,31 @@ class FEM:
         A = self.truss.A
         L = self.truss.lengths
         trans = np.concatenate((-self.truss.orientations.T, self.truss.orientations.T),
-                               axis=1)  # Transformationsvektor lokal -> global
+                               axis=1)  # transformation vector local -> global
         K = self.computeStiffnessMatrix(E, A, L, trans)
         # print("Determinant K:", np.linalg.det(K))
-        freeDOF = self.truss.supports.flatten().nonzero()[0]  # Prüfe, welche Knoten FG > 0 haben
+        freeDOF = self.truss.supports.flatten().nonzero()[0]  # check, which nodes are FG > 0 
         supportDOF = (self.truss.supports.flatten() == 0).nonzero()[0]  # Knoten mit Lagern
-        Kff = K[np.ix_(freeDOF, freeDOF)]  # Vollkommen Bewegliche knoten
-        Kfr = K[np.ix_(freeDOF, supportDOF)]  # Teilweise bewegliche Knoten # sicher?
+        Kff = K[np.ix_(freeDOF, freeDOF)]  # totally movable nodes 
+        Kfr = K[np.ix_(freeDOF, supportDOF)]  # partially movable nodes  # are we shuurree?
         Krf = Kfr.T
-        # Krr = K[np.ix_(supportDOF, supportDOF)]  # für die Lagerkräfte
+        # Krr = K[np.ix_(supportDOF, supportDOF)]  # for the support forces
 
-        # Weight
+        # weight
         if (self.firstCreate and self.own_weight):
             weights = np.zeros_like(self.truss.F)
             weights[:, 2] = -self.computeWeight()
             self.truss.addExternalForces(weights)
 
-        F = self.truss.F.flatten()[freeDOF]  # Kraftmatrix passend zu K mit nicht null Einträgen, wie oben definiert
+        F = self.truss.F.flatten()[freeDOF]  # matrix of forces, like K, with not-null entries, as definied before
         Uf = np.linalg.lstsq(Kff, F, rcond=None)[0]
         U = self.truss.supports.astype(float).flatten()
         U[freeDOF] = Uf
         U[supportDOF] = self.truss.Ur
         U = U.reshape(self.NN, self.DOF)
-        u = np.concatenate((U[self.truss.bars[:, 0]], U[self.truss.bars[:, 1]]),
-                           axis=1)  # Verschiebungsvektor für die einzelnen Elemente
-        N = E * A / L[:] * (trans[:] * u[:]).sum(axis=1)  # interne Kräfte
-        R = (Krf[:] * Uf).sum(axis=1)  # + (Krr[:] * self.truss.Ur).sum(axis=1)  # Reaktionskräfte
+        u = np.concatenate((U[self.truss.bars[:, 0]], U[self.truss.bars[:, 1]]),axis=1)  # displacement vector for each element
+        N = E * A / L[:] * (trans[:] * u[:]).sum(axis=1)  # internal forces
+        R = (Krf[:] * Uf).sum(axis=1)  # + (Krr[:] * self.truss.Ur).sum(axis=1)  # reactional forces
         # update N, R, U
         self.__dict__["N"] = N
         self.__dict__["R"] = R
@@ -89,11 +88,11 @@ class FEM:
         K = np.zeros([self.NDOF, self.NDOF])
         for k in range(self.NE):
             aux = self.DOF * self.truss.bars[k, :]
-            # Indices der vom Element betroffenen Knoten für Position der Summierung
+            # Indices of elements of effected nodes for position of sum
             index = np.r_[aux[0]:aux[0] + self.DOF, aux[1]:aux[1] + self.DOF]
-            # lokale Steifigkeiten, np.newaxis für 0 Zeile(4x4)
+            # local stiffness, np.newaxis for 0 lines(4x4)
             ES = np.dot(trans[k][np.newaxis].T * E * A, trans[k][np.newaxis]) / L[k]
-            # Globale Steifigkeiten durch Summierung der Einzelsteifigkeiten, Position !
+            # global stiffness: sum of single stiffnesses, position !
             K[np.ix_(index, index)] = K[np.ix_(index, index)] + ES
         return K
 
@@ -150,11 +149,11 @@ class FEM:
         for bar in bars:
             nOutgoingBars[bar] = nOutgoingBars[bar] + 1
 
-        # Height of the bars
+        # height of the bars
         area_bars = self.truss.A ** 0.5 * lengths
 
         # add wind force to node for each bar that is connected to it
-        # Wind pressure: 0.5 * rho * v^2 [m/s] * A [m^2]
+        # wind pressure: 0.5 * rho * v^2 [m/s] * A [m^2]
         forces = np.zeros_like(self.truss.nodes[:, 0])
         for i in range(len(bars)):
             forces[bars[i]] = forces[bars[i]] + 0.5 * area_bars[
@@ -179,21 +178,21 @@ class FEM:
         if value < 0 or value > 1:
             raise Exception("The input value must lay between 0 and one!")
 
-        # Define the color scale
+        # define the color scale
         color_scale = [
-            (0, (0, 255, 0)),      # Green
-            (0.2, (255, 255, 0)),  # Yellow
-            (0.4, (255, 165, 0)),  # Orange
-            (0.6, (255, 0, 0)),    # Red
-            (1, (128, 0, 128))     # Purple
+            (0, (0, 255, 0)),      # green
+            (0.25, (255, 255, 0)),  # yellow
+            (0.5, (255, 165, 0)),  # orange
+            (0.75, (255, 0, 0)),    # red
+            (1, (128, 0, 128))     # purple
         ]
         
-        # Find the appropriate color range for the value
+        # find the appropriate color range for the value
         for i in range(len(color_scale) - 1):
             if value <= color_scale[i + 1][0]:
                 break
         
-        # Interpolate between the colors
+        # interpolate between the colors
         start_value, start_color = color_scale[i]
         end_value, end_color = color_scale[i + 1]
         ratio = (value - start_value) / (end_value - start_value)
@@ -203,46 +202,69 @@ class FEM:
             int(start_color[2] + ratio * (end_color[2] - start_color[2]))
         )
         
-        # Convert the color to HEX format
+        # convert the color to HEX format
         hex_color = '#{:02x}{:02x}{:02x}'.format(*color)
         
         return hex_color
     
     def getColorMap(self):
-        min = np.min(self.N)
-        max = np.max(self.N)
+        tension = self.getTension()
+        min = np.min(tension)
+        max = np.max(tension)
         color = []
         for bar in self.truss.bars:
-            force = (self.N[bar[0]] + self.N[bar[1]]) / 2
-            value = (force - min) / (max - min) # Wert normalisieren
+            force = (tension[bar[0]] + tension[bar[1]]) / 2
+            value = (force - min) / (max - min) # normalise value 
             color.append(self.map_value_to_color(value))
         return color
 
     def display(self, scale=1, external_forces=True, tension=False):
-        # Zeichne undeformierten Kran
+        minTension = np.min(self.getTension())/1e6 # minimum tension [MPa]
+        maxTension = np.max(self.getTension())/1e6 # maximum tension [MPa]
+
+        # plot crane without deformations
         self.plot(self.truss.nodes, self.truss.bars, 'gray', '--', 1)
 
-        # Zeichne deformierten Kran
-        dnodes = self.U * scale + self.truss.nodes # Verschiebung der Knoten
+        # plot crane with deformations 
+        dnodes = self.U * scale + self.truss.nodes # displacement of nodes
 
         if not tension:
             self.plot(dnodes, self.truss.bars, 'red', '-', 2)
         else:
-            # Normalkräfte farblich visualisieren
+            # visualize normal forces with colors 
             colors = self.getColorMap()
             self.plot(dnodes, self.truss.bars, colors, '-', 2)
+            # legend
+            color_scale = [
+                (0, 255, 0),    # green
+                (255, 255, 0),  # yellow
+                (255, 165, 0),  # orange
+                (255, 0, 0),    # red
+                (128, 0, 128)]  # purple
+        
+            lines = [plt.Line2D([0], [0], color='#{:02x}{:02x}{:02x}'.format(*color_scale[0]), lw=2),
+                     plt.Line2D([0], [0], color='#{:02x}{:02x}{:02x}'.format(*color_scale[1]), lw=2),
+                     plt.Line2D([0], [0], color='#{:02x}{:02x}{:02x}'.format(*color_scale[2]), lw=2),
+                     plt.Line2D([0], [0], color='#{:02x}{:02x}{:02x}'.format(*color_scale[3]), lw=2),
+                     plt.Line2D([0], [0], color='#{:02x}{:02x}{:02x}'.format(*color_scale[4]), lw=2)]
+            
+            labels = [str(int(minTension))+" MPa",
+                      str(int(minTension + 0.25*(maxTension-minTension)))+" MPa",
+                      str(int(minTension + 0.5*(maxTension-minTension)))+" MPa",
+                      str(int(minTension + 0.75*(maxTension-minTension)))+" MPa",
+                      str(int(maxTension))+" MPa"]
+
+            plt.legend(lines, labels, title="Spannungen")
 
         if external_forces:
             for i in self.truss.force_points:
                 self.plotPoint(dnodes[i])
 
         plt.suptitle(self.truss)
-        plt.title("forces: ["+str(int(np.min(self.N)/1000))+", "+str(int(np.max(self.N)/1000))+"] kN", fontsize=10)
-        # Graphik speichern
-        plt.savefig('figures/fig1', dpi=600)
+        plt.title("spannung: ["+str(int(minTension))+", "+str(int(maxTension))+"] MPa", fontsize=10)
+        # save plot
+        # plt.savefig('figures/fig1', dpi=600)
         plt.show()
-        
-    
 
 
     def plot(self, nodes, bars, color, lt, lw, lg=None):
@@ -252,11 +274,11 @@ class FEM:
         plt.gca().set_aspect('equal')
         # plt.gca(projection='3d')
         for i in range(len(bars)):
-            # Jeweilige Start und Endkoordiante
+            # each start and end coordinate
             xi, xf = nodes[bars[i, 0], 0], nodes[bars[i, 1], 0]
             yi, yf = nodes[bars[i, 0], 1], nodes[bars[i, 1], 1]
             zi, zf = nodes[bars[i, 0], 2], nodes[bars[i, 1], 2]
-            # Plotte die Elemente
+            # plot elements 
             line, = plt.plot([xi, xf], [yi, yf], [zi, zf], color=color[i], linestyle=lt, linewidth=lw)
         if lg is not None:
             line.set_label(lg)
