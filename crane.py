@@ -671,8 +671,11 @@ class crane_2_2(Truss):
         # external forces
         self.F = np.zeros_like(self.nodes)
 
-        self._computeLengths()
-        self._computeOrientations()
+        # Connection vector of each bar, as ending node - starting node
+        self.d = self.nodes[self.bars[:, 1], :] - self.nodes[self.bars[:, 0], :]
+
+        self._computeLengths(self.d)
+        self._computeOrientations(self.d)
         self._computeMass()
 
     def __str__(self):
