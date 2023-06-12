@@ -299,10 +299,12 @@ class FEM:
             legend_colors, _ = self.getColorMap(legend_values, minTension, maxTension)
             for color in legend_colors:
                 lines.append(plt.Line2D([0], [0], color=color, lw=2))
+            lines.reverse()
             
             labels = []
             for value in legend_values:
                 labels.append(str(int(value))+" "+unit)
+            labels.reverse()
 
             plt.legend(lines, labels, title="Spannungen")
 
