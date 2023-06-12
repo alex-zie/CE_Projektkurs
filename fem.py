@@ -187,27 +187,18 @@ class FEM:
         self.TrussAnalysis()
 
     #TODO change colors
-    def map_value_to_color(self, value):
-        if value < 0 or value > 1:
-            raise Exception("The input value must lay between 0 and one!")
-
-        # define the color scale
-        color_scale = [
-            (0, (0, 255, 0)),      # green
-            (0.25, (255, 255, 0)),  # yellow
-            (0.5, (255, 165, 0)),  # orange
-            (0.75, (255, 0, 0)),    # red
-            (1, (128, 0, 128))     # purple
-        ]
+    def map_value_to_color(self, value, color_map):
+        if value < -1 or value > 1:
+            raise Exception("The input value must lay between -1 and 1!")
         
         # find the appropriate color range for the value
-        for i in range(len(color_scale) - 1):
-            if value <= color_scale[i + 1][0]:
+        for i in range(len(color_map) - 1):
+            if value < color_map[i + 1][0]:
                 break
         
         # interpolate between the colors
-        start_value, start_color = color_scale[i]
-        end_value, end_color = color_scale[i + 1]
+        start_value, start_color = color_map[i]
+        end_value, end_color = color_map[i + 1]
         ratio = (value - start_value) / (end_value - start_value)
         color = (
             int(start_color[0] + ratio * (end_color[0] - start_color[0])),
@@ -220,16 +211,35 @@ class FEM:
         
         return hex_color
     
-    def getColorMap(self):
-        tension = self.getTension()
-        min = np.min(tension)
-        max = np.max(tension)
+    def getColorMap(self, values, min, max):
+        """
+        Returns:
+            * a color array based on the given values
+            * the color map that was used
+
+        values : array-like
+        min :
+            minimum value to be assigned a color
+        max :
+            maximum value to be assigned a color
+        """
+
+        # define the color map
+        color_map = [
+            (-1, (128, 0, 128)),    # purple
+            (-2/3, (0, 0, 255)),   # blue
+            (-1/3, (0, 255, 255)), # cyan
+            (0, (0, 255, 0)),       # green
+            (1/3, (255, 255, 0)),  # yellow
+            (2/3, (255, 165, 0)),  # orange
+            (1, (200, 0, 64))       # dark red
+        ]
+
+        abs_max = np.max([np.abs(min), np.abs(max)]) # so that 0 is later mapped to zero
         color = []
-        for bar in self.truss.bars:
-            force = (tension[bar[0]] + tension[bar[1]]) / 2
-            value = (force - min) / (max - min) # normalise value 
-            color.append(self.map_value_to_color(value))
-        return color
+        for value in values:
+            color.append(self.map_value_to_color(value/abs_max, color_map)) # normalize value to fit interval [-1, 1]
+        return color, color_map
 
     def display(self, scale=1, external_forces=True, tension=False, wind=False):
         """
@@ -245,8 +255,20 @@ class FEM:
         if tension and wind:
             print("It is not recommended to have both tension and wind exposed surfaces displayed!")
 
-        minTension = np.min(self.getTension())/1e6 # minimum tension [MPa]
-        maxTension = np.max(self.getTension())/1e6 # maximum tension [MPa]
+        tensions = self.getTension()
+        minTension = np.min(tensions)
+        maxTension = np.max(tensions)
+
+        if np.abs(minTension) >= 1e6 or np.abs(maxTension):
+            minTension = minTension/1e6  
+            maxTension = maxTension/1e6
+            tensions = tensions/1e6
+            unit = 'MPa'
+        else: # both are < 1e6
+            minTension = minTension/1e3  
+            maxTension = maxTension/1e3
+            tensions = tensions/1e3
+            unit = 'KPa'
 
         # plot crane without deformations
         self.plot(self.truss.nodes, self.truss.bars, 'gray', '--', 1)
@@ -257,28 +279,30 @@ class FEM:
         if not tension:
             self.plot(dnodes, self.truss.bars, 'red', '-', 2)
         else:
-            # visualize normal forces with colors 
-            colors = self.getColorMap()
+            # visualize tensions with colors 
+            colors, color_map = self.getColorMap(tensions, minTension, maxTension)
             self.plot(dnodes, self.truss.bars, colors, '-', 2)
-            # legend
-            color_scale = [
-                (0, 255, 0),    # green
-                (255, 255, 0),  # yellow
-                (255, 165, 0),  # orange
-                (255, 0, 0),    # red
-                (128, 0, 128)]  # purple
-        
-            lines = [plt.Line2D([0], [0], color='#{:02x}{:02x}{:02x}'.format(*color_scale[0]), lw=2),
-                     plt.Line2D([0], [0], color='#{:02x}{:02x}{:02x}'.format(*color_scale[1]), lw=2),
-                     plt.Line2D([0], [0], color='#{:02x}{:02x}{:02x}'.format(*color_scale[2]), lw=2),
-                     plt.Line2D([0], [0], color='#{:02x}{:02x}{:02x}'.format(*color_scale[3]), lw=2),
-                     plt.Line2D([0], [0], color='#{:02x}{:02x}{:02x}'.format(*color_scale[4]), lw=2)]
             
-            labels = [str(int(minTension))+" MPa",
-                      str(int(minTension + 0.25*(maxTension-minTension)))+" MPa",
-                      str(int(minTension + 0.5*(maxTension-minTension)))+" MPa",
-                      str(int(minTension + 0.75*(maxTension-minTension)))+" MPa",
-                      str(int(maxTension))+" MPa"]
+            # legend
+            color_map = np.array(color_map)
+            abs_max = np.max([np.abs(minTension), np.abs(maxTension)])
+            legend_values = []
+            legend_values.append(minTension) # start at minimum tension
+            for value in color_map[:, 0]:
+                # it could be that there are colors defined for nonexisting tensions
+                # we don't want those
+                if value*abs_max <= minTension:
+                    continue
+                legend_values.append(value*abs_max) # fill up till maximum is reached
+
+            lines = []
+            legend_colors, _ = self.getColorMap(legend_values, minTension, maxTension)
+            for color in legend_colors:
+                lines.append(plt.Line2D([0], [0], color=color, lw=2))
+            
+            labels = []
+            for value in legend_values:
+                labels.append(str(int(value))+" "+unit)
 
             plt.legend(lines, labels, title="Spannungen")
 
