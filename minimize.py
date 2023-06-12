@@ -1,4 +1,4 @@
-from crane import crane
+import crane
 from fem import FEM
 import numpy as np
 import matplotlib.pyplot as plt
@@ -36,7 +36,7 @@ def eigDecomposition(cov):
     return A
 
 
-def cem(iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=0.2):
+def cem(crane,iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=0.2):
     """
     This function runs cross-entropy method to search the best combination of parameter set that has minimal cost
     @param iterations: total iterations that the function runs
@@ -69,13 +69,13 @@ def cem(iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=0.2):
             # normal distribution generate some samples with negative value, need absolute value
             x=np.abs(x)
             # initialize crane object
-            myCrane = crane(1, x[0], x[1], x[2], x[3],  rho, E, False)
+            myCrane = crane( x[0], x[1], x[2], x[3],  rho, E, False)
             for i in range(-1, -5, -1):
                 myCrane.addExternalForce(i, 0, 0, -500e3 / 4)
             fem = FEM(myCrane, False)
             # calculate tension and cost
             t = np.abs(np.max(fem.getTension()))
-            cost = np.sum(myCrane.mass)*price
+            cost = -np.sum(myCrane.mass)*price
             # manually selects the samples within certain range
             x[0] = np.clip(x[0], 9.9, 10)
             x[1] = np.clip(x[1], 9.9, 10)
@@ -109,34 +109,55 @@ def cem(iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=0.2):
         A = eigDecomposition(np.cov(matrix))
         diff = np.abs(mean_rewards[-1]-np.mean(rewards))
         print("---------------diff: ",diff,"---------------------")
-        if(diff<1e-3):
+        if(diff<0.1):
             break
         mean_rewards.append(np.mean(rewards))
     return mean_rewards,np.array(mean_x)
 
-def cost(x: np.ndarray):
-    myCrane = crane(1, x[0], x[1], x[2], x[3], rho, E,False)
-    return np.sum(myCrane.mass)
-
 
 if __name__ == "__main__":
-    #print(tension(np.array([7.5, 7.5, 1, 1, 0.0225])))
-    # cons = ({'type': 'ineq', 'fun': lambda x: tension(x) + 0.2e9},  # tension < 0.2e9)
-    # res = shgo(cost, bounds=((5, 10), (5, 10), (0.5, 2), (0.5, 2), (2.5e-3, 6.25e-2)),constraints=cons)
-    # print(res)
-
-    rewards,x=cem(100,200)
-    vol=[]
-    for s in x:
-        vol.append(s[2]*s[3])
-    indexNorm= np.argmin(norm)
-    print("theta: "+ str(x[-1]))
-    print("reward: " + str(rewards[-1]))
-    fig, axs = plt.subplots(2, 1, figsize=(8, 6))
-    axs[0].plot(rewards[1:], label='r')
+    result_1=[]
+    result_2=[]
+    result_3=[]
+    t1=[]
+    t2=[]
+    t3=[]
+    for i in range(50):
+        rewards_1, x_1 = cem(crane.crane_1,100, 500)
+        rewards_2, x_2 = cem(crane.crane_2_1, 100, 500)
+        rewards_3, x_3 = cem(crane.crane_2_2, 100, 500)
+        result_1.append(rewards_1[-1])
+        result_2.append(rewards_2[-1])
+        result_3.append(rewards_3[-1])
+        t1.append(x_1[-1])
+        t2.append(x_2[-1])
+        t3.append(x_3[-1])
+    print(t1)
+    print(t2)
+    print(t3)
+    fig, axs = plt.subplots(3, 1, figsize=(8, 6))
+    axs[0].plot(result_1, label='r')
     axs[0].set_title('r')
     axs[0].legend()
-    axs[1].plot(vol, label='volumn')
-    axs[1].set_title('x')
+    axs[1].plot(result_2, label='r')
+    axs[1].set_title('r')
     axs[1].legend()
+    axs[2].plot(result_3, label='r')
+    axs[2].set_title('r')
+    axs[2].legend()
+    # rewards,x=cem(100,450)
+    # vol=[]
+    # for s in x:
+    #     vol.append(s[2]*s[3])
+    # indexNorm= np.argmin(norm)
+    # print("theta: "+ str(x[-1]))
+    # print("reward: " + str(rewards[-1]))
+    # fig, axs = plt.subplots(2, 1, figsize=(8, 6))
+    # axs[0].plot(rewards[1:], label='r')
+    # axs[0].set_title('r')
+    # axs[0].legend()
+    # axs[1].plot(vol, label='volumn')
+    # axs[1].set_title('x')
+    # axs[1].legend()
     plt.show()
+
