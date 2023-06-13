@@ -2,9 +2,8 @@ import crane
 from fem import FEM
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import minimize, shgo
-from scipy.stats import norm
-from scipy.stats import multivariate_normal
+from multiprocessing import Pool
+import os
 
 E = 210e9  # E-module [Pa]
 rho = 7850  # density [kg/m^3]
@@ -109,10 +108,11 @@ def cem(crane,iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=
         A = eigDecomposition(np.cov(matrix))
         diff = np.abs(mean_rewards[-1]-np.mean(rewards))
         print("---------------diff: ",diff,"---------------------")
-        if(diff<0.1):
+        if(diff<100):
             break
         mean_rewards.append(np.mean(rewards))
-    return mean_rewards,np.array(mean_x)
+    return [mean_rewards[-1] ,mean_x[-1]]
+
 
 
 if __name__ == "__main__":
@@ -122,29 +122,55 @@ if __name__ == "__main__":
     t1=[]
     t2=[]
     t3=[]
-    for i in range(50):
-        rewards_1, x_1 = cem(crane.crane_1,100, 500)
-        rewards_2, x_2 = cem(crane.crane_2_1, 100, 500)
-        rewards_3, x_3 = cem(crane.crane_2_2, 100, 500)
-        result_1.append(rewards_1[-1])
-        result_2.append(rewards_2[-1])
-        result_3.append(rewards_3[-1])
-        t1.append(x_1[-1])
-        t2.append(x_2[-1])
-        t3.append(x_3[-1])
-    print(t1)
-    print(t2)
-    print(t3)
-    fig, axs = plt.subplots(3, 1, figsize=(8, 6))
-    axs[0].plot(result_1, label='r')
-    axs[0].set_title('r')
-    axs[0].legend()
-    axs[1].plot(result_2, label='r')
-    axs[1].set_title('r')
-    axs[1].legend()
-    axs[2].plot(result_3, label='r')
-    axs[2].set_title('r')
-    axs[2].legend()
+    cpun=os.cpu_count()
+    N = cpun*3
+    # we use multiprocessors here
+    p = Pool(os.cpu_count())
+    #resule_1 look like this : [[rewards=[],mean=[]],...,]
+    for i in range(N):
+        p.apply_async(cem,   args=(crane.crane_1,100,500),callback=result_1.append)
+        p.apply_async(cem, args=(crane.crane_2_1,100,500),callback=result_2.append)
+        p.apply_async(cem, args=(crane.crane_2_2,100,500),callback=result_3.append)
+    p.close()
+    p.join()
+    # for i in range(50):
+    #     rewards_1, x_1 = cem(crane.crane_1,100, 500)
+    #     rewards_2, x_2 = cem(crane.crane_2_1, 100, 500)
+    #     rewards_3, x_3 = cem(crane.crane_2_2, 100, 500)
+    #     result_1.append(rewards_1[-1])
+    #     result_2.append(rewards_2[-1])
+    #     result_3.append(rewards_3[-1])
+    #     t1.append(x_1[-1])
+    #     t2.append(x_2[-1])
+    #     t3.append(x_3[-1])
+    # print(t1)
+    # print(t2)
+    # print(t3)
+    rewards_1 = [result_1[i][0] for i in range(N)]
+    rewards_2 = [result_2[i][0] for i in range(N)]
+    rewards_3 = [result_3[i][0] for i in range(N)]
+    t1 = np.array([result_1[i][1] for i in range(N)])
+    t2 = np.array([result_2[i][1] for i in range(N)])
+    t3 = np.array([result_3[i][1] for i in range(N)])
+    fig, axs = plt.subplots(6, 1, figsize=(8, 6))
+    axs[0].plot(rewards_1)
+    axs[0].set_title('crane_1_rewards')
+
+    axs[1].scatter(t1[:,-2], t1[:,-1])
+    axs[1].set_title('crane_1_volumn')
+
+    axs[2].plot(rewards_2)
+    axs[2].set_title('crane_2_1_rewards')
+
+    axs[3].scatter(t2[:,-2], t2[:,-1])
+    axs[3].set_title('crane_2_1_volumn')
+
+    axs[4].plot(rewards_3)
+    axs[4].set_title('crane_2_2_rewards')
+
+    axs[5].scatter(t3[:,-2], t3[:,-1])
+    axs[5].set_title('crane_2_2_volumn')
+
     # rewards,x=cem(100,450)
     # vol=[]
     # for s in x:
