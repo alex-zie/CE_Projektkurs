@@ -259,16 +259,20 @@ class FEM:
         minTension = np.min(tensions)
         maxTension = np.max(tensions)
 
-        if np.abs(minTension) >= 1e6 or np.abs(maxTension):
+        print(minTension, maxTension)
+
+        if np.abs(minTension) >= 1e7 or np.abs(maxTension) >= 1e7:
             minTension = minTension/1e6  
             maxTension = maxTension/1e6
             tensions = tensions/1e6
             unit = 'MPa'
-        else: # both are < 1e6
+        else: # both are < 1e7
             minTension = minTension/1e3  
             maxTension = maxTension/1e3
             tensions = tensions/1e3
             unit = 'KPa'
+
+        print(minTension, maxTension)
 
         # plot crane without deformations
         self.plot(self.truss.nodes, self.truss.bars, 'gray', '--', 1)
@@ -326,7 +330,7 @@ class FEM:
                     self.plot(dnodes, self.truss.bars[self.truss.y_negative_side], 'lightskyblue', '-', 2, 'wind exposed area')
 
         plt.suptitle(self.truss)
-        plt.title("tension: ["+str(int(minTension))+", "+str(int(maxTension))+"] MPa", fontsize=10)
+        plt.title("tension: ["+str(int(minTension))+", "+str(int(maxTension))+"] ", fontsize=10)
         # save plot
         # plt.savefig('figures/fig1', dpi=600)
         plt.show()
