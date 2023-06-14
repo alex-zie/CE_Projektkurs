@@ -6,14 +6,20 @@ import matplotlib.pyplot as plt
 class FEM:
 
     def __init__(self, truss: Truss, own_weight: bool):
+        """
+        truss : Truss
+            the Truss that is to be simulated
+        own_weight : bool
+            whether or not its own weight should be accounted for
+        """
         self.truss = truss
         self.num_nodes = len(truss.nodes)
         self.num_bars = len(truss.bars)
         self.DOF = 3  # because we are in 3D 
         self.NDOF = self.DOF * self.num_nodes  # total number of degrees of freedom
         self.own_weight = own_weight
-        self.wind = False
-        self.wind_dir = -1
+        self.wind = False # True if wind is being simulated
+        self.wind_dir = -1 # Diection of wind (0 to 3, -1 if no wind)
         self.firstCreate = True  # so that weights don't get added multiple times
         self.TrussAnalysis()
         self.firstCreate = False
@@ -33,19 +39,20 @@ class FEM:
         """Return deformations"""
         return self.__dict__["U"]
 
-    def F_krit(self):
+    def F_crit(self):
         """Return critical bending force """
         F_k = np.pi ** 2 * self.truss.E * self.truss.I / (self.truss.lengths ** 2)
         F_k[40:44] = 1.43 ** 2 * F_k[0:4]
         return F_k
 
     def check_bending_force(self):
-        b = self.N[np.where(self.N < 0)[0]] < self.F_krit()[np.where(self.N < 0)[0]]
+        b = self.N[np.where(self.N < 0)[0]] < self.F_crit()[np.where(self.N < 0)[0]]
         return len(np.where(~b)[0]) == 0
 
     def TrussAnalysis(self, p=False):
         """
-        returns: axial forces, reactional forces, displacements
+        Performs a statical analysis using the finite element method.
+        Modifies the attributes N, R, U
         """
         if p and self.firstCreate:
             message = "Simulating truss with " + str(self.num_nodes) + " nodes and " + str(self.num_bars) + " bars"
@@ -58,13 +65,11 @@ class FEM:
         trans = np.concatenate((-self.truss.orientations.T, self.truss.orientations.T),
                                axis=1)  # transformation vector local -> global
         K = self.computeStiffnessMatrix(E, A, L, trans)
-        # print("Determinant K:", np.linalg.det(K))
         freeDOF = self.truss.supports.flatten().nonzero()[0]  # check, which nodes are FG > 0 
-        supportDOF = (self.truss.supports.flatten() == 0).nonzero()[0]  # Knoten mit Lagern
-        Kff = K[np.ix_(freeDOF, freeDOF)]  # totally movable nodes 
-        Kfr = K[np.ix_(freeDOF, supportDOF)]  # partially movable nodes  # are we shuurree?
+        supportDOF = (self.truss.supports.flatten() == 0).nonzero()[0]  # nodes with supports
+        Kff = K[np.ix_(freeDOF, freeDOF)]  # split K appropriately
+        Kfr = K[np.ix_(freeDOF, supportDOF)]
         Krf = Kfr.T
-        # Krr = K[np.ix_(supportDOF, supportDOF)]  # for the support forces
 
         # weight
         if (self.firstCreate and self.own_weight):
@@ -80,7 +85,7 @@ class FEM:
         U = U.reshape(self.num_nodes, self.DOF)
         u = np.concatenate((U[self.truss.bars[:, 0]], U[self.truss.bars[:, 1]]),axis=1)  # displacement vector for each element
         N = E * A / L[:] * (trans[:] * u[:]).sum(axis=1)  # internal forces
-        R = (Krf[:] * Uf).sum(axis=1)  # + (Krr[:] * self.truss.Ur).sum(axis=1)  # reactional forces
+        R = (Krf[:] * Uf).sum(axis=1) # reactional forces
         # update N, R, U
         self.__dict__["N"] = N
         self.__dict__["R"] = R
@@ -101,6 +106,9 @@ class FEM:
         return K
 
     def computeWeight(self):
+        """
+        Returns a force vector that assigns a force to each node by averaging the weight of the connected bars
+        """
         bars = self.truss.bars
         nOutgoingBars = np.zeros_like(self.truss.nodes[:, 0])
 
@@ -195,6 +203,10 @@ class FEM:
         self.TrussAnalysis()
 
     def map_value_to_color(self, value, color_map):
+        """
+        Returns a hexadecimal color number as a string for a value between -1 and 1 based
+        on the given color map
+        """
         if value < -1 or value > 1:
             raise Exception("The input value must lay between -1 and 1!")
         
@@ -220,15 +232,15 @@ class FEM:
     
     def getColorMap(self, values, min, max):
         """
-        Returns:
-            * a color array that maps a color to each element in values
-            * the color map that was used
-
         values : array-like
         min :
             minimum value to be assigned a color
         max :
             maximum value to be assigned a color
+
+        Returns:
+            * a color array that maps a color to each element in values
+            * the color map that was used
         """
 
         # define the color map
@@ -342,11 +354,19 @@ class FEM:
 
 
     def plot(self, nodes, bars, color, lt, lw, lg=None):
+        """
+        nodes : number array
+        bars : number array
+        color : string or array of string
+        lt : string
+            line style
+        lw : number
+            linewidth
+        """
         if isinstance(color, str):
             color = [color] * len(bars)
         plt.subplot(projection='3d')
         plt.gca().set_aspect('equal')
-        # plt.gca(projection='3d')
         for i in range(len(bars)):
             # each start and end coordinate
             xi, xf = nodes[bars[i, 0], 0], nodes[bars[i, 1], 0]
@@ -358,11 +378,16 @@ class FEM:
             line.set_label(lg)
             plt.legend(prop={'size': 7})
         
-
     def plotNode(self, node):
+        """
+        Plots the point at index node
+        """
         plt.subplot(projection='3d')
         plt.plot(self.truss.nodes[node, 0], self.truss.nodes[node, 1], self.truss.nodes[node, 2], 'bo')
 
     def plotPoint(self, point):
+        """
+        Plots a 3D point
+        """
         plt.subplot(projection='3d')
         plt.plot(point[0], point[1], point[2], 'bo')

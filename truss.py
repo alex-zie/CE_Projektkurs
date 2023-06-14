@@ -3,7 +3,7 @@ import numpy as np
 
 class Truss:
     """
-    This class represents a simple truss that can be passed to the fem class to make truss analyses
+    This class represents a simple truss that can be passed to the fem class to perform a truss analysis
     """
 
     def __init__(self, nodes, bars, A, rho, E):
@@ -11,7 +11,7 @@ class Truss:
         self.bars = np.array(bars)
         self.F = np.zeros_like(nodes) # external forces
         self.force_points = [] # indices of points, where external forces attack
-        self.supports = np.ones_like(nodes).astype(int) # degrees of freedom (1 = movable, 0 = fixed), 3 times for (x,y,z) # maybe use booleans?
+        self.supports = np.ones_like(nodes).astype(int) # degrees of freedom (1 = movable, 0 = fixed), 3 times for (x,y,z)
         self.Ur = np.array([]).astype(int)
 
         # material
@@ -49,7 +49,7 @@ class Truss:
         self.supports[node, 1] = y
         self.supports[node, 2] = z
 
-        # appends a 0 per suppressed degree of freedom # TODO can be optimized
+        # appends a 0 per suppressed degree of freedom
         if x == 0:
             self.Ur = np.append(self.Ur, 0)
         if y == 0:
