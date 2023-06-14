@@ -7,10 +7,10 @@ class FEM:
 
     def __init__(self, truss: Truss, own_weight: bool):
         self.truss = truss
-        self.NN = len(truss.nodes)
-        self.NE = len(truss.bars)
+        self.num_nodes = len(truss.nodes)
+        self.num_bars = len(truss.bars)
         self.DOF = 3  # because we are in 3D 
-        self.NDOF = self.DOF * self.NN  # total number of degrees of freedom
+        self.NDOF = self.DOF * self.num_nodes  # total number of degrees of freedom
         self.own_weight = own_weight
         self.wind = False
         self.wind_dir = -1
@@ -48,7 +48,7 @@ class FEM:
         returns: axial forces, reactional forces, displacements
         """
         if p and self.firstCreate:
-            message = "Simulating truss with " + str(self.NN) + " nodes and " + str(self.NE) + " bars"
+            message = "Simulating truss with " + str(self.num_nodes) + " nodes and " + str(self.num_bars) + " bars"
             message += " considering gravity." if self.own_weight else "."
             print(message)
 
@@ -77,7 +77,7 @@ class FEM:
         U = self.truss.supports.astype(float).flatten()
         U[freeDOF] = Uf
         U[supportDOF] = self.truss.Ur
-        U = U.reshape(self.NN, self.DOF)
+        U = U.reshape(self.num_nodes, self.DOF)
         u = np.concatenate((U[self.truss.bars[:, 0]], U[self.truss.bars[:, 1]]),axis=1)  # displacement vector for each element
         N = E * A / L[:] * (trans[:] * u[:]).sum(axis=1)  # internal forces
         R = (Krf[:] * Uf).sum(axis=1)  # + (Krr[:] * self.truss.Ur).sum(axis=1)  # reactional forces
@@ -87,13 +87,15 @@ class FEM:
         self.__dict__["U"] = U
 
     def computeStiffnessMatrix(self, E, A, L, trans):
+        if isinstance(A, float) or isinstance(A, int):
+            A = A*np.ones(self.num_bars)
         K = np.zeros([self.NDOF, self.NDOF])
-        for k in range(self.NE):
+        for k in range(self.num_bars):
             aux = self.DOF * self.truss.bars[k, :]
             # Indices of elements of effected nodes for position of sum
             index = np.r_[aux[0]:aux[0] + self.DOF, aux[1]:aux[1] + self.DOF]
             # local stiffness, np.newaxis for 0 lines(4x4)
-            ES = np.dot(trans[k][np.newaxis].T * E * A, trans[k][np.newaxis]) / L[k]
+            ES = np.dot(trans[k][np.newaxis].T * E * A[k], trans[k][np.newaxis]) / L[k]
             # global stiffness: sum of single stiffnesses, position !
             K[np.ix_(index, index)] = K[np.ix_(index, index)] + ES
         return K
@@ -125,6 +127,8 @@ class FEM:
         if not (axis == 0 or axis == 1):
             raise Exception("axis can only take values 0 (x), 1 (y)")
         
+        A = self.truss.A*np.ones(self.num_bars)
+        
         self.wind = True
 
         message = "Simulating wind with " + str(speed) + " m/s (" + str(round(speed * 3.6, 2)) + " km/h) blowing in "
@@ -137,19 +141,23 @@ class FEM:
             if dir == -1:
                 bars = self.truss.bars[self.truss.x_positive_side]
                 lengths = self.truss.lengths[self.truss.x_positive_side]
+                A = A[self.truss.x_positive_side]
                 self.wind_dir = 0
             else:
                 bars = self.truss.bars[self.truss.x_negative_side]
                 lengths = self.truss.lengths[self.truss.x_negative_side]
+                A = A[self.truss.x_negative_side]
                 self.wind_dir = 1
         else:
             if dir == -1:
                 bars = self.truss.bars[self.truss.y_positive_side]
                 lengths = self.truss.lengths[self.truss.y_positive_side]
+                A = A[self.truss.y_positive_side]
                 self.wind_dir = 2
             else:
                 bars = self.truss.bars[self.truss.y_negative_side]
                 lengths = self.truss.lengths[self.truss.y_negative_side]
+                A = A[self.truss.y_negative_side]
                 self.wind_dir = 3
 
         nOutgoingBars = np.zeros_like(self.truss.nodes[:, 0])
@@ -158,7 +166,7 @@ class FEM:
             nOutgoingBars[bar] = nOutgoingBars[bar] + 1
 
         # height of the bars
-        area_bars = self.truss.A ** 0.5 * lengths
+        area_bars = np.multiply(A ** 0.5, lengths)
 
         # add wind force to node for each bar that is connected to it
         # wind pressure: 0.5 * rho * v^2 [m/s] * A [m^2]
@@ -186,7 +194,6 @@ class FEM:
         self.truss.reset()
         self.TrussAnalysis()
 
-    #TODO change colors
     def map_value_to_color(self, value, color_map):
         if value < -1 or value > 1:
             raise Exception("The input value must lay between -1 and 1!")
@@ -214,7 +221,7 @@ class FEM:
     def getColorMap(self, values, min, max):
         """
         Returns:
-            * a color array based on the given values
+            * a color array that maps a color to each element in values
             * the color map that was used
 
         values : array-like
@@ -259,8 +266,6 @@ class FEM:
         minTension = np.min(tensions)
         maxTension = np.max(tensions)
 
-        print(minTension, maxTension)
-
         if np.abs(minTension) >= 1e7 or np.abs(maxTension) >= 1e7:
             minTension = minTension/1e6  
             maxTension = maxTension/1e6
@@ -271,8 +276,6 @@ class FEM:
             maxTension = maxTension/1e3
             tensions = tensions/1e3
             unit = 'KPa'
-
-        print(minTension, maxTension)
 
         # plot crane without deformations
         self.plot(self.truss.nodes, self.truss.bars, 'gray', '--', 1)
@@ -330,7 +333,9 @@ class FEM:
                     self.plot(dnodes, self.truss.bars[self.truss.y_negative_side], 'lightskyblue', '-', 2, 'wind exposed area')
 
         plt.suptitle(self.truss)
-        plt.title("tension: ["+str(int(minTension))+", "+str(int(maxTension))+"] ", fontsize=10)
+        plt.title("Höhe: "+str(self.truss.height)+" m\n"
+                + "Länge: "+str(self.truss.length)+" m\n"
+                + "Segmentlänge: "+str(self.truss.ls)+" m", fontsize=8, y = 0.95, loc="right")
         # save plot
         # plt.savefig('figures/fig1', dpi=600)
         plt.show()
