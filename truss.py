@@ -33,9 +33,9 @@ class Truss:
         d = self.nodes[self.bars[:, 1], :] - self.nodes[self.bars[:, 0], :]  # endnode - startnode
         self.orientations = d.T / self.lengths  # orientation vector of bars (transpose for matching dimensions)
 
-    # pysics
+    # physics
     def _computeMass(self):
-        self.mass = self.lengths * self.A * self.rho
+        self.mass = np.multiply(self.lengths, self.A) * self.rho
 
     def addSupport(self, node, x, y, z):
         """

@@ -194,20 +194,51 @@ class FEM:
 
     def optimize_crossections(self, max_A, crit_tension):
         """
-        Minimizes the corssections in an interval [min_A, max_A] based on a critical tension
+        Minimizes the crossections in the interval [A, max_A] based on a critical tension
 
         returns: Array of crossections
         """
-        min_A = self.truss.A
-        self.truss.A = np.zeros(len(self.truss.bars))
-        critical_bars = self.getTension() > crit_tension # indices where tensionis exceeded
-        self.truss.A[critical_bars] = self.N[critical_bars] / crit_tension # increase crossections here
+        iterations = 0
+        abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
+        while abs_max_tension > crit_tension:
+            critical_bars = np.abs(self.getTension()) > 0.999*crit_tension # indices where tension is exceeded # 0.995 to make it slightly smaller so that increased weight force is accounted for
+            if isinstance(self.truss.A, float) or isinstance(self.truss.A, int):
+                min_A = self.truss.A
+                self.truss.A = np.zeros(len(self.truss.bars))
+            else:
+                min_A = np.max(self.truss.A)
+            self.truss.A[critical_bars] = np.abs(self.N[critical_bars]) / (0.995*crit_tension) # increase crossections here
+            self.truss.A[self.truss.A < min_A] = min_A # keep crossections whithin allowed range
+            self.truss.A[self.truss.A > max_A] = max_A
+            self.truss._computeMass() # update mass
+            
+            self.TrussAnalysis() # recalculate forces
+            abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
+            # if abs_max_tension > crit_tension:
+            #     raise Exception("Critical tension exceeded! Consider increasing max_A or applying less force.")
+            print(iterations)
+            iterations = iterations+1
+        
+        return self.truss.A
+
+    def homogenize_tensions(self, max_A, crit_tension):
+        """
+        Changes crossections such that tension is equal
+
+        returns: Array of crossections
+        """
+        if isinstance(self.truss.A, float) or isinstance(self.truss.A, int):
+            min_A = self.truss.A
+            self.truss.A = np.zeros(len(self.truss.bars))
+        else:
+            min_A = np.max(self.truss.A)
+        self.truss.A = np.abs(self.N) / (0.995*crit_tension) # increase crossections here
         self.truss.A[self.truss.A < min_A] = min_A # keep crossections whithin allowed range
         self.truss.A[self.truss.A > max_A] = max_A
 
         self.TrussAnalysis() # recalculate forces
         abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
-        print("Max tension:", abs_max_tension)
+        self.truss._computeMass() # update mass
         # if abs_max_tension > crit_tension:
         #     raise Exception("Critical tension exceeded! Consider increasing max_A or applying less force.")
         
@@ -369,7 +400,8 @@ class FEM:
         plt.suptitle(self.truss)
         plt.title("Höhe: "+str(self.truss.height)+" m\n"
                 + "Länge: "+str(self.truss.length)+" m\n"
-                + "Segmentlänge: "+str(self.truss.ls)+" m", fontsize=8, y = 0.95, loc="right")
+                + "Segmentlänge: "+str(self.truss.ls)+" m\n"
+                + "Masse: "+str(int(np.sum(self.truss.mass)))+" kg", fontsize=8, y = 0.95, loc="right")
         # save plot
         # plt.savefig('figures/fig1', dpi=600)
         plt.show()

@@ -32,10 +32,11 @@ if __name__ == "__main__":
       myCrane.addExternalForce(i, 0, 0, load/len(myCrane.counterweight_nodes))
    
    fem = FEM(myCrane, own_weight=True)
+   fem.display(scale=1, tension=True)
    fem.optimize_crossections(625e-4, 200e6)
-   print(myCrane.A)
+   #fem.homogenize_tensions(625e-4, 200e6)
 
-   #fem.addWind(28, 1, 1)
+   # fem.addWind(28, 1, 1)
    
    # visualization
    fem.display(scale=1, tension=True)
@@ -43,4 +44,4 @@ if __name__ == "__main__":
    # highlight critical bars
    # plt.subplot(projection='3d')
    # fem.plot(nodes, bars[fem.getTension() > 200e6], 'lightskyblue', '-', 2)          
-   plt.show()
+   # plt.show()
