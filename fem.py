@@ -192,6 +192,28 @@ class FEM:
     def getTension(self):
         return self.N / self.truss.A
 
+    def optimize_crossections(self, max_A, crit_tension):
+        """
+        Minimizes the corssections in an interval [min_A, max_A] based on a critical tension
+
+        returns: Array of crossections
+        """
+        min_A = self.truss.A
+        self.truss.A = np.zeros(len(self.truss.bars))
+        critical_bars = self.getTension() > crit_tension # indices where tensionis exceeded
+        self.truss.A[critical_bars] = self.N[critical_bars] / crit_tension # increase crossections here
+        self.truss.A[self.truss.A < min_A] = min_A # keep crossections whithin allowed range
+        self.truss.A[self.truss.A > max_A] = max_A
+
+        self.TrussAnalysis() # recalculate forces
+        abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
+        print("Max tension:", abs_max_tension)
+        # if abs_max_tension > crit_tension:
+        #     raise Exception("Critical tension exceeded! Consider increasing max_A or applying less force.")
+        
+        return self.truss.A
+
+
     def reset(self):
         """
         Removes all external forces including gravity and wind

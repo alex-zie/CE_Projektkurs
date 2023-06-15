@@ -7,7 +7,7 @@ class crane_1(Truss):
     Simple crane with cubical tower and jib made of pyramids
     """
 
-    def __init__(self, height, length, ls, A, rho, E, p=True, max_bar_length=-1, optimized_cossections=False):
+    def __init__(self, height, length, ls, A, rho, E, p=True, max_bar_length=-1):
         """
         height : float
             Maximum crane height. Not exact, because height depends on the length of the segments.
@@ -51,9 +51,6 @@ class crane_1(Truss):
         self.y_positive_side = []
         self.y_negative_side = [] 
 
-        # indices of bars with thicker crossection
-        self.thick_bars = []
-
         if p:
             print("Creating crane with cuboid tower with " + str(self.nST) + " segments of length "+str(self.ls)+" and pyramidal jib with " + str(self.nSA) + " segments.")
         self.make_tower(nodes, bars)
@@ -64,9 +61,6 @@ class crane_1(Truss):
         self.make_jib(nodes, bars, offsetT, offsetTG)
         self.tip_nodes = [-2, -3, -5, -6] # nodes at front of jib where weight is applied
         super().__init__(nodes, bars, A, rho, E)
-        if optimized_cossections and (isinstance(A, float) or isinstance(A, int)):
-            self.A = A*np.ones(len(bars))
-            self.A[self.thick_bars] = 10*A
 
         # indices of bars on a certain side of the crane
         self.x_positive_side = np.array(self.x_positive_side).astype(int)
@@ -118,19 +112,15 @@ class crane_1(Truss):
             bars.append([4 * i, 4 * i + 4])  # LT
             selectYNegativeBar(self, bars)
             selectXNegativeBar(self, bars)
-            selectThickBar(self, bars)
             bars.append([4 * i + 1, 4 * i + 5])  # RT
             selectYNegativeBar(self, bars)
             selectXPositiveBar(self, bars)
-            selectThickBar(self, bars)
             bars.append([4 * i + 2, 4 * i + 6])  # LB
             selectXNegativeBar(self, bars)
             selectYPositiveBar(self, bars)
-            selectThickBar(self, bars)
             bars.append([4 * i + 3, 4 * i + 7])  # RB
             selectXPositiveBar(self, bars)
             selectYPositiveBar(self, bars)
-            selectThickBar(self, bars)
 
         # crossbars 
         for i in range(self.nST - 1):
@@ -154,16 +144,12 @@ class crane_1(Truss):
         offsetTO = len(nodes)
         bars.append([offsetTO - 1, offsetTO - 2])
         selectYPositiveBar(self, bars)
-        selectThickBar(self, bars)
         bars.append([offsetTO - 1, offsetTO - 3])
         selectYPositiveBar(self, bars)
-        selectThickBar(self, bars)
         bars.append([offsetTO - 1, offsetTO - 4])
         selectYNegativeBar(self, bars)
-        selectThickBar(self, bars)
         bars.append([offsetTO - 1, offsetTO - 5])
         selectYNegativeBar(self, bars)
-        selectThickBar(self, bars)
         
         # support line (optional)
         bars.append([offsetTO - 3, offsetTO - 4])
@@ -197,7 +183,6 @@ class crane_1(Truss):
         bars.append([offsetT + 2, offsetT - 1])
         selectYNegativeBar(self, bars)
         selectYPositiveBar(self, bars)
-        selectThickBar(self, bars)
 
         # x- and y-direction 
         for i in range(self.nSGA - 1):
@@ -237,7 +222,6 @@ class crane_1(Truss):
             bars.append([offsetT + 2 + 3 * i, offsetT + 2 + 3 * i + 3])
             selectYNegativeBar(self, bars)
             selectYPositiveBar(self, bars)
-            selectThickBar(self, bars)
 
 
     def make_jib(self, nodes, bars, offsetT, offsetTG):
@@ -285,7 +269,7 @@ class crane_1(Truss):
             bars.append([(offsetTG + 2) + i * 3, (offsetTG + 5) + i * 3])
             selectYNegativeBar(self, bars)
             selectYPositiveBar(self, bars)
-            selectThickBar(self, bars)
+
 
         bars.append([offsetTO - 2, offsetTO - 3]) # last bar at the end of the crane
         selectXPositiveBar(self, bars)
@@ -293,7 +277,6 @@ class crane_1(Truss):
         bars.append([offsetT - 1, offsetTG + 2]) # top of the Tower with first jib node
         selectYNegativeBar(self, bars)
         selectYPositiveBar(self, bars)
-        selectThickBar(self, bars)
 
         # tower with the base of the jib
         bars.append([offsetT - 4, offsetTG])
@@ -952,9 +935,6 @@ def selectYNegativeBar(crane, bars):
     Select the index from the last bar added in bars array and add to Y negative bars
     """
     crane.y_negative_side.append(len(bars) - 1)
-
-def selectThickBar(crane, bars):
-    crane.thick_bars.append(len(bars)-1)
 
 
 
