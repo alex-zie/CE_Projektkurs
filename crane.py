@@ -7,7 +7,7 @@ class crane_1(Truss):
     Simple crane with cubical tower and jib made of pyramids
     """
 
-    def __init__(self, height, length, ls, A, rho, E, p=True, max_bar_length=-1, different_cossections=False):
+    def __init__(self, height, length, ls, A, rho, E, p=True, max_bar_length=-1, optimized_cossections=False):
         """
         height : float
             Maximum crane height. Not exact, because height depends on the length of the segments.
@@ -15,7 +15,7 @@ class crane_1(Truss):
             Maximum length of jib. Not exact, because jib length depends on the length of the segments.
         ls : float
             the length of the segments
-        A : float or vector of float
+        A : float (or vector of float)
             crossection area(s) of bars
         rho: float
             desity of material
@@ -25,6 +25,8 @@ class crane_1(Truss):
             print information after creation
         max_bar_length : float
             Maximal allowed length of beams. Throws exception if surpassed.
+        optimized_crossections : bool
+            will increase crossections of particularly strained beams up to ten times if true
         """
         if ls > height:
             raise Exception("Height of segments cannot be greater than the height of the crane!")
@@ -62,7 +64,7 @@ class crane_1(Truss):
         self.make_jib(nodes, bars, offsetT, offsetTG)
         self.tip_nodes = [-2, -3, -5, -6] # nodes at front of jib where weight is applied
         super().__init__(nodes, bars, A, rho, E)
-        if different_cossections and (isinstance(A, float) or isinstance(A, int)):
+        if optimized_cossections and (isinstance(A, float) or isinstance(A, int)):
             self.A = A*np.ones(len(bars))
             self.A[self.thick_bars] = 10*A
 

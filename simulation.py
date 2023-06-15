@@ -16,7 +16,7 @@ if __name__ == "__main__":
    rho = 7850  # density [kg/m^3]
    load = 500e3 # attached weight [N]
 
-   myCrane = crane_1(tower_height, jib_length, length_segments, A, rho, E, different_cossections=True)
+   myCrane = crane_1(tower_height, jib_length, length_segments, A, rho, E, optimized_cossections=True)
    # myCrane = crane_2_1(10, 10, 1, A, rho, E)
    # myCrane = crane_2_2(10, 10, 1, A, rho, E)
 
