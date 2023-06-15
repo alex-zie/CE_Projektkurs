@@ -33,9 +33,9 @@ if __name__ == "__main__":
    
    fem = FEM(myCrane, own_weight=True)
    fem.display(scale=1, tension=True)
-   fem.optimize_crossections(625e-4, 200e6)
-   #fem.homogenize_tensions(625e-4, 200e6)
-
+   #fem.optimize_crossections(625e-4, 200e6)
+   fem.homogenize_tensions(625e-4, 200e6)
+   
    # fem.addWind(28, 1, 1)
    
    # visualization

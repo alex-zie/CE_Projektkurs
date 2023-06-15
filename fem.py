@@ -198,26 +198,23 @@ class FEM:
 
         returns: Array of crossections
         """
-        iterations = 0
         abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
+
+        if isinstance(self.truss.A, float) or isinstance(self.truss.A, int):
+            min_A = self.truss.A
+            self.truss.A = np.zeros(len(self.truss.bars))
+        else:
+            min_A = np.max(self.truss.A)
+
         while abs_max_tension > crit_tension:
             critical_bars = np.abs(self.getTension()) > 0.999*crit_tension # indices where tension is exceeded # 0.995 to make it slightly smaller so that increased weight force is accounted for
-            if isinstance(self.truss.A, float) or isinstance(self.truss.A, int):
-                min_A = self.truss.A
-                self.truss.A = np.zeros(len(self.truss.bars))
-            else:
-                min_A = np.max(self.truss.A)
-            self.truss.A[critical_bars] = np.abs(self.N[critical_bars]) / (0.995*crit_tension) # increase crossections here
+            self.truss.A[critical_bars] = np.abs(self.N[critical_bars]) / (0.999*crit_tension) # increase crossections here
             self.truss.A[self.truss.A < min_A] = min_A # keep crossections whithin allowed range
             self.truss.A[self.truss.A > max_A] = max_A
             self.truss._computeMass() # update mass
             
             self.TrussAnalysis() # recalculate forces
-            abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
-            # if abs_max_tension > crit_tension:
-            #     raise Exception("Critical tension exceeded! Consider increasing max_A or applying less force.")
-            print(iterations)
-            iterations = iterations+1
+            abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])       
         
         return self.truss.A
 
@@ -227,21 +224,23 @@ class FEM:
 
         returns: Array of crossections
         """
+        abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
+
         if isinstance(self.truss.A, float) or isinstance(self.truss.A, int):
             min_A = self.truss.A
             self.truss.A = np.zeros(len(self.truss.bars))
         else:
             min_A = np.max(self.truss.A)
-        self.truss.A = np.abs(self.N) / (0.995*crit_tension) # increase crossections here
-        self.truss.A[self.truss.A < min_A] = min_A # keep crossections whithin allowed range
-        self.truss.A[self.truss.A > max_A] = max_A
 
-        self.TrussAnalysis() # recalculate forces
-        abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
-        self.truss._computeMass() # update mass
-        # if abs_max_tension > crit_tension:
-        #     raise Exception("Critical tension exceeded! Consider increasing max_A or applying less force.")
-        
+        while abs_max_tension > crit_tension:
+            self.truss.A = np.abs(self.N) / (0.995*crit_tension) # increase crossections here
+            self.truss.A[self.truss.A < min_A] = min_A # keep crossections whithin allowed range
+            self.truss.A[self.truss.A > max_A] = max_A
+
+            self.TrussAnalysis() # recalculate forces
+            abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
+            self.truss._computeMass() # update mass
+                
         return self.truss.A
 
 
