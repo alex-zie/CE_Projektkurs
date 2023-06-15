@@ -399,7 +399,7 @@ class FEM:
         plt.suptitle(self.truss)
         plt.title("Höhe: "+str(self.truss.height)+" m\n"
                 + "Länge: "+str(self.truss.length)+" m\n"
-                + "Segmentlänge: "+str(self.truss.ls)+" m\n"
+                + "Segmentlänge: "+str(np.round(self.truss.ls, 2))+" m\n"
                 + "Masse: "+str(int(np.sum(self.truss.mass)))+" kg", fontsize=8, y = 0.95, loc="right")
         # save plot
         # plt.savefig('figures/fig1', dpi=600)

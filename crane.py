@@ -97,16 +97,16 @@ class crane_1(Truss):
         nodes.append([self.ls / 2, self.ls / 2, self.ls * self.nST])
 
         # bars 
-        # x- and y-direction (LT for Left Top usw.)
-        for i in range(self.nST):
-            bars.append([4 * i, 4 * i + 1])  
-            selectYNegativeBar(self, bars)
-            bars.append([4 * i + 2, 4 * i + 3])  
-            selectYPositiveBar(self, bars)
-            bars.append([4 * i, 4 * i + 2]) 
-            selectXNegativeBar(self, bars)
-            bars.append([4 * i + 1, 4 * i + 3])  
-            selectXPositiveBar(self, bars)
+        # # x- and y-direction (LT for Left Top usw.)
+        # for i in range(self.nST):
+        #     bars.append([4 * i, 4 * i + 1])  
+        #     selectYNegativeBar(self, bars)
+        #     bars.append([4 * i + 2, 4 * i + 3])  
+        #     selectYPositiveBar(self, bars)
+        #     bars.append([4 * i, 4 * i + 2]) 
+        #     selectXNegativeBar(self, bars)
+        #     bars.append([4 * i + 1, 4 * i + 3])  
+        #     selectXPositiveBar(self, bars)
         # z-direction
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 4])  # LT
@@ -151,9 +151,9 @@ class crane_1(Truss):
         bars.append([offsetTO - 1, offsetTO - 5])
         selectYNegativeBar(self, bars)
         
-        # support line (optional)
-        bars.append([offsetTO - 3, offsetTO - 4])
-        bars.append([offsetTO - 2, offsetTO - 5])
+        # # diagonal lines at the top (optional)
+        # bars.append([offsetTO - 3, offsetTO - 4])
+        # bars.append([offsetTO - 2, offsetTO - 5])
 
     def make_counterjib(self, nodes, bars, offsetT):
         # nodes 
@@ -195,10 +195,10 @@ class crane_1(Truss):
         bars.append([offsetGT - 2, offsetGT - 3])  # last bar
         selectXNegativeBar(self, bars)
 
-        # support lines at the bottom (optional) 
-        bars.append([offsetT + 1, offsetT -5])  #first line
-        for i in range(self.nSGA - 1):
-            bars.append([offsetT + 3 * i, offsetT + 4 + 3 * i])
+        # # diagonal lines at the bottom (optional) 
+        # bars.append([offsetT + 1, offsetT -5])  #first line
+        # for i in range(self.nSGA - 1):
+        #     bars.append([offsetT + 3 * i, offsetT + 4 + 3 * i])
 
         # making the pyramids
         tmp_lastbar1 = 0
@@ -232,7 +232,6 @@ class crane_1(Truss):
             nodes.append([(self.ls/2 + i * self.ls), self.ls / 2, (self.nST) * self.ls])  # Top
         offsetTO = len(nodes)  
 
-
         # bars
         # x- und y-dircetion
         for i in range(self.nSA - 1):
@@ -242,10 +241,10 @@ class crane_1(Truss):
             bars.append([(offsetTG + 1) + i * 3, (offsetTG + 4) + i * 3])
             selectYPositiveBar(self, bars)
 
-        # support line at bottom
-        bars.append([offsetT - 2, offsetTG]) #first line
-        for i in range(self.nSA -1):
-            bars.append([offsetTG + 1 + i*3, offsetTG + 3 + i*3])
+        # # diagonal lines at the bottom (optional)
+        # bars.append([offsetT - 2, offsetTG]) #first line
+        # for i in range(self.nSA -1):
+        #     bars.append([offsetTG + 1 + i*3, offsetTG + 3 + i*3])
 
         # bottom nodes with top nodes
         tmp_lastbar1 = 0
