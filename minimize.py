@@ -17,7 +17,7 @@ def calculateCov(range_min:np.ndarray,range_max: np.ndarray):
     @return: covariance matrix
     """
     # Calculate variances for each dimension
-    variances = ((range_max - range_min)) / 24
+    variances = ((range_max - range_min)) / 6
     cov = np.diag(variances)
     return cov
 
@@ -35,7 +35,7 @@ def eigDecomposition(cov):
     return A
 
 
-def cem(crane,iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=0.2):
+def cem(crane,iterations,batch_size,waning_time= 3,additional_std=0.35,fraction=0.15):
     """
     This function runs cross-entropy method to search the best combination of parameter set that has minimal cost
     @param iterations: total iterations that the function runs
@@ -59,6 +59,7 @@ def cem(crane,iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=
         theta_set=[]
         rewards=[]
         print("-----------------------iteration: ",iteration,"--------------------------")
+        np.random.seed(None)
         for batch in range(batch_size):
             # for each batch
             # X = AZ + u
@@ -68,6 +69,11 @@ def cem(crane,iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=
             # normal distribution generate some samples with negative value, need absolute value
             x=np.abs(x)
             # initialize crane object
+            # manually selects the samples within certain range
+            x[0] = np.clip(x[0], 9.9, 10)
+            x[1] = np.clip(x[1], 9.9, 10)
+            x[2] = np.clip(x[2],0.5,2)
+            x[3] = np.clip(x[3],0.0025,0.0625)
             myCrane = crane( x[0], x[1], x[2], x[3],  rho, E, False)
             for i in range(-1, -5, -1):
                 myCrane.addExternalForce(i, 0, 0, -500e3 / 4)
@@ -75,11 +81,6 @@ def cem(crane,iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=
             # calculate tension and cost
             t = np.abs(np.max(fem.getTension()))
             cost = -np.sum(myCrane.mass)*price
-            # manually selects the samples within certain range
-            x[0] = np.clip(x[0], 9.9, 10)
-            x[1] = np.clip(x[1], 9.9, 10)
-            x[2] = np.clip(x[2],0.5,2)
-            x[3] = np.clip(x[3],0.0025,0.0625)
             # check condition
             if t >=0.2e9 or not fem.check_bending_force():
                 continue
@@ -108,7 +109,7 @@ def cem(crane,iterations,batch_size,waning_time= 1,additional_std=0.45,fraction=
         A = eigDecomposition(np.cov(matrix))
         diff = np.abs(mean_rewards[-1]-np.mean(rewards))
         print("---------------diff: ",diff,"---------------------")
-        if(diff<100):
+        if(diff<10):
             break
         mean_rewards.append(np.mean(rewards))
     return [mean_rewards[-1] ,mean_x[-1]]
@@ -122,15 +123,15 @@ if __name__ == "__main__":
     t1=[]
     t2=[]
     t3=[]
-    cpun=os.cpu_count()
-    N = cpun*3
+    cpun=4
+    N = cpun*1
     # we use multiprocessors here
     p = Pool(os.cpu_count())
     #resule_1 look like this : [[rewards=[],mean=[]],...,]
     for i in range(N):
         p.apply_async(cem,   args=(crane.crane_1,100,500),callback=result_1.append)
-        p.apply_async(cem, args=(crane.crane_2_1,100,500),callback=result_2.append)
-        p.apply_async(cem, args=(crane.crane_2_2,100,500),callback=result_3.append)
+        # p.apply_async(cem, args=(crane.crane_2_1,100,500),callback=result_2.append)
+        # p.apply_async(cem, args=(crane.crane_2_2,100,500),callback=result_3.append)
     p.close()
     p.join()
     # for i in range(50):
@@ -147,11 +148,11 @@ if __name__ == "__main__":
     # print(t2)
     # print(t3)
     rewards_1 = [result_1[i][0] for i in range(N)]
-    rewards_2 = [result_2[i][0] for i in range(N)]
-    rewards_3 = [result_3[i][0] for i in range(N)]
+    # rewards_2 = [result_2[i][0] for i in range(N)]
+    # rewards_3 = [result_3[i][0] for i in range(N)]
     t1 = np.array([result_1[i][1] for i in range(N)])
-    t2 = np.array([result_2[i][1] for i in range(N)])
-    t3 = np.array([result_3[i][1] for i in range(N)])
+    # t2 = np.array([result_2[i][1] for i in range(N)])
+    # t3 = np.array([result_3[i][1] for i in range(N)])
     fig, axs = plt.subplots(6, 1, figsize=(8, 6))
     axs[0].plot(rewards_1)
     axs[0].set_title('crane_1_rewards')
@@ -159,17 +160,17 @@ if __name__ == "__main__":
     axs[1].scatter(t1[:,-2], t1[:,-1])
     axs[1].set_title('crane_1_volumn')
 
-    axs[2].plot(rewards_2)
-    axs[2].set_title('crane_2_1_rewards')
-
-    axs[3].scatter(t2[:,-2], t2[:,-1])
-    axs[3].set_title('crane_2_1_volumn')
-
-    axs[4].plot(rewards_3)
-    axs[4].set_title('crane_2_2_rewards')
-
-    axs[5].scatter(t3[:,-2], t3[:,-1])
-    axs[5].set_title('crane_2_2_volumn')
+    # axs[2].plot(rewards_2)
+    # axs[2].set_title('crane_2_1_rewards')
+    #
+    # axs[3].scatter(t2[:,-2], t2[:,-1])
+    # axs[3].set_title('crane_2_1_volumn')
+    #
+    # axs[4].plot(rewards_3)
+    # axs[4].set_title('crane_2_2_rewards')
+    #
+    # axs[5].scatter(t3[:,-2], t3[:,-1])
+    # axs[5].set_title('crane_2_2_volumn')
 
     # rewards,x=cem(100,450)
     # vol=[]
