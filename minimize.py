@@ -17,7 +17,7 @@ def calculateCov(range_min:np.ndarray,range_max: np.ndarray):
     @return: covariance matrix
     """
     # Calculate variances for each dimension
-    variances = ((range_max - range_min)) / 6
+    variances = ((range_max - range_min)) /6
     cov = np.diag(variances)
     return cov
 
@@ -28,14 +28,14 @@ def eigDecomposition(cov):
     @return:Matrix with eigenvector
     """
     e, v = np.linalg.eig(cov)
-    for i in range(4):
+    for i in range(2):
         if e[i] < 0: e[i] = 0
-    e = np.identity(4) * np.sqrt(e)
+    e = np.identity(2) * np.sqrt(e)
     A = v @ e
     return A
 
 
-def cem(crane,iterations,batch_size,waning_time= 3,additional_std=0.35,fraction=0.15):
+def cem(crane,iterations,batch_size,waning_time= 1,additional_std=0.35,fraction=0.15):
     """
     This function runs cross-entropy method to search the best combination of parameter set that has minimal cost
     @param iterations: total iterations that the function runs
@@ -115,74 +115,100 @@ def cem(crane,iterations,batch_size,waning_time= 3,additional_std=0.35,fraction=
     return [mean_rewards[-1] ,mean_x[-1]]
 
 
+def sample(crane, mean, A, cons_cov, iteration, waning_time, additional_std):
+    np.random.seed(None)
+    x = (A + (cons_cov * max(1 - iteration / waning_time, 0) * additional_std ** 2)) @ np.random.randn(2) + mean
+    x[1] = np.clip(x[1], 0.5, 2)
+    x[0] = np.clip(x[0], 0, 500e3)
+    myCrane = crane(10, 10, x[1], 0.0025, rho, E, False)
+    for i in range(-1, -5, -1):
+        myCrane.addExternalForce(i, 0, 0, -500e3 / 4)
+    # counterweight
+    for i in myCrane.counterweight_nodes:
+        myCrane.addExternalForce(i, 0, 0, -x[0] / len(myCrane.counterweight_nodes))
+    fem = FEM(myCrane, own_weight=True)
+    fem.homogenize_tensions(625e-4, 200e6)
+    cost = -np.sum(myCrane.mass) * price
+    return [x, cost]
+
+def cem_slcw(crane,iterations,batch_size,waning_time= 3,additional_std=0.35,fraction=0.15):
+    """
+    This function runs cross-entropy method to search the best combination of parameter set that has minimal cost
+    @param crane: crane version
+    @param iterations: total iterations that the function runs
+    @param batch_size: total batches in one iteration
+    @param waning_time: first <waning_time> iteraitons that additional standard deviation added
+    @param additional_std: additional standard deviation
+    @param fraction: percentage of the top tier
+    @return:
+    """
+    #set mean rewards
+    mean_rewards = []
+    mean_rewards.append(0)
+    # initialize mean and standard deviation
+    theta_mean = np.array([250e3,1.25])
+    #length and height are set around 10
+    A = calculateCov(np.array([0, 0.5]), np.array([500e3,1.414]))
+    cons_cov = calculateCov(np.array([0, 0.5]), np.array([500e3,1.414]))
+    mean_x=[]
+    for iteration in range(iterations):
+        # initialize batch
+        theta_set=[]
+        rewards=[]
+        print("-----------------------iteration: ",iteration,"--------------------------")
+        def transfer(result):
+            theta_set.append(result[0])
+            rewards.append(result[1])
+            return
+        """
+        Pool(enter your number of physical cpu)
+        """
+        p = Pool(os.cpu_count())
+        for batch in range(batch_size):
+            """
+            try to parallelize the loop
+            """
+            p.apply_async(sample, args=(crane,theta_mean,A,cons_cov,iteration,waning_time,additional_std),callback=transfer)
+        # process that selects elite sets
+        p.close()
+        p.join()
+        index = np.argsort(np.array(rewards))
+        #reverse sequence, so we have [987654321]
+        index = index[::-1]
+        elite = []
+        # number of candidates
+        num_top = int(fraction * len(theta_set))
+        # append candidates
+        for i in range (num_top):
+            elite.append(theta_set[index[i]])
+        # append corresponding parameter sets of candidates
+        matrix =np.stack(elite,axis=0).T
+        # calculate mean value of all parameter in this elite sets
+        for i in range(2):
+            theta_mean[i] = np.mean(matrix[i,:])
+        # deep copy into returned lists
+        mean_x.append(np.copy(theta_mean))
+        # generate new covariance for the next iteration
+        # cov = AA.T, using eigenvalue decomposition
+        A = eigDecomposition(np.cov(matrix))
+        diff = np.abs(mean_rewards[-1]-np.mean(rewards))
+        print("---------------diff: ",diff,"---------------------")
+        if(diff<10):
+            break
+        mean_rewards.append(np.mean(rewards))
+    return mean_rewards ,mean_x
+
+
+
 
 if __name__ == "__main__":
-    result_1=[]
-    result_2=[]
-    result_3=[]
-    t1=[]
-    t2=[]
-    t3=[]
-    cpun=4
-    N = cpun*1
-    # we use multiprocessors here
-    p = Pool(os.cpu_count())
-    #resule_1 look like this : [[rewards=[],mean=[]],...,]
-    for i in range(N):
-        p.apply_async(cem,   args=(crane.crane_1,100,500),callback=result_1.append)
-        # p.apply_async(cem, args=(crane.crane_2_1,100,500),callback=result_2.append)
-        # p.apply_async(cem, args=(crane.crane_2_2,100,500),callback=result_3.append)
-    p.close()
-    p.join()
-    # for i in range(50):
-    #     rewards_1, x_1 = cem(crane.crane_1,100, 500)
-    #     rewards_2, x_2 = cem(crane.crane_2_1, 100, 500)
-    #     rewards_3, x_3 = cem(crane.crane_2_2, 100, 500)
-    #     result_1.append(rewards_1[-1])
-    #     result_2.append(rewards_2[-1])
-    #     result_3.append(rewards_3[-1])
-    #     t1.append(x_1[-1])
-    #     t2.append(x_2[-1])
-    #     t3.append(x_3[-1])
-    # print(t1)
-    # print(t2)
-    # print(t3)
-    rewards_1 = [result_1[i][0] for i in range(N)]
-    # rewards_2 = [result_2[i][0] for i in range(N)]
-    # rewards_3 = [result_3[i][0] for i in range(N)]
-    t1 = np.array([result_1[i][1] for i in range(N)])
-    # t2 = np.array([result_2[i][1] for i in range(N)])
-    # t3 = np.array([result_3[i][1] for i in range(N)])
-    fig, axs = plt.subplots(6, 1, figsize=(8, 6))
-    axs[0].plot(rewards_1)
-    axs[0].set_title('crane_1_rewards')
-
-    axs[1].scatter(t1[:,-2], t1[:,-1])
-    axs[1].set_title('crane_1_volumn')
-
-    # axs[2].plot(rewards_2)
-    # axs[2].set_title('crane_2_1_rewards')
-    #
-    # axs[3].scatter(t2[:,-2], t2[:,-1])
-    # axs[3].set_title('crane_2_1_volumn')
-    #
-    # axs[4].plot(rewards_3)
-    # axs[4].set_title('crane_2_2_rewards')
-    #
-    # axs[5].scatter(t3[:,-2], t3[:,-1])
-    # axs[5].set_title('crane_2_2_volumn')
-
-    # rewards,x=cem(100,450)
-    # vol=[]
-    # for s in x:
-    #     vol.append(s[2]*s[3])
-    # indexNorm= np.argmin(norm)
-    # print("theta: "+ str(x[-1]))
-    # print("reward: " + str(rewards[-1]))
-    # fig, axs = plt.subplots(2, 1, figsize=(8, 6))
-    # axs[0].plot(rewards[1:], label='r')
-    # axs[0].set_title('r')
-    # axs[0].legend()
+    rewards,x=cem_slcw(crane.crane_2_2, 100,16)
+    print("theta: "+ str(x[-1]))
+    print("reward: " + str(rewards[-1]))
+    fig, axs = plt.subplots(2, 1, figsize=(8, 6))
+    axs[0].plot(rewards[1:], label='r')
+    axs[0].set_title('r')
+    axs[0].legend()
     # axs[1].plot(vol, label='volumn')
     # axs[1].set_title('x')
     # axs[1].legend()
