@@ -312,7 +312,7 @@ class FEM:
             color.append(self.map_value_to_color(value/abs_max, color_map)) # normalize value to fit interval [-1, 1]
         return color, color_map
 
-    def display(self, scale=1, external_forces=True, tension=False, wind=False):
+    def display(self, scale=1, external_forces=True, tension=False, wind=False, saveFig=None):
         """
         scale : float
             the scale in which the deformations should be displayed
@@ -322,6 +322,8 @@ class FEM:
             highlight the tension in each bar using a color map
         wind : bool
             highlight the surface at which wind is attacking
+        saveFig : string
+            name of the figure that should be saved
         """
         if tension and wind:
             print("It is not recommended to have both tension and wind exposed surfaces displayed!")
@@ -396,13 +398,15 @@ class FEM:
                 elif self.wind_dir == 3:
                     self.plot(dnodes, self.truss.bars[self.truss.y_negative_side], 'lightskyblue', '-', 2, 'wind exposed area')
 
-        plt.suptitle(self.truss)
-        plt.title("Höhe: "+str(self.truss.height)+" m\n"
-                + "Länge: "+str(self.truss.length)+" m\n"
-                + "Segmentlänge: "+str(np.round(self.truss.ls, 2))+" m\n"
-                + "Masse: "+str(int(np.sum(self.truss.mass)))+" kg", fontsize=8, y = 0.95, loc="right")
+        # plt.suptitle(self.truss)
+        # plt.title("Höhe: "+str(self.truss.height)+" m\n"
+        #         + "Länge: "+str(self.truss.length)+" m\n"
+        #         + "Segmentlänge: "+str(np.round(self.truss.ls, 2))+" m\n"
+        #         + "Masse: "+str(int(np.sum(self.truss.mass)))+" kg", fontsize=8, y = 0.95, loc="right")
+
         # save plot
-        # plt.savefig('figures/fig1', dpi=600)
+        if saveFig is not None:
+            plt.savefig('figures/'+str(saveFig), dpi=600)
         plt.show()
 
 
@@ -420,6 +424,7 @@ class FEM:
             color = [color] * len(bars)
         plt.subplot(projection='3d')
         plt.gca().set_aspect('equal')
+        plt.gca().view_init(elev=19, azim=-57, roll=0)
         for i in range(len(bars)):
             # each start and end coordinate
             xi, xf = nodes[bars[i, 0], 0], nodes[bars[i, 1], 0]
