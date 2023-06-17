@@ -17,7 +17,7 @@ def calculateCov(range_min:np.ndarray,range_max: np.ndarray):
     @return: covariance matrix
     """
     # Calculate variances for each dimension
-    variances = ((range_max - range_min)) /6
+    variances = ((range_max - range_min)) /4
     cov = np.diag(variances)
     return cov
 
@@ -118,7 +118,7 @@ def cem(crane,iterations,batch_size,waning_time= 1,additional_std=0.35,fraction=
 def sample(crane, mean, A, cons_cov, iteration, waning_time, additional_std):
     np.random.seed(None)
     x = (A + (cons_cov * max(1 - iteration / waning_time, 0) * additional_std ** 2)) @ np.random.randn(2) + mean
-    x[1] = np.clip(x[1], 0.5, 2)
+    x[1] = np.clip(x[1], 0.5, 1.414)
     x[0] = np.clip(x[0], 0, 500e3)
     myCrane = crane(10, 10, x[1], 0.0025, rho, E, False)
     for i in range(-1, -5, -1):
@@ -153,12 +153,10 @@ def cem_slcw(crane,iterations,batch_size,waning_time= 3,additional_std=0.35,frac
     mean_x=[]
     for iteration in range(iterations):
         # initialize batch
-        theta_set=[]
-        rewards=[]
+        results=[]
         print("-----------------------iteration: ",iteration,"--------------------------")
         def transfer(result):
-            theta_set.append(result[0])
-            rewards.append(result[1])
+            results.append(result)
             return
         """
         Pool(enter your number of physical cpu)
@@ -172,6 +170,8 @@ def cem_slcw(crane,iterations,batch_size,waning_time= 3,additional_std=0.35,frac
         # process that selects elite sets
         p.close()
         p.join()
+        rewards = [results[i][1] for i in range(len(results))]
+        theta_set = [results[i][0] for i in range(len(results))]
         index = np.argsort(np.array(rewards))
         #reverse sequence, so we have [987654321]
         index = index[::-1]
@@ -202,15 +202,28 @@ def cem_slcw(crane,iterations,batch_size,waning_time= 3,additional_std=0.35,frac
 
 
 if __name__ == "__main__":
-    rewards,x=cem_slcw(crane.crane_2_2, 100,16)
+    """
+    Print result for one optimization
+    """
+    rewards, x = cem_slcw(crane.crane_2_1, 100, 1000)
     print("theta: "+ str(x[-1]))
     print("reward: " + str(rewards[-1]))
-    fig, axs = plt.subplots(2, 1, figsize=(8, 6))
-    axs[0].plot(rewards[1:], label='r')
-    axs[0].set_title('r')
-    axs[0].legend()
-    # axs[1].plot(vol, label='volumn')
-    # axs[1].set_title('x')
+
+    """
+    multiple times optimization
+    """
+    # fig, axs = plt.subplots(2, 1, figsize=(8, 6))
+    # cost=[]
+    # xset=[]
+    # for i in range(10):
+    #     rewards, x = cem_slcw(crane.crane_2_1, 100, 1000)
+    #     cost.append(rewards[-1])
+    #     xset.append(x[-1])
+    # axs[0].plot(cost, label='r')
+    # axs[0].set_title('rewards')
+    # axs[0].legend()
+    # axs[1].scatter([xset[i][0] for i in range(len(xset))], [xset[i][1] for i in range(len(xset))])
+    # axs[1].set_title('cw and sl')
     # axs[1].legend()
     plt.show()
 
