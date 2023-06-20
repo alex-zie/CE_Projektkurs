@@ -7,7 +7,7 @@ import os
 
 E = 210e9  # E-module [Pa]
 rho = 7850  # density [kg/m^3]
-price = 10
+price = 1
 
 def calculateCov(range_min:np.ndarray,range_max: np.ndarray):
     """
@@ -119,19 +119,20 @@ def sample(crane, mean, A, cons_cov, iteration, waning_time, additional_std):
     np.random.seed(None)
     x = (A + (cons_cov * max(1 - iteration / waning_time, 0) * additional_std ** 2)) @ np.random.randn(2) + mean
     x[1] = np.clip(x[1], 0.5, 1.414)
-    x[0] = np.clip(x[0], 0, 500e3)
+    x[0] = np.clip(np.abs(x[0]), 0, 500e3)
     myCrane = crane(10, 10, x[1], 0.0025, rho, E, False)
-    for i in range(-1, -5, -1):
+    for i in myCrane.tip_nodes:
         myCrane.addExternalForce(i, 0, 0, -500e3 / 4)
     # counterweight
     for i in myCrane.counterweight_nodes:
         myCrane.addExternalForce(i, 0, 0, -x[0] / len(myCrane.counterweight_nodes))
     fem = FEM(myCrane, own_weight=True)
     fem.homogenize_tensions(625e-4, 200e6)
-    cost = -np.sum(myCrane.mass) * price
+    cost = -np.sum(fem.truss.mass)
+    print("sample: ",x,"after： ",cost)
     return [x, cost]
 
-def cem_slcw(crane,iterations,batch_size,waning_time= 3,additional_std=0.35,fraction=0.15):
+def cem_slcw(crane,iterations,batch_size,waning_time= 10,additional_std=0.5,fraction=0.15):
     """
     This function runs cross-entropy method to search the best combination of parameter set that has minimal cost
     @param crane: crane version
@@ -146,10 +147,9 @@ def cem_slcw(crane,iterations,batch_size,waning_time= 3,additional_std=0.35,frac
     mean_rewards = []
     mean_rewards.append(0)
     # initialize mean and standard deviation
-    theta_mean = np.array([250e3,1.25])
+    theta_mean = np.array([250e3,0.957])
     #length and height are set around 10
     A = calculateCov(np.array([0, 0.5]), np.array([500e3,1.414]))
-    cons_cov = calculateCov(np.array([0, 0.5]), np.array([500e3,1.414]))
     mean_x=[]
     for iteration in range(iterations):
         # initialize batch
@@ -166,7 +166,7 @@ def cem_slcw(crane,iterations,batch_size,waning_time= 3,additional_std=0.35,frac
             """
             try to parallelize the loop
             """
-            p.apply_async(sample, args=(crane,theta_mean,A,cons_cov,iteration,waning_time,additional_std),callback=transfer)
+            p.apply_async(sample, args=(crane,theta_mean,A,A,iteration,waning_time,additional_std),callback=transfer)
         # process that selects elite sets
         p.close()
         p.join()
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     """
     Print result for one optimization
     """
-    rewards, x = cem_slcw(crane.crane_2_1, 100, 1000)
+    rewards, x = cem_slcw(crane.crane_2_1, 100, 500,waning_time=1,fraction=0.1)
     print("theta: "+ str(x[-1]))
     print("reward: " + str(rewards[-1]))
 
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     # cost=[]
     # xset=[]
     # for i in range(10):
-    #     rewards, x = cem_slcw(crane.crane_2_1, 100, 1000)
+    #     rewards, x = cem_slcw(crane.crane_2_2, 100, 1000)
     #     cost.append(rewards[-1])
     #     xset.append(x[-1])
     # axs[0].plot(cost, label='r')
@@ -225,5 +225,5 @@ if __name__ == "__main__":
     # axs[1].scatter([xset[i][0] for i in range(len(xset))], [xset[i][1] for i in range(len(xset))])
     # axs[1].set_title('cw and sl')
     # axs[1].legend()
-    plt.show()
+    # plt.show()
 
