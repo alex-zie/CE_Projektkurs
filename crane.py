@@ -4,15 +4,29 @@ import numpy as np
 
 class crane_1(Truss):
     """
-    simple crane with cubicle tower and jib made from pyramids
+    Simple crane with cubical tower and jib made of pyramids
     """
 
-    def __init__(self, height, length, ls, A, rho, E, p=True):
+    def __init__(self, height, length, ls, A, rho, E, p=True, max_bar_length=-1):
         """
-        :param variant:
-        :param height:
-        :param length:
-        :param ls:
+        height : float
+            Maximum crane height. Not exact, because height depends on the length of the segments.
+        length : float
+            Maximum length of jib. Not exact, because jib length depends on the length of the segments.
+        ls : float
+            the length of the segments
+        A : float (or vector of float)
+            crossection area(s) of bars
+        rho: float
+            desity of material
+        E : float
+            Young's modulus of material
+        p : bool
+            print information after creation
+        max_bar_length : float
+            Maximal allowed length of beams. Throws exception if surpassed.
+        optimized_crossections : bool
+            will increase crossections of particularly strained beams up to ten times if true
         """
         if ls > height:
             raise Exception("Height of segments cannot be greater than the height of the crane!")
@@ -35,25 +49,24 @@ class crane_1(Truss):
         self.x_positive_side = []  
         self.x_negative_side = []  
         self.y_positive_side = []
-        self.y_negative_side = []  
+        self.y_negative_side = [] 
 
         if p:
             print("Creating crane with cuboid tower with " + str(self.nST) + " segments of length "+str(self.ls)+" and pyramidal jib with " + str(self.nSA) + " segments.")
-        self.tower_pyramid(nodes, bars)
+        self.make_tower(nodes, bars)
         offsetT = cur_offset(nodes)
         self.counterweight_nodes = [] # nodes of counter jib for counter weight 
-        self.gegenausleger_pyramid(nodes, bars, offsetT)
+        self.make_counterjib(nodes, bars, offsetT)
         offsetTG = cur_offset(nodes)
-        self.ausleger_pyramid(nodes, bars, offsetT, offsetTG)
-        self.tip_nodes = [-2, -3, -5, -6] # nodes at front of jib for weights
-
+        self.make_jib(nodes, bars, offsetT, offsetTG)
+        self.tip_nodes = [-2, -3, -5, -6] # nodes at front of jib where weight is applied
         super().__init__(nodes, bars, A, rho, E)
 
+        # indices of bars on a certain side of the crane
         self.x_positive_side = np.array(self.x_positive_side).astype(int)
         self.x_negative_side = np.array(self.x_negative_side).astype(int)
         self.y_positive_side = np.array(self.y_positive_side).astype(int)
         self.y_negative_side = np.array(self.y_negative_side).astype(int)
-        # super().setLateralBars(self.x_side, self.y_side)
 
         # supports
         self.supports = np.ones_like(self.nodes).astype(int)
@@ -65,13 +78,16 @@ class crane_1(Truss):
         self._computeOrientations()
         self._computeMass()
 
+        if max_bar_length != -1 and max_bar_length > np.max(self.lengths):
+            raise Exception("Maximum bar length exceeded!\n Maximum length: "+str(np.max(self.lengths)))
+
     def __str__(self):
         return self.to_string()
 
     def to_string(self):
-        return "Kran 1: "+str(self.height)+" "+str(self.length)+" "+str(self.ls)
+        return "Kran Modell 1"
     
-    def tower_pyramid(self, nodes, bars):
+    def make_tower(self, nodes, bars):
         # nodes
         for i in range(self.nST):
             nodes.append([0, 0, i * self.ls])  
@@ -81,16 +97,16 @@ class crane_1(Truss):
         nodes.append([self.ls / 2, self.ls / 2, self.ls * self.nST])
 
         # bars 
-        # x- and y-direction (LT for Left Top usw.)
-        for i in range(self.nST):
-            bars.append([4 * i, 4 * i + 1])  
-            selectYNegativeBar(self, bars)
-            bars.append([4 * i + 2, 4 * i + 3])  
-            selectYPositiveBar(self, bars)
-            bars.append([4 * i, 4 * i + 2]) 
-            selectXNegativeBar(self, bars)
-            bars.append([4 * i + 1, 4 * i + 3])  
-            selectXPositiveBar(self, bars)
+        # # x- and y-direction (LT for Left Top usw.)
+        # for i in range(self.nST):
+        #     bars.append([4 * i, 4 * i + 1])  
+        #     selectYNegativeBar(self, bars)
+        #     bars.append([4 * i + 2, 4 * i + 3])  
+        #     selectYPositiveBar(self, bars)
+        #     bars.append([4 * i, 4 * i + 2]) 
+        #     selectXNegativeBar(self, bars)
+        #     bars.append([4 * i + 1, 4 * i + 3])  
+        #     selectXPositiveBar(self, bars)
         # z-direction
         for i in range(self.nST - 1):
             bars.append([4 * i, 4 * i + 4])  # LT
@@ -135,11 +151,11 @@ class crane_1(Truss):
         bars.append([offsetTO - 1, offsetTO - 5])
         selectYNegativeBar(self, bars)
         
-        # support line (optional)
-        bars.append([offsetTO - 3, offsetTO - 4])
-        bars.append([offsetTO - 2, offsetTO - 5])
+        # # diagonal lines at the top (optional)
+        # bars.append([offsetTO - 3, offsetTO - 4])
+        # bars.append([offsetTO - 2, offsetTO - 5])
 
-    def gegenausleger_pyramid(self, nodes, bars, offsetT):
+    def make_counterjib(self, nodes, bars, offsetT):
         # nodes 
         for i in range(1, self.nSGA + 1):  
             nodes.append([-(self.ls + i * self.ls) + self.ls, 0, (self.nST - 1) * self.ls])  
@@ -158,12 +174,12 @@ class crane_1(Truss):
         selectYPositiveBar(self, bars)
         bars.append([offsetT + 2, offsetT])
         selectYNegativeBar(self, bars)
-
         bars.append([offsetT + 2, offsetT - 5])
         selectYNegativeBar(self, bars)
-
         bars.append([offsetT + 2, offsetT - 3])
         selectYPositiveBar(self, bars)
+
+        # connection to peak of tower
         bars.append([offsetT + 2, offsetT - 1])
         selectYNegativeBar(self, bars)
         selectYPositiveBar(self, bars)
@@ -179,10 +195,10 @@ class crane_1(Truss):
         bars.append([offsetGT - 2, offsetGT - 3])  # last bar
         selectXNegativeBar(self, bars)
 
-        # support lines at the bottom (optional) 
-        bars.append([offsetT + 1, offsetT -5])  #first line
-        for i in range(self.nSGA - 1):
-            bars.append([offsetT + 3 * i, offsetT + 4 + 3 * i])
+        # # diagonal lines at the bottom (optional) 
+        # bars.append([offsetT + 1, offsetT -5])  #first line
+        # for i in range(self.nSGA - 1):
+        #     bars.append([offsetT + 3 * i, offsetT + 4 + 3 * i])
 
         # making the pyramids
         tmp_lastbar1 = 0
@@ -208,14 +224,13 @@ class crane_1(Truss):
             selectYPositiveBar(self, bars)
 
 
-    def ausleger_pyramid(self, nodes, bars, offsetT, offsetTG):
+    def make_jib(self, nodes, bars, offsetT, offsetTG):
         # nodes
         for i in range(1, self.nSA + 1):
             nodes.append([self.ls + i * self.ls, 0, (self.nST-1) * self.ls])  # Left Bottom
             nodes.append([self.ls + i * self.ls, self.ls, (self.nST-1) * self.ls])  # Right Bottom
             nodes.append([(self.ls/2 + i * self.ls), self.ls / 2, (self.nST) * self.ls])  # Top
         offsetTO = len(nodes)  
-
 
         # bars
         # x- und y-dircetion
@@ -226,10 +241,10 @@ class crane_1(Truss):
             bars.append([(offsetTG + 1) + i * 3, (offsetTG + 4) + i * 3])
             selectYPositiveBar(self, bars)
 
-        # support line at bottom
-        bars.append([offsetT - 2, offsetTG]) #first line
-        for i in range(self.nSA -1):
-            bars.append([offsetTG + 1 + i*3, offsetTG + 3 + i*3])
+        # # diagonal lines at the bottom (optional)
+        # bars.append([offsetT - 2, offsetTG]) #first line
+        # for i in range(self.nSA -1):
+        #     bars.append([offsetTG + 1 + i*3, offsetTG + 3 + i*3])
 
         # bottom nodes with top nodes
         tmp_lastbar1 = 0
@@ -254,10 +269,11 @@ class crane_1(Truss):
             selectYNegativeBar(self, bars)
             selectYPositiveBar(self, bars)
 
+
         bars.append([offsetTO - 2, offsetTO - 3]) # last bar at the end of the crane
         selectXPositiveBar(self, bars)
 
-        bars.append([offsetT - 1, offsetTG + 2]) # top of the Tower with first Node Ausleger
+        bars.append([offsetT - 1, offsetTG + 2]) # top of the Tower with first jib node
         selectYNegativeBar(self, bars)
         selectYPositiveBar(self, bars)
 
@@ -279,40 +295,27 @@ class crane_1(Truss):
         bars.append([offsetTG + 2, offsetTG])
         selectYNegativeBar(self, bars)
 
-    def selectYPositiveBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the Y bars
-        """
-        self.y_positive_side.append(len(bars) - 1)
-
-    def selectYNegativeBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the Y bars
-        """
-        self.y_negative_side.append(len(bars) - 1)
-
-    def selectXNegativeBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the X negative bars
-        """
-        self.x_positive_side.append(len(bars) - 1)
-
-    def selectXPositiveBar(self, bars):
-        """
-        Select the last bar from the bar array and add this to another array to select the X positive bars
-        """
-        self.x_negative_side.append(len(bars) - 1)
-
 class crane_2_1(Truss):
     """
-    crane with almost cubicles in the tower and higher top,  jib made from pyramids and rope
+    Crane with zig-zag tower, peak, jib made of pyramids and ropes
     """
 
     def __init__(self, height, length, ls, A, rho, E, p=True):
         """
-        :param height:
-        :param length:
-        :param ls:
+        height : float
+            Maximum crane height. Not exact, because height depends on the length of the segments.
+        length : float
+            Maximum length of jib. Not exact, because jib length depends on the length of the segments.
+        ls : float
+            the length of the segments
+        A : float
+            crossection area of bars
+        rho: float
+            desity of material
+        E : float
+            Young's modulus of material
+        p : bool
+            print information after creation
         """
         if ls > height:
             raise Exception("Height of segments cannot be greater than the height of the crane!")
@@ -336,17 +339,17 @@ class crane_2_1(Truss):
         self.x_positive_side = []  
         self.x_negative_side = []  
         self.y_positive_side = []
-        self.y_negative_side = []  
+        self.y_negative_side = []
 
         if p:
             print("Creating crane with zig-zag tower with " + str(self.nST) + " segments of length "+str(self.ls)+" and pyramidal jib with " + str(self.nSA) + " segments.")
-        self.tower_ver2(nodes, bars)
+        self.make_tower(nodes, bars)
         offsetT = cur_offset(nodes) - 8
-        self.ausleger_ver2(nodes, bars, offsetT)
+        self.make_jib(nodes, bars, offsetT)
         offsetA = cur_offset(nodes) + 1
         self.tip_nodes = [offsetA-3, offsetA-4, offsetA-6, offsetA-7] # nodes at front of jib for weights
         self.counterweight_nodes = [] # nodes of counter jib for counter weight
-        self.gegenausleger_ver2(nodes, bars, offsetT, offsetA)
+        self.make_counterjib(nodes, bars, offsetT, offsetA)
 
         super().__init__(nodes, bars, A, rho, E)
 
@@ -372,9 +375,9 @@ class crane_2_1(Truss):
         return self.to_string()
 
     def to_string(self):
-        return "Kran 2.1: "+str(self.height)+" "+str(self.length)+" "+str(self.ls)
+        return "Kran Modell 2"
 
-    def tower_ver2(self, nodes, bars):
+    def make_tower(self, nodes, bars):
         # nodes 
         for i in range(self.nST-1):
             nodes.append([0, 0, i * self.ls])  # Left Top
@@ -485,7 +488,7 @@ class crane_2_1(Truss):
         bars.append([offset-9, offset-3])
         selectYNegativeBar(self, bars)
 
-    def ausleger_ver2(self, nodes, bars, offsetT):
+    def make_jib(self, nodes, bars, offsetT):
         # nodes
         for i in range(1, self.nSA + 1):
             nodes.append([self.ls + i * self.ls, 0, (self.nST-2) * self.ls])  # Left Bottom
@@ -546,7 +549,7 @@ class crane_2_1(Truss):
         # rope
         bars.append([offsetT+7, offsetT + (self.nSA//2)*3 + 10])
 
-    def gegenausleger_ver2(self, nodes, bars, offsetT, offsetA):
+    def make_counterjib(self, nodes, bars, offsetT, offsetA):
         # nodes
         nodes.append([(self.ls/2 - self.ls), self.ls / 2, (self.nST-1) * self.ls]) # first top
         for i in range(2, self.nSA//2 + 3):
@@ -613,12 +616,24 @@ class crane_2_2(Truss):
 
     """
 
-    def __init__(self, height, length, ls, A, rho, E, p=True):
+    def __init__(self, height, length, ls, A, rho, E, p=True, max_bar_length=-1):
         """
-        :param variant:
-        :param height:
-        :param length:
-        :param ls:
+         height : float
+            Maximum crane height. Not exact, because height depends on the length of the segments.
+        length : float
+            Maximum length of jib. Not exact, because jib length depends on the length of the segments.
+        ls : float
+            the length of the segments
+        A : float
+            crossection area
+        rho: float
+            desity of material
+        E : float
+            Young's modulus of material
+        p : bool
+            print information after creation
+        max_bar_length : float
+            Maximal allowed length of beams. Throws exception if surpassed.
         """
         if ls > height:
             raise Exception("Height of segments cannot be greater than the height of the crane!")
@@ -646,13 +661,13 @@ class crane_2_2(Truss):
 
         if p:
             print("Creating crane with zig-zag tower with " + str(self.nST) + " segments of length "+str(self.ls)+" and pyramidal jib with " + str(self.nSA) + " segments.")
-        self.tower_ver2(nodes, bars)
+        self.make_tower(nodes, bars)
         offsetT = cur_offset(nodes)
-        self.ausleger_ver2(nodes, bars, offsetT)
+        self.make_jib(nodes, bars, offsetT)
         offsetA = cur_offset(nodes) + 1
         self.tip_nodes = [offsetA-3, offsetA-4, offsetA-6, offsetA-7] # nodes at front of jib for weights
         self.counterweight_nodes = [] # nodes of counter jib for counter weight
-        self.gegenausleger_ver2(nodes, bars, offsetT, offsetA)
+        self.make_counterjib(nodes, bars, offsetT, offsetA)
 
         super().__init__(nodes, bars, A, rho, E)
 
@@ -660,7 +675,6 @@ class crane_2_2(Truss):
         self.x_negative_side = np.array(self.x_negative_side).astype(int)
         self.y_positive_side = np.array(self.y_positive_side).astype(int)
         self.y_negative_side = np.array(self.y_negative_side).astype(int)
-        # super().setLateralBars(self.x_side, self.y_side)
 
         # supports
         self.supports = np.ones_like(self.nodes).astype(int)
@@ -678,14 +692,17 @@ class crane_2_2(Truss):
         self._computeOrientations(self.d)
         self._computeMass()
 
+        if max_bar_length != -1 and max_bar_length > np.max(self.lengths):
+            raise Exception("Maximum bar length exceeded!\n Maximum length: "+str(np.max(self.lengths)))
+
     def __str__(self):
         return self.to_string()
 
     def to_string(self):
-        return "Kran 2.2: "+str(self.height)+" "+str(self.length)+" "+str(self.ls)
+        return "Kran Modell 3"
 
 
-    def tower_ver2(self, nodes, bars):
+    def make_tower(self, nodes, bars):
         # nodes 
         for i in range(self.nST):
             nodes.append([0, 0, i * self.ls])  # Left Top
@@ -774,7 +791,7 @@ class crane_2_2(Truss):
         selectYNegativeBar(self, bars)
         bars.append([offset-2, offset-5]) # digonal bottom 
 
-    def ausleger_ver2(self, nodes, bars, offsetT):
+    def make_jib(self, nodes, bars, offsetT):
 
         for i in range(1, self.nSA + 1):
             nodes.append([self.ls + i * self.ls, 0, (self.nST-1) * self.ls])  # Left Bottom
@@ -832,7 +849,7 @@ class crane_2_2(Truss):
             bars.append([offsetT + 3*i, offsetT+4 + 3*i])
 
 
-    def gegenausleger_ver2(self, nodes, bars, offsetT, offsetA):
+    def make_counterjib(self, nodes, bars, offsetT, offsetA):
         nodes.append([(self.ls/2 - self.ls), self.ls / 2, self.nST * self.ls]) # First top
         for i in range(2, self.nSA//2 + 3):
             nodes.append([self.ls - i * self.ls, 0, (self.nST-1) * self.ls])  # Left Bottom
