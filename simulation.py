@@ -32,7 +32,7 @@ if __name__ == "__main__":
       myCrane.addExternalForce(i, 0, 0, -3*load/len(myCrane.counterweight_nodes))
    
    fem = FEM(myCrane, own_weight=True)
-   fem.display(scale=1, tension=True)
+   #fem.display(scale=1, tension=True)
    #fem.optimize_crossections(625e-4, 200e6)
    fem.homogenize_tensions(625e-4, 200e6)
    

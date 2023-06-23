@@ -16,10 +16,10 @@ class FEM:
         The analysis is automatically performed when creating an instance of this class.
         """
         self.truss = truss
-        self.NN = len(truss.nodes)
-        self.NE = len(truss.bars)
+        self.num_nodes = len(truss.nodes)
+        self.num_bars = len(truss.bars)
         self.DOF = 3  # because we are in 3D 
-        self.NDOF = self.DOF * self.NN  # total number of degrees of freedom
+        self.NDOF = self.DOF * self.num_nodes  # total number of degrees of freedom
         self.own_weight = own_weight
         self.wind = False
         self.wind_dir = -1
@@ -63,7 +63,7 @@ class FEM:
         """
         # Printing characteristics of the model
         if p and self.firstCreate:
-            message = "Simulating truss with " + str(self.NN) + " nodes and " + str(self.NE) + " bars"
+            message = "Simulating truss with " + str(self.num_nodes) + " nodes and " + str(self.num_bars) + " bars"
             message += " considering gravity." if self.own_weight else "."
             print(message)
 
@@ -115,7 +115,7 @@ class FEM:
         U[supportDOF] = self.truss.Ur
 
         # Necessary reshape operation
-        U = U.reshape(self.NN, self.DOF)
+        U = U.reshape(self.num_nodes, self.DOF)
         # displacement vector for each bar/element -> [deformation of start node, deformation of end node]
         u = np.concatenate((U[self.truss.bars[:, 0]], U[self.truss.bars[:, 1]]),
                            axis=1)
@@ -139,10 +139,13 @@ class FEM:
 
         Returns the global stiffnes matrix
         """
+        if isinstance(A, float) or isinstance(A, int):
+            A = A*np.ones(self.num_bars)
+
         # Create stiffness matrix
         K = np.zeros([self.NDOF, self.NDOF])
 
-        for k in range(self.NE):
+        for k in range(self.num_bars):
             # auxiliary variable
             aux = self.DOF * self.truss.bars[k]
 
@@ -150,7 +153,7 @@ class FEM:
             index = np.r_[aux[0]:aux[0] + self.DOF, aux[1]:aux[1] + self.DOF]
 
             # stiffness of the element
-            ES = np.dot(trans[k][np.newaxis].T * E * A, trans[k][np.newaxis]) / L[k]
+            ES = np.dot(trans[k][np.newaxis].T * E * A[k], trans[k][np.newaxis]) / L[k]
 
             # global stiffness: sum of single stiffness matrices in the correct order given by index
             K[np.ix_(index, index)] += ES
