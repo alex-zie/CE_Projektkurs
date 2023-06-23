@@ -175,11 +175,14 @@ class FEM:
         for i in range(len(bars)):
             weights[bars[i]] = weights[bars[i]] + masses[i]
         return 9.81 * weights / nOutgoingBars
+    
     def addWind(self, speed, axis, dir):
         """
         speed in m/s
         axis: 0 (x-Axis) or 1 (y-Axis)
         dir: 1 (positive direction) or -1 (negative direction)
+
+        Applies a force to wind exposed nodes based on the area of the bars that are connected to it.
         """
         if not (dir == -1 or dir == 1):
             raise Exception("dir has to be either -1 or 1")
@@ -233,8 +236,13 @@ class FEM:
         w_forces[:, axis] = dir * forces / nOutgoingBars
         self.truss.addExternalForces(w_forces)
         self.TrussAnalysis()
+
     def getTension(self):
+        """
+        Returns the tension in each bar
+        """
         return self.N / self.truss.A
+    
     def optimize_crossections(self, max_A, crit_tension):
         """
         Minimizes the crossections in the interval [A, max_A] based on a critical tension
