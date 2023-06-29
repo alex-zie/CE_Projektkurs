@@ -97,8 +97,9 @@ class crane_1(Truss):
         nodes.append([self.ls / 2, self.ls / 2, self.ls * self.nST])
 
         # bars 
-        # # x- and y-direction (LT for Left Top usw.)
-        # for i in range(self.nST):
+
+        # # x- and y-direction (LT for Left Top usw.) (optional)
+        # for i in range(self.nST-1):
         #     bars.append([4 * i, 4 * i + 1])  
         #     selectYNegativeBar(self, bars)
         #     bars.append([4 * i + 2, 4 * i + 3])  
@@ -107,6 +108,18 @@ class crane_1(Truss):
         #     selectXNegativeBar(self, bars)
         #     bars.append([4 * i + 1, 4 * i + 3])  
         #     selectXPositiveBar(self, bars)
+
+        # x- and y-direction at top
+        i = self.nST-1
+        bars.append([4 * i, 4 * i + 1])  
+        selectYNegativeBar(self, bars)
+        bars.append([4 * i + 2, 4 * i + 3])  
+        selectYPositiveBar(self, bars)
+        bars.append([4 * i, 4 * i + 2]) 
+        selectXNegativeBar(self, bars)
+        bars.append([4 * i + 1, 4 * i + 3])  
+        selectXPositiveBar(self, bars)
+        
             
         # z-direction
         for i in range(self.nST - 1):

@@ -29,11 +29,11 @@ if __name__ == "__main__":
 
    # counter weight
    for i in myCrane.counterweight_nodes:
-      myCrane.addExternalForce(i, 0, 0, -3*load/len(myCrane.counterweight_nodes))
+      myCrane.addExternalForce(i, 0, 0, -load/len(myCrane.counterweight_nodes))
    
    fem = FEM(myCrane, own_weight=True)
    #fem.display(scale=1, tension=True)
-   #fem.optimize_crossections(625e-4, 0.9*200e6)
+   fem.optimize_crossections(625e-4, 0.9*200e6)
    
    # fem.addWind(28, 1, 1)
    

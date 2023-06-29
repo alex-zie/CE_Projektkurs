@@ -75,8 +75,7 @@ class FEM:
         L = self.truss.lengths
 
         # Transformation Matrix local coordinate system -> global coordinate system
-        trans = np.concatenate((-self.truss.orientations.T, self.truss.orientations.T),
-                               axis=1)
+        trans = np.concatenate((-self.truss.orientations.T, self.truss.orientations.T), axis=1)
         # Global stiffness matrix
         K = self.computeStiffnessMatrix(E, A, L, trans)
 
@@ -257,7 +256,7 @@ class FEM:
         while abs_max_tension > crit_tension:
             critical_bars = np.abs(self.getTension()) > 0.999*crit_tension # indices where tension is exceeded # 0.995 to make it slightly smaller so that increased weight force is accounted for
             self.truss.A[critical_bars] = np.abs(self.N[critical_bars]) / (0.999*crit_tension) # increase crossections here
-            self.truss.A[self.truss.A < min_A] = min_A # keep crossections whithin allowed range
+            self.truss.A[self.truss.A < min_A] = min_A # keep crossections within allowed range
             self.truss.A[self.truss.A > max_A] = max_A
             self.truss._computeMass() # update mass
             
@@ -338,13 +337,13 @@ class FEM:
         """
         # define the color map
         color_map = [
-            (-1, (128, 0, 128)),    # purple
-            (-2/3, (0, 0, 255)),   # blue
-            (-1/3, (0, 255, 255)), # cyan
-            (0, (0, 255, 0)),       # green
-            (1/3, (255, 255, 0)),  # yellow
-            (2/3, (255, 165, 0)),  # orange
-            (1, (200, 0, 64))       # dark red
+            [-1, (128, 0, 128)],    # purple
+            [-2/3, (0, 0, 255)],   # blue
+            [-1/3, (0, 255, 255)], # cyan
+            [0, (0, 255, 0)],       # green
+            [1/3, (255, 255, 0)],  # yellow
+            [2/3, (255, 165, 0)],  # orange
+            [1, (200, 0, 64)]      # dark red
         ]
         abs_max = np.max([np.abs(min), np.abs(max)]) # so that 0 is later mapped to zero
         color = []
@@ -392,7 +391,7 @@ class FEM:
             self.plot(dnodes, self.truss.bars, colors, '-', 2)
             
             # legend
-            color_map = np.array(color_map)
+            color_map = np.array(color_map, dtype=object)
             abs_max = np.max([np.abs(minTension), np.abs(maxTension)])
             legend_values = []
             legend_values.append(minTension) # start at minimum tension
@@ -429,11 +428,11 @@ class FEM:
                 elif self.wind_dir == 3:
                     self.plot(dnodes, self.truss.bars[self.truss.y_negative_side], 'lightskyblue', '-', 2, 'wind exposed area')
 
-        plt.suptitle(self.truss)
+        plt.suptitle(self.truss, y=0.9)
         plt.title("Höhe: "+str(self.truss.height)+" m\n"
                 + "Länge: "+str(self.truss.length)+" m\n"
                 + "Segmentlänge: "+str(np.round(self.truss.ls, 2))+" m\n"
-                + "Masse: "+str(int(np.sum(self.truss.mass)))+" kg", fontsize=8, y = 0.95, loc="right")
+                + "Masse: "+str(int(np.sum(self.truss.mass)))+" kg", fontsize=8, y = 0.8, loc="right")
         
         if saveFig is not None:
             plt.savefig('figures/'+str(saveFig)+'.pdf', dpi=600)
