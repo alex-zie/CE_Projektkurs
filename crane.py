@@ -160,10 +160,10 @@ class crane_1(Truss):
         # nodes 
         for i in range(1, self.nSGA + 1):  
             nodes.append([-(self.ls + i * self.ls) + self.ls, 0, (self.nST - 1) * self.ls])  
-            nodes.append([-(self.ls + i * self.ls) + self.ls, self.ls, (self.nST - 1) * self.ls])  
+            nodes.append([-(self.ls + i * self.ls) + self.ls, self.ls, (self.nST - 1) * self.ls]) 
             self.counterweight_nodes.append(len(nodes) - 2)
             self.counterweight_nodes.append(len(nodes) - 1)
-            nodes.append([-(0.5 * self.ls + i * self.ls) + self.ls, self.ls / 2,(self.nST) * self.ls])  
+            nodes.append([-(0.5 * self.ls + i * self.ls) + self.ls, self.ls / 2,(self.nST) * self.ls]) 
 
         # bars 
         # first pyramid
@@ -689,8 +689,8 @@ class crane_2_2(Truss):
         # Connection vector of each bar, as ending node - starting node
         self.d = self.nodes[self.bars[:, 1], :] - self.nodes[self.bars[:, 0], :]
 
-        self._computeLengths(self.d)
-        self._computeOrientations(self.d)
+        self._computeLengths()
+        self._computeOrientations()
         self._computeMass()
 
         if max_bar_length != -1 and max_bar_length > np.max(self.lengths):

@@ -265,26 +265,29 @@ class FEM:
             abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])       
         
         return self.truss.A
-    def homogenize_tensions(self, max_A, crit_tension):
-        """
-        Changes crossections such that tension is equal
-        returns: Array of crossections
-        """
-        abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
-        if isinstance(self.truss.A, float) or isinstance(self.truss.A, int):
-            min_A = self.truss.A
-            self.truss.A = np.zeros(len(self.truss.bars))
-        else:
-            min_A = np.max(self.truss.A)
-        while abs_max_tension > crit_tension:
-            self.truss.A = np.abs(self.N) / (0.995*crit_tension) # increase crossections here
-            self.truss.A[self.truss.A < min_A] = min_A # keep crossections whithin allowed range
-            self.truss.A[self.truss.A > max_A] = max_A
-            self.TrussAnalysis() # recalculate forces
-            abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
-            self.truss._computeMass() # update mass
+    
+    # # not needed because it does the same as optimize_tensions()
+    # def homogenize_tensions(self, max_A, crit_tension):
+    #     """
+    #     Changes crossections such that tension is equal
+    #     returns: Array of crossections
+    #     """
+    #     abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
+    #     if isinstance(self.truss.A, float) or isinstance(self.truss.A, int):
+    #         min_A = self.truss.A
+    #         self.truss.A = np.zeros(len(self.truss.bars))
+    #     else:
+    #         min_A = np.max(self.truss.A)
+    #     while abs_max_tension > crit_tension:
+    #         self.truss.A = np.abs(self.N) / (0.995*crit_tension) # increase crossections here
+    #         self.truss.A[self.truss.A < min_A] = min_A # keep crossections whithin allowed range
+    #         self.truss.A[self.truss.A > max_A] = max_A
+    #         self.TrussAnalysis() # recalculate forces
+    #         abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
+    #         self.truss._computeMass() # update mass
                 
-        return self.truss.A
+    #     return self.truss.A
+
     def reset(self):
         """
         Removes all external forces including gravity and wind
@@ -433,7 +436,7 @@ class FEM:
                 + "Masse: "+str(int(np.sum(self.truss.mass)))+" kg", fontsize=8, y = 0.95, loc="right")
         
         if saveFig is not None:
-            plt.savefig('figures/'+str(saveFig), dpi=600)
+            plt.savefig('figures/'+str(saveFig)+'.pdf', dpi=600)
 
         plt.show()
 
