@@ -296,13 +296,20 @@ class FEM:
         self.wind_dir = -1
         self.truss.reset()
         self.TrussAnalysis()
+
     def map_value_to_color(self, value, color_map):
         """
         Returns a hexadecimal color number as a string for a value between -1 and 1 based
         on the given color map
         """
+        # crop high values if scaling should be in an interval
+        # if value > 1:
+        #     value = 1
+        # if value < -1:
+        #     value = -1
+
         if value < -1 or value > 1:
-            raise Exception("The input value must lay between -1 and 1!")
+            raise Exception("The input value must lay between -1 and 1 but was "+str(value))
         
         # find the appropriate color range for the value
         for i in range(len(color_map) - 1):
@@ -367,8 +374,8 @@ class FEM:
         if tension and wind:
             print("It is not recommended to have both tension and wind exposed surfaces displayed!")
         tensions = self.getTension()
-        minTension = np.min(tensions)
-        maxTension = np.max(tensions)
+        minTension = -1e6 #np.min(tensions)
+        maxTension = 1e6 #np.max(tensions)
         if np.abs(minTension) >= 1e7 or np.abs(maxTension) >= 1e7:
             minTension = minTension/1e6  
             maxTension = maxTension/1e6
@@ -411,6 +418,9 @@ class FEM:
             for value in legend_values:
                 labels.append(str(int(value))+" "+unit)
             labels.reverse()
+            # # if scaling is cropped
+            # labels[0] = ">"+labels[0]
+            # labels[-1] = "<"+labels[-1]
             plt.legend(lines, labels, title="Spannungen")
         if external_forces:
             for i in self.truss.force_points:
