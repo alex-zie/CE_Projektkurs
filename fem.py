@@ -251,9 +251,9 @@ class FEM:
         abs_max_tension = np.max([np.abs(np.min(self.getTension())), np.abs(np.max(self.getTension()))])
         if isinstance(self.truss.A, float) or isinstance(self.truss.A, int):
             min_A = self.truss.A
-            self.truss.A = np.zeros(len(self.truss.bars))
+            self.truss.A = min_A*np.ones(self.num_bars)
         else:
-            min_A = np.max(self.truss.A)
+            min_A = np.min(self.truss.A)
         while abs_max_tension > crit_tension:
             critical_bars = np.abs(self.getTension()) > 0.999*crit_tension # indices where tension is exceeded # 0.995 to make it slightly smaller so that increased weight force is accounted for
             self.truss.A[critical_bars] = np.abs(self.N[critical_bars]) / (0.999*crit_tension) # increase crossections here

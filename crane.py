@@ -97,16 +97,16 @@ class crane_1(Truss):
         nodes.append([self.ls / 2, self.ls / 2, self.ls * self.nST])
 
         # bars 
-        # x- and y-direction (LT for Left Top usw.)
-        for i in range(self.nST):
-            bars.append([4 * i, 4 * i + 1])  
-            selectYNegativeBar(self, bars)
-            bars.append([4 * i + 2, 4 * i + 3])  
-            selectYPositiveBar(self, bars)
-            bars.append([4 * i, 4 * i + 2]) 
-            selectXNegativeBar(self, bars)
-            bars.append([4 * i + 1, 4 * i + 3])  
-            selectXPositiveBar(self, bars)
+        # # x- and y-direction (LT for Left Top usw.)
+        # for i in range(self.nST):
+        #     bars.append([4 * i, 4 * i + 1])  
+        #     selectYNegativeBar(self, bars)
+        #     bars.append([4 * i + 2, 4 * i + 3])  
+        #     selectYPositiveBar(self, bars)
+        #     bars.append([4 * i, 4 * i + 2]) 
+        #     selectXNegativeBar(self, bars)
+        #     bars.append([4 * i + 1, 4 * i + 3])  
+        #     selectXPositiveBar(self, bars)
             
         # z-direction
         for i in range(self.nST - 1):
@@ -542,10 +542,10 @@ class crane_2_1(Truss):
             selectYNegativeBar(self, bars)
             selectYPositiveBar(self, bars)
 
-        # diagonals
-        bars.append([offsetT, offsetT+9])
-        for i in range(self.nSA - 1):
-            bars.append([offsetT+8 + 3*i, offsetT+12 + 3*i])
+        # # diagonals
+        # bars.append([offsetT, offsetT+9])
+        # for i in range(self.nSA - 1):
+        #     bars.append([offsetT+8 + 3*i, offsetT+12 + 3*i])
 
         # rope
         bars.append([offsetT+7, offsetT + (self.nSA//2)*3 + 10])
@@ -603,10 +603,10 @@ class crane_2_1(Truss):
             selectYNegativeBar(self, bars)
             selectYPositiveBar(self, bars)
 
-        # diagonals
-        bars.append([offsetT+1, offsetA])
-        for i in range(self.nSA//2):
-            bars.append([offsetA+1 + 3*i, offsetA+3 + 3*i])
+        # # diagonals
+        # bars.append([offsetT+1, offsetA])
+        # for i in range(self.nSA//2):
+        #     bars.append([offsetA+1 + 3*i, offsetA+3 + 3*i])
 
         # rope
         bars.append([offsetT+7, -3])
@@ -844,10 +844,10 @@ class crane_2_2(Truss):
             selectYNegativeBar(self, bars)
             selectYPositiveBar(self, bars)
 
-        # diagonals
-        bars.append([offsetT-4, offsetT+1])
-        for i in range(self.nSA - 1):
-            bars.append([offsetT + 3*i, offsetT+4 + 3*i])
+        # # diagonals
+        # bars.append([offsetT-4, offsetT+1])
+        # for i in range(self.nSA - 1):
+        #     bars.append([offsetT + 3*i, offsetT+4 + 3*i])
 
 
     def make_counterjib(self, nodes, bars, offsetT, offsetA):
@@ -904,10 +904,10 @@ class crane_2_2(Truss):
             selectYNegativeBar(self, bars)
             selectYPositiveBar(self, bars)
 
-        # diagonals
-        bars.append([offsetT-3, offsetA])
-        for i in range(self.nSA//2):
-            bars.append([offsetA+1 + 3*i, offsetA+3 + 3*i])
+        # # diagonals
+        # bars.append([offsetT-3, offsetA])
+        # for i in range(self.nSA//2):
+        #     bars.append([offsetA+1 + 3*i, offsetA+3 + 3*i])
 
         # rope
         #bars.append([offsetT+7, -3])
