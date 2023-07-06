@@ -373,8 +373,8 @@ class FEM:
         if tension and wind:
             print("It is not recommended to have both tension and wind exposed surfaces displayed!")
         tensions = self.getTension()
-        minTension = -1e6 #np.min(tensions)
-        maxTension = 1e6 #np.max(tensions)
+        minTension = np.min(tensions) # chnage here for different scaling
+        maxTension = np.max(tensions)
         if np.abs(minTension) >= 1e7 or np.abs(maxTension) >= 1e7:
             minTension = minTension/1e6  
             maxTension = maxTension/1e6
