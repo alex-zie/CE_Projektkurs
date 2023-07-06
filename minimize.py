@@ -119,7 +119,7 @@ def sample(crane, mean, A, cons_cov, iteration, waning_time, additional_std):
     np.random.seed(None)
     x = (A + (cons_cov * max(1 - iteration / waning_time, 0) * additional_std ** 2)) @ np.random.randn(2) + mean
     x[1] = np.clip(x[1], 0.5, 1.414)
-    x[0] = np.clip(np.abs(x[0]), 0, 10*500e3)
+    x[0] = np.clip(np.abs(x[0]), 0, 6*500e3)
     myCrane = crane(10, 10, x[1], 0.0025, rho, E, False)
     for i in myCrane.tip_nodes:
         myCrane.addExternalForce(i, 0, 0, -500e3/len(myCrane.tip_nodes))
@@ -147,9 +147,9 @@ def cem_slcw(crane,iterations,batch_size,waning_time= 1,additional_std=0.3,fract
     mean_rewards = []
     mean_rewards.append(0)
     # initialize mean and standard deviation
-    theta_mean = np.array([2500e3,0.957])
+    theta_mean = np.array([1500e3,0.957])
     #length and height are set around 10
-    A = calculateCov(np.array([0, 0.5]), np.array([10*500e3,1.414]))
+    A = calculateCov(np.array([0, 0.5]), np.array([6*500e3,1.414]))
     mean_x=[]
     for iteration in range(iterations):
         # initialize batch

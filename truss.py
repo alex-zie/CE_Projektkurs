@@ -36,7 +36,7 @@ class Truss:
         """
         Computes the orientation of each bar and saves it in the attribute orientations, it is represented by angles.
         """
-        print(np.sum(self.A ** 0.5 * self.lengths) / 2)
+        # print(np.sum(self.A ** 0.5 * self.lengths) / 2)
         self.orientations = self.d.T / self.lengths  # orientation vector of bars (transpose for matching dimensions)
     # physics
     def _computeMass(self):
