@@ -9,9 +9,10 @@ class Truss:
     def __init__(self, nodes, bars, A, rho, E):
         self.nodes = np.array(nodes).astype(float)
         self.bars = np.array(bars)
-        self.F = np.zeros_like(nodes) # external forces
-        self.force_points = [] # indices of points, where external forces attack
-        self.supports = np.ones_like(nodes).astype(int) # degrees of freedom (1 = movable, 0 = fixed), 3 times for (x,y,z)
+        self.F = np.zeros_like(nodes)  # external forces
+        self.force_points = []  # indices of points, where external forces attack
+        self.supports = np.ones_like(nodes).astype(
+            int)  # degrees of freedom (1 = movable, 0 = fixed), 3 times for (x,y,z)
         self.Ur = np.array([]).astype(int)
 
         # material
@@ -19,22 +20,29 @@ class Truss:
         self.rho = rho
         self.E = E
         self.I = A ** 2 / 12
-
+        self.d = self.nodes[self.bars[:, 1], :] - self.nodes[self.bars[:, 0], :]  # direction vector for each bar
         self._computeLengths()
         self._computeOrientations()
         self._computeMass()
 
     # geometry
     def _computeLengths(self):
-        d = self.nodes[self.bars[:, 1], :] - self.nodes[self.bars[:, 0], :]  # endnode - startnode
-        self.lengths = np.sqrt((d ** 2).sum(axis=1))  #  length of bars (euclidian norm)
+        """
+        Computes the length of each bar and saves it in the attribute lengths which is shaped like bars
+        """
+        self.lengths = np.sqrt((self.d ** 2).sum(axis=1))  # length of bars (euclidian norm)
 
     def _computeOrientations(self):
-        d = self.nodes[self.bars[:, 1], :] - self.nodes[self.bars[:, 0], :]  # endnode - startnode
-        self.orientations = d.T / self.lengths  # orientation vector of bars (transpose for matching dimensions)
-
+        """
+        Computes the orientation of each bar and saves it in the attribute orientations, it is represented by angles.
+        """
+        print(np.sum(self.A ** 0.5 * self.lengths) / 2)
+        self.orientations = self.d.T / self.lengths  # orientation vector of bars (transpose for matching dimensions)
     # physics
     def _computeMass(self):
+        """
+        Computes the mass of each bar and saves it in the attribute mass
+        """
         self.mass = np.multiply(self.lengths, self.A) * self.rho
 
     def addSupport(self, node, x, y, z):
@@ -70,7 +78,7 @@ class Truss:
         self.F[node][1] = self.F[node][1] + y
         self.F[node][2] = self.F[node][2] + z
 
-        self.force_points.append(node) # save attack point
+        self.force_points.append(node)  # save attack point
 
     def addExternalForces(self, forces):
         """
@@ -80,8 +88,9 @@ class Truss:
         """
         self.F = self.F + forces
 
-    # removes external forces
     def reset(self):
+        """
+        Removes all external forces
+        """
         self.F = np.zeros_like(self.nodes)
         self.force_points = []
-

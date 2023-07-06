@@ -118,10 +118,9 @@ class FEM:
         # displacement vector for each bar/element -> [deformation of start node, deformation of end node]
         u = np.concatenate((U[self.truss.bars[:, 0]], U[self.truss.bars[:, 1]]),
                            axis=1)
-
         # Calculate axial forces for each element
         N = E * A / L[:] * (trans[:] * u[:]).sum(axis=1)
-        # Calculate reaction forces for the fixed noddes
+        # Calculate reaction forces for the fixed nodes
         R = (Krf[:] * Uf).sum(axis=1) + (Krr[:] * self.truss.Ur).sum(axis=1)
 
         # update N, R, U with resulting forces and deformations
