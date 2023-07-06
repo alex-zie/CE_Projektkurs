@@ -127,12 +127,12 @@ def sample(crane, mean, A, cons_cov, iteration, waning_time, additional_std):
     for i in myCrane.counterweight_nodes:
         myCrane.addExternalForce(i, 0, 0, -x[0] / len(myCrane.counterweight_nodes))
     fem = FEM(myCrane, own_weight=True)
-    fem.homogenize_tensions(625e-4, 200e6)
+    fem.optimize_crossections(625e-4, 0.9*200e6)
     cost = -np.sum(fem.truss.mass)
-    print("sample: ",x,"after： ",cost)
+    # print("sample: ",x,"after： ",cost)
     return [x, cost]
 
-def cem_slcw(crane,iterations,batch_size,waning_time= 10,additional_std=0.5,fraction=0.15):
+def cem_slcw(crane,iterations,batch_size,waning_time= 1,additional_std=0.3,fraction=0.15):
     """
     This function runs cross-entropy method to search the best combination of parameter set that has minimal cost
     @param crane: crane version
@@ -167,6 +167,7 @@ def cem_slcw(crane,iterations,batch_size,waning_time= 10,additional_std=0.5,frac
             try to parallelize the loop
             """
             p.apply_async(sample, args=(crane,theta_mean,A,A,iteration,waning_time,additional_std),callback=transfer)
+
         # process that selects elite sets
         p.close()
         p.join()
@@ -193,7 +194,7 @@ def cem_slcw(crane,iterations,batch_size,waning_time= 10,additional_std=0.5,frac
         A = eigDecomposition(np.cov(matrix))
         diff = np.abs(mean_rewards[-1]-np.mean(rewards))
         print("---------------diff: ",diff,"---------------------")
-        if(diff<10):
+        if(diff<5):
             break
         mean_rewards.append(np.mean(rewards))
     return mean_rewards ,mean_x
@@ -205,10 +206,18 @@ if __name__ == "__main__":
     """
     Print result for one optimization
     """
-    rewards, x = cem_slcw(crane.crane_2_1, 100, 500,waning_time=1,fraction=0.1)
+    rewards, x = cem_slcw(crane.crane_1, 100, 1000,waning_time=3,additional_std=1,fraction=0.25)
     print("theta: "+ str(x[-1]))
     print("reward: " + str(rewards[-1]))
 
+    """
+    Print result in chronological order
+    """
+    plt.figure()
+    plt.plot(rewards[1:])
+    plt.xlabel("Iteration")
+    plt.ylabel("Cost")
+    plt.show()
     """
     multiple times optimization
     """
