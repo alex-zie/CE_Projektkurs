@@ -16,10 +16,12 @@ if __name__ == "__main__":
    rho = 7850  # density [kg/m^3]
    load = 500e3 # attached weight [N]
 
+   # Crane version
    myCrane = crane_1(tower_height, jib_length, length_segments, A, rho, E)
    #myCrane = crane_2_1(10, 10, 1, A, rho, E)
    #myCrane = crane_2_2(10, 10, 1, A, rho, E)
 
+   # Nodes and bars
    nodes = myCrane.nodes
    bars = myCrane.bars
 
@@ -30,12 +32,14 @@ if __name__ == "__main__":
    # counter weight
    for i in myCrane.counterweight_nodes:
       myCrane.addExternalForce(i, 0, 0, -3*load/len(myCrane.counterweight_nodes))
-   
+
+   # fem and optimization
    fem = FEM(myCrane, own_weight=True)
    fem.display(scale=1, tension=True)
    fem.optimize_crossections(625e-4, 180e6)
-   
-   #fem.addWind(28, 1, 1)
+
+   # wind
+   fem.addWind(28, 1, 1)
    
    # visualization
    fem.display(scale=1, tension=True)
